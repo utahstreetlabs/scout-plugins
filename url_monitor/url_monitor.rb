@@ -22,7 +22,7 @@ class UrlMonitor < Scout::Plugin
                :alerts => Array.new }
     
     response = http_response
-    report[:report][:status] = response
+    report[:report][:status] = response.class.to_s
     
     if valid_http_response?(response)
       report[:report][:up] = 1
@@ -75,7 +75,7 @@ class UrlMonitor < Scout::Plugin
       end
     end
         
-    return response.class.to_s
+    return response
   end
   
   

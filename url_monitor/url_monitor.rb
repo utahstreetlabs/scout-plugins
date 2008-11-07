@@ -75,7 +75,7 @@ class UrlMonitor < Scout::Plugin
       end
     end
         
-    return response
+    return response.class.to_s
   end
   
   

@@ -38,14 +38,7 @@ class UrlMonitor < Scout::Plugin
   end
   
   def valid_http_response?(result)
-    [HTTPSuccess,HTTPRedirection].each do |klass|
-      if result =~ /^HTTP/ and  Net.const_get(result.to_sym).ancestors.include?(klass)
-        return true
-      else
-        false
-      end
-    end
-    return false  
+    [HTTPOK,HTTPFound].include?(result.class) 
   end
   
   # returns the http response (string) from a url
@@ -53,18 +46,18 @@ class UrlMonitor < Scout::Plugin
     url = @options['url']
 
     uri = URI.parse(url)
-    h = Net::HTTP.new(uri.host,uri.port)
-    if h.port == 443
-      h.use_ssl = true
-    end
-    h.open_timeout = TIMEOUT_LENGTH
+
     response = nil
     retry_url_trailing_slash = true
     retry_url_execution_expired = true
     begin
-      h.start { |http|
-        response = http.get(uri.path + (uri.query ? ('?' + uri.query) : ''))
-        response = response.class.to_s.gsub!(/^Net::/,'')
+      Net::HTTP.start(uri.host) {|http|
+            http.open_timeout = TIMEOUT_LENGTH
+            req = Net::HTTP::Get.new((uri.path != '' ? uri.path : '/' ) + (uri.query ? ('?' + uri.query) : ''))
+            if uri.user && uri.password
+              req.basic_auth uri.user, uri.password
+            end
+            response = http.request(req)
       }
     rescue Exception => e
       # forgot the trailing slash...add and retry

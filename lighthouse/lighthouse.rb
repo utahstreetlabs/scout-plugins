@@ -1,3 +1,10 @@
+#
+# This uses the lighthouse-api gem, which is available from
+# here: http://github.com/Caged/lighthouse-api/tree/master
+#
+# sudo gem install Caged-lighthouse-api
+#
+
 require 'rubygems'
 require 'lighthouse-api'
 

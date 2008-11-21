@@ -1,0 +1,14 @@
+options:
+  account:
+    name: Lighthouse Account
+    notes: Specify your lighthouse account name - e.g. myname.hoptoadapp.com
+    default:
+  api_token:
+    name: Lighthouse API Token
+    notes: You can find this on your user profile page.
+    default: 
+  project_id:
+    name: Project Id
+    notes: This is the unique project id used in lighthouse. e.g. "10091"
+    default: 
+    

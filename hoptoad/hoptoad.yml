@@ -1,0 +1,9 @@
+options:
+  account:
+    name: Hoptoad Account
+    notes: Specify your hoptoad account name - e.g. myname.hoptoadapp.com
+    default:
+  api_token:
+    name: Hoptoad API Token
+    notes: You can find this on your hopoad profile page.
+    default:

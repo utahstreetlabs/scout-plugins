@@ -21,7 +21,7 @@ class AmazonSQSStats < Scout::Plugin
     report( :queue_size => size )
 
   rescue
-    error( :subject => "Error talking to lighthouse or parsing xml", :body => $!.message)
+    error( :subject => "Error talking to Amazon SQS", :body => $!.message)
   end
   
 end

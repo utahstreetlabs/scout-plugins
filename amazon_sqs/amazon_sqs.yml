@@ -1,0 +1,18 @@
+options:
+  access_key:
+    name: Amazon Access Key
+    notes: Your Amazon Web Services access key
+  secret_access_key:
+    name: Amazon Secret Access Key
+    notes: Your Secret Key for Amazon
+  queue_name:
+    name: Project Id
+    notes: This is the unique project id used in lighthouse. e.g. "10091"
+  max_size:
+    name: Maximum Queue Size
+    notes: Generate an alert if the queue is larger than this.
+  sqs_protocol_version:
+    name: SQS Protocol Version
+    notes: Version 1 will be deprecated as of May 6, 2009.
+    default: 2
+    

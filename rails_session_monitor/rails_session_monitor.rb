@@ -18,7 +18,7 @@ class RailsSessionMonitor < Scout::Plugin
     require "#{@options['path_to_app']}/config/environment"
     
     total = CGI::Session::ActiveRecordStore::Session.count
-    old = CGI::Session::ActiveRecordStore::Session.count(["updated_at < ?", @options['days_for_old_sessions'].to_i.days.ago ])
+    old = CGI::Session::ActiveRecordStore::Session.count(:conditions => ["updated_at < ?", @options['days_for_old_sessions'].to_i.days.ago ])
     
     {
       :report => {

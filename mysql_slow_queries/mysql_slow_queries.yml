@@ -1,0 +1,8 @@
+options:
+  mysql_slow_log:
+    name: MySQL Slow Query Log Path
+    notes: The full path to the MySQL slow queries log file.
+  max_query_time:
+    name: Max Query Time (Seconds)
+    notes: If process memory is larger than this amount, an alert is generated.
+    default: 5

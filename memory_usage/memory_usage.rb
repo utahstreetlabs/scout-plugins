@@ -16,8 +16,8 @@ class MemoryUsage < ScoutAgent::Plugin
     if swap           
       report_memory(swap, "swap")
       report_percent("swap")
-      if swap_used = report.last[:swap_used]
-        ratio  = ( swap_used.to_f / report.last[:mem_used] ).round        
+      if swap_used = reports.last[:swap_used]
+        ratio  = ( swap_used.to_f / reports.last[:mem_used] ).round        
         
         report(:swap_ratio => ratio)
 
@@ -32,8 +32,8 @@ class MemoryUsage < ScoutAgent::Plugin
       end
     end
     @report
-  rescue
-    error "Couldn't use `top` as expected.", $!.message
+  rescue => e
+    error "Couldn't use `top` as expected.", "#{e.message}\n#{e.backtrace}" #$!.message
   end
   
   private
@@ -45,8 +45,8 @@ class MemoryUsage < ScoutAgent::Plugin
   end
   
   def report_percent(type)
-    used = report.last["#{type}_used".to_sym] or return
-    free = report.last["#{type}_free".to_sym] or return
+    used = (reports.last["#{type}_used".to_sym]) or return
+    free = (reports.last["#{type}_free".to_sym]) or return
     report( "#{type}_used_percent".to_sym => (used.to_f / (used + free)  * 100).round )
   end
 end

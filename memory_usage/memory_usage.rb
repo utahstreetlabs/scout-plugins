@@ -1,4 +1,4 @@
-class MemoryUsage < ScoutAgent::Plugin
+class MemoryUsage < Scout::Plugin
   TEST_USAGE = "#{File.basename($0)} max_swap_used MAX_SWAP_USED max_swap_ration MAX_SWAP_RATIO"
   
   UNITS = { "b" => 1,

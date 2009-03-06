@@ -58,12 +58,14 @@ class DiskUsage < Scout::Plugin
       report[:report][name.downcase.strip.to_sym] = value
     end
     
+    capacity = (report[:report][:capacity] || report[:report][:"use%"]).to_i
+    
     max = @options["max_capacity"].to_i
 
-    if max > 0 and report[:report][:capacity].to_i > max
+    if max > 0 and capacity > max
       
       report[:alerts] << { :subject => "Maximum Capacity Exceeded " +
-                                       "(#{report[:report][:capacity]})" }
+                                       "(#{capacity}%)" }
     end
     report
   rescue

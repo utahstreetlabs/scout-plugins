@@ -1,0 +1,53 @@
+schema:
+  - throughput
+  - avg_request_time
+  - actions.num_requests
+  - actions.runtime_avg
+  - actions.runtime_max
+  - actions.render_runtime_avg
+  - actions.render_runtime_max
+  - actions.db_runtime_avg
+  - actions.db_runtime_max
+
+# Valid keys in metadata
+# :label -- defaults to a humanized version of key
+# :units -- defaults to blank
+# :precision -- defaults to 0
+# :delimiter -- defaults to  as in 4096
+metadata:
+  throughput:          
+    label: Throughput
+    units: req/sec
+    precision: 0
+  avg_request_time:
+    label: Average Request Time
+    units: ms
+    precision: 0
+  actions.num_requests:
+    label: Max runtime
+    units: ms
+    precision: 0
+  actions.runtime_avg: 
+    label: Average Runtime
+    units: ms
+    precision: 0
+  actions.runtime_max: 
+    label: Max runtime
+    units: ms
+    precision: 0
+  actions.render_runtime_avg: 
+    label: Average render time
+    units: ms
+    precision: 0                                     
+  actions.render_runtime_max: 
+    label: Max render time
+    units: ms
+    precision: 0
+  actions.db_runtime_avg: 
+    label: Average database time
+    units: ms
+    precision: 0
+  actions.db_runtime_max: 
+    label: Max database time
+    units: ms
+    precision: 0

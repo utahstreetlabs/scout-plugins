@@ -71,9 +71,8 @@ metadata:
 #  window_reference: PRECEDING_WINDOW       # PRECEEDING_WINDOW, YESTERDAY, LAST_WEEK
 
 triggers:
-  --
   - type: peak
-    data_series_name: actions.runtime_max  
+    data_series_name: actions.runtime_max
     max_value: 200
   - type: plateau
     data_series_name: actions.runtime_max
@@ -85,4 +84,3 @@ triggers:
     percentage_change: 10
     duration: 120
     window_reference: PRECEDING_WINDOW
-    

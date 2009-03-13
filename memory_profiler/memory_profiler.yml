@@ -1,0 +1,31 @@
+metadata:
+  Memory Total:          
+    units: MB
+    precision: 0
+  Memory Used:          
+    units: MB
+    precision: 0
+  % Memory Used:          
+    units: %
+    precision: 0
+  Swap Total:          
+    units: MB
+    precision: 0
+  Swap Used:          
+    units: MB
+    precision: 0
+  % Swap Used:          
+    units: %
+    precision: 0
+    
+triggers:
+  - type: peak
+    data_series_name: % Swap Used
+    max_value: 50
+  # swap usage increases by 30% compared to last week
+  - type: trend
+    data_series_name: % Swap Used
+    direction: UP
+    percentage_change: 30
+    duration: 60
+    window_reference: LAST_WEEK

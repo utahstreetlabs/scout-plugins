@@ -25,3 +25,15 @@ metadata:
     label: Disk Space Available
     units: GB
     precision: 0
+
+triggers:
+  - type: peak
+    data_series_name: capacity
+    max_value: 85
+  # available disk space decreases by 10% compared to last week
+  - type: trend
+    data_series_name: avail
+    direction: DOWN
+    percentage_change: 10
+    duration: 60
+    window_reference: LAST_WEEK

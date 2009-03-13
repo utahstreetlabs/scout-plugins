@@ -7,34 +7,29 @@ class UrlMonitor < Scout::Plugin
   TEST_USAGE = "#{File.basename($0)} url URL last_run LAST_RUN"
   TIMEOUT_LENGTH = 50 # seconds
   
-  def run
+  def build_report
     if @options["url"].strip.length == 0
-      return { :error => { :subject => "A url wasn't provided." } }
+      return error(:subject => "A url wasn't provided.")
     end
     
     unless (@options["url"].index("http://") == 0 || @options["url"].index("https://") == 0)
       @options["url"] = "http://" + @options["url"]
     end
-
-    report = { :report => { :up     => 0, # 1 if working, 0 if not
-                            :status => nil # the HTTP status
-                          },
-               :alerts => Array.new }
     
     response = http_response
-    report[:report][:status] = response.class.to_s
+    report(:status => response.class.to_s)
     
     if valid_http_response?(response)
-      report[:report][:up] = 1
+      report(:up => 1)
     else 
-      report[:report][:up] = 0
-      report[:alerts] << {:subject => "The URL [#{@options['url']}] is not responding",
-                          :body => "URL: #{@options['url']}\n\nStatus: #{report[:report][:status]}"}
+      report(:up => 0)
+      alert(:subject => "The URL [#{@options['url']}] is not responding",
+            :body => "URL: #{@options['url']}\n\nStatus: #{report[:report][:status]}"
+            )
     end
-    report
   rescue
-    { :error => { :subject => "Error monitoring url [#{@options['url']}]",
-                  :body    => $!.message } }
+    error(:subject => "Error monitoring url [#{@options['url']}]",
+          :body    => $!.message)
   end
   
   def valid_http_response?(result)

@@ -49,9 +49,7 @@ class DiskUsage < Scout::Plugin
   def build_report
     df_command   = @options["command"] || "df -h"
     df_output    = `#{df_command}`
-    
-    report       = {:report => Hash.new, :alerts => Array.new}
-        
+          
     df_lines = []
     parse_file_systems(df_output) { |row| df_lines << row }
     

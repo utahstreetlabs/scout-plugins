@@ -168,7 +168,10 @@ class RailsAnalyzer
       request_groups.each do |queries|
         # Look at each query, analyzing it for problems. If any problems occur,
         # add the query to the list of problem queries for the +action+.
-        queries.each do |query_and_time|
+        queries.each do |(time, query_lookup_id, *rest)|
+          # queries are abstracted into a lookup table, so we pull in the
+          # actual query from this lookup table before analyzing it.
+          query_and_time = [time, o['queries'][query_lookup_id], *rest]
           analyzed_query = SqlQuery.analyze(query_and_time)
           add_problem_query(action,analyzed_query) if analyzed_query.problems?
         end # queries.each

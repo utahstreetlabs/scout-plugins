@@ -10,15 +10,18 @@ schema:
   - actions.db_runtime_max
 
 # Valid keys in metadata
-# :label -- defaults to a humanized version of key
-# :units -- defaults to blank
-# :precision -- defaults to 0
-# :delimiter -- defaults to  as in 4096
+# label -- defaults to a humanized version of key
+# units -- defaults to blank
+# precision -- defaults to 0
+# delimiter -- defaults to nothing as in 4096
+# larger_is_better -- you can set this true, otherwise smaller numbers are regarded as being better
+
 metadata:
-  throughput:          
+  throughput:
     label: Throughput
     units: req/sec
     precision: 0
+    larger_is_better: true
   avg_request_time:
     label: Average Request Time
     units: ms

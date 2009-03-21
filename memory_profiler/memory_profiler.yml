@@ -2,6 +2,7 @@ metadata:
   Memory Total:          
     units: MB
     precision: 0
+    larger_is_better: true
   Memory Used:          
     units: MB
     precision: 0

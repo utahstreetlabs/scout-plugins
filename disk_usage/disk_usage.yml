@@ -25,6 +25,7 @@ metadata:
     label: Disk Space Available
     units: GB
     precision: 0
+    larger_is_better: true
 
 triggers:
   - type: peak

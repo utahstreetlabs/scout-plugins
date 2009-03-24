@@ -68,7 +68,7 @@ class PassengerMemoryStats < ScoutAgent::Plugin
       end
     end
 
-    report(stats)
+    stats
   end
 
   def as_mb(memory_string)

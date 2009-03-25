@@ -10,3 +10,11 @@ options:
 visualization:
   type: Line
   series: last_minute
+
+metadata:
+  last_minute:
+    precision: 2
+  last_five_minutes:
+    precision: 2
+  last_fifteen_minutes:
+    precision: 2

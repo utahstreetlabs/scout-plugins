@@ -9,7 +9,7 @@ class LoadAverages < Scout::Plugin
                         :last_five_minutes    => $4,
                         :last_fifteen_minutes => $6 }
     else
-      raise "Unexpected output format"  
+      raise "Unexpected output format for uptime: #{`uptime`}"  
     end
     if @options['max_load'] and data[:report][:last_minute].to_f > @options['max_load'].to_f
       data[:alerts] << {:subject => "Maximum Load Exceeded (#{data[:report][:last_minute]})"}

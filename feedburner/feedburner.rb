@@ -41,7 +41,7 @@ class Feedburner < Scout::Plugin
   
   # Returns a 2-element hash with the circulation and feed hits
   def get_data(feed)
-    res = open("http://api.feedburner.com/awareness/1.0/GetFeedData?uri=#{feed}").read
+    res = open("https://feedburner.google.com/api/awareness/1.0/GetFeedData?uri=#{feed}").read
     hp = Hpricot(res)
     if hp.at("rsp").attributes['stat'] == "ok"
       parse_feedburner(res)

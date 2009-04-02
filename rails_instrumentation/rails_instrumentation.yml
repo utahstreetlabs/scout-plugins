@@ -8,6 +8,8 @@ schema:
   - actions.render_runtime_max
   - actions.db_runtime_avg
   - actions.db_runtime_max
+  - actions.other_runtime_avg
+  - actions.other_runtime_max
 
 # Valid keys in metadata
 # label -- defaults to a humanized version of key
@@ -54,7 +56,14 @@ metadata:
     label: Max database time
     units: ms
     precision: 0
-    
+  actions.other_runtime_avg: 
+    label: Average other time
+    units: ms
+    precision: 0
+  actions.other_runtime_max: 
+    label: Max other time
+    units: ms
+    precision: 0    
     
 # Define your triggers here as an array of hashes. This example 
 # defines three triggers, one of each type:

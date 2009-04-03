@@ -86,14 +86,14 @@ metadata:
 triggers:
   - type: peak
     data_series_name: actions.runtime_max
-    max_value: 900
+    max_value: 4000
   - type: plateau
     data_series_name: actions.runtime_max
-    max_value: 1000
+    max_value: 3000
     duration: 10
   - type: trend
     data_series_name: actions.runtime_avg
     direction: UP
-    percentage_change: 10
+    percentage_change: 30
     duration: 120
-    window_reference: PRECEDING_WINDOW
+    window_reference: LAST_WEEK

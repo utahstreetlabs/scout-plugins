@@ -102,15 +102,15 @@ class SqlQuery
 
   def analyze_query_type
     case query_type
-    when "system", "const", "eq_ref":
+    when "system", "const", "eq_ref" 
       # these are good
-    when "ref", "ref_or_null", "range", "index_merge":
+    when "ref", "ref_or_null", "range", "index_merge" 
       # also good
-    when "unique_subquery", "index_subquery":
+    when "unique_subquery", "index_subquery"
       #NOT SURE
-    when "index":
+    when "index" 
       self.explain_issues << "using a full index tree scan (slightly faster than a full table scan)" if extra.include?("using where")
-    when "all":
+    when "all" 
       self.explain_issues << "using a full table scan" if extra.include?("using where")
     end
   end

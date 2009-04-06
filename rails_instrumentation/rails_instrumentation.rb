@@ -20,7 +20,7 @@ class RailsInstrumentation < ScoutAgent::Plugin
   end
 end
 
-require "md5"
+require "digest/md5"
 
 # Accepts a Query Array (which contains details on an SQL Query). This is a wrapper
 # to make SQL queries easier to work with.

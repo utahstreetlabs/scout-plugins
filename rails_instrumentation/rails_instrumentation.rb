@@ -252,7 +252,7 @@ class RailsAnalyzer
       :time => time,
       :kind => :sql
     }.merge(options)
-    options[:token] = MD5.hexdigest(options[:token])
+    options[:token] = Digest::MD5.hexdigest(options[:token])
     self.hints << options
   end
   

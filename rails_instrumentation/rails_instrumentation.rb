@@ -6,7 +6,7 @@ class RailsInstrumentation < ScoutAgent::Plugin
       
       ### pull in the reports from the message queue and analyze each report
       each_queued_message do |message, time|
-        report(message)
+        report(message.reject { |k,v| k == 'queries'}) # remove the top-level queries key/value...only needed for analysis
         analyzer.analyze(message)
       end
       # create hints based on analysis

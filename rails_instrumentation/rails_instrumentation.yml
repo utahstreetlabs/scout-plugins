@@ -19,11 +19,12 @@ schema:
 # larger_is_better -- you can set this true, otherwise smaller numbers are regarded as being better
 
 metadata:
-  throughput:
-    label: Throughput
-    units: req/sec
-    precision: 0
-    larger_is_better: true
+  # add back once rate_of_change type available
+  # throughput:
+  #   label: Throughput
+  #   units: req/sec
+  #   precision: 0
+  #   larger_is_better: true
   avg_request_time:
     label: Average Request Time
     units: ms

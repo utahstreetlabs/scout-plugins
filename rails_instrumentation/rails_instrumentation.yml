@@ -1,5 +1,5 @@
 schema:
-  - throughput
+  # - throughput
   - avg_request_time
   - actions.num_requests
   - actions.runtime_avg

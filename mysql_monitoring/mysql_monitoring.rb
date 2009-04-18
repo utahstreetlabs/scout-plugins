@@ -12,7 +12,7 @@ class MysqlMonitoring< Scout::Plugin
     end
     
     user = @options['user'] || 'root'
-    password, host, port, socket = @options.values_at( *%w(password host port socket) )
+    password, host, port, socket = @options.values_at( *%w(password host port socket) ).map { |v| v.to_s.strip == '' ? nil : v}
 
     now = Time.now
     begin

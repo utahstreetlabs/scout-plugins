@@ -40,15 +40,14 @@ class MysqlMonitoring< Scout::Plugin
     report['total'] = calculate_counter(now, 'total', total)
 
     report(report)
-    remember(@memory)
   end
 
   private
   def calculate_counter(current_time, name, value)
     result = nil
 
-    if @memory[name] && @memory[name].is_a?(Hash)
-      last_time, last_value = @memory[name].values_at(:time, :value)
+    if memory(name) && memory(name).is_a?(Hash)
+      last_time, last_value = memory(name).values_at(:time, :value).map(&:to_i)
 
       # We won't log it if the value has wrapped
       if value >= last_value
@@ -63,7 +62,7 @@ class MysqlMonitoring< Scout::Plugin
       end
     end
 
-    @memory[name] = { :time => current_time, :value => value }
+    remember(:name => { :time => current_time, :value => value })
 
     result
   end

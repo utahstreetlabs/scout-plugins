@@ -46,14 +46,13 @@ class MysqlMonitoring< Scout::Plugin
   def calculate_counter(current_time, name, value)
     result = nil
 
-    if memory(name) && memory(name).is_a?(Hash)
-      last_time, last_value = memory(name).values_at( *%w(time value) )
-      last_value = last_value.to_i
+    if mem = memory(name) && mem.is_a?(Hash)
+      last_value = mem['value'].to_i
+      last_time = Time.parse(mem['time'])
       # We won't log it if the value has wrapped
       if value >= last_value
         elapsed_seconds = last_time - current_time
         elapsed_seconds = 1 if elapsed_seconds < 1
-
         result = value - last_value
         # calculate per/second
         result = result / elapsed_seconds.to_f

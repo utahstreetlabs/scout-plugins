@@ -39,7 +39,7 @@ class MysqlMonitoring< Scout::Plugin
     end
     report['total'] = calculate_counter(now, 'total', total)
 
-    report(report)
+    report(report) if report.values.compact.any?
   end
 
   private
@@ -55,10 +55,8 @@ class MysqlMonitoring< Scout::Plugin
         elapsed_seconds = 1 if elapsed_seconds < 1
 
         result = value - last_value
-
-        if @options['calculate_per_second']
-          result = result / elapsed_seconds.to_f
-        end
+        # calculate per/second
+        result = result / elapsed_seconds.to_f
       end
     end
 

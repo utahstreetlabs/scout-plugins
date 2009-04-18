@@ -15,7 +15,12 @@ class MysqlMonitoring< Scout::Plugin
     password, host, port, socket = @options.values_at( *%w(password host port socket) )
 
     now = Time.now
-    mysql = Mysql.connect(host, user, password, nil, port.to_i, socket)
+    begin
+      mysql = Mysql.connect(host, user, password, nil, port.to_i, socket)
+    rescue Mysql::Error => e
+      return errors << {:subject => "Unable to connect to MySQL Server.",
+                        :body => "Scout was unable to connect to the mysql server with the following options: #{@options.inspect}: #{e.backtrace}"}
+    end
     result = mysql.query('SHOW /*!50002 GLOBAL */ STATUS')
 
     rows = []

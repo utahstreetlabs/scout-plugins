@@ -39,7 +39,8 @@ class MysqlMonitoring< Scout::Plugin
     end
     report['total'] = calculate_counter(now, 'total', total)
 
-    { :report => report, :memory => @memory }
+    report(report)
+    remember(@memory)
   end
 
   private

@@ -57,8 +57,6 @@ class MysqlMonitoring< Scout::Plugin
         # calculate per/second
         result = result / elapsed_seconds.to_f
       end
-    else
-      add_error(:subject => 'debug', :body => "mem:#{mem.inspect}")
     end
 
     remember(name => { 'time' => current_time, 'value' => value })

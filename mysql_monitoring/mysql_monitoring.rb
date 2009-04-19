@@ -39,7 +39,7 @@ class MysqlMonitoring< Scout::Plugin
     end
     report['total'] = calculate_counter(now, 'total', total)
 
-    report(report)
+    report(report) if report.values.compact.any?
   end
 
   private

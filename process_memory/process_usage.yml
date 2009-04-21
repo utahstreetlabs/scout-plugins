@@ -24,3 +24,4 @@ triggers:
     percentage_change: 20
     duration: 60
     window_reference: LAST_WEEK
+    min_value: 5

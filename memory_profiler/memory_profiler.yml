@@ -30,6 +30,7 @@ triggers:
     percentage_change: 30
     duration: 60
     window_reference: LAST_WEEK 
+    min_value: 10
     
 visualization_options:
   - % Swap Used

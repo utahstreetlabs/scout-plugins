@@ -24,12 +24,12 @@ class UrlMonitor < Scout::Plugin
     else 
       report(:up => 0)
       alert(:subject => "The URL [#{@options['url']}] is not responding",
-            :body => "URL: #{@options['url']}\n\nStatus: #{report[:report][:status]}"
+            :body => "URL: #{@options['url']}\n\nStatus: #{response.to_s}"
             )
     end
   rescue
     error(:subject => "Error monitoring url [#{@options['url']}]",
-          :body    => $!.message)
+          :body    => $!.message + '<br\><br\>' + $!.backtrace.join('<br/>'))
   end
   
   def valid_http_response?(result)
@@ -46,7 +46,7 @@ class UrlMonitor < Scout::Plugin
     retry_url_trailing_slash = true
     retry_url_execution_expired = true
     begin
-      Net::HTTP.start(uri.host) {|http|
+      Net::HTTP.start(uri.host,uri.port) {|http|
             http.open_timeout = TIMEOUT_LENGTH
             req = Net::HTTP::Get.new((uri.path != '' ? uri.path : '/' ) + (uri.query ? ('?' + uri.query) : ''))
             if uri.user && uri.password

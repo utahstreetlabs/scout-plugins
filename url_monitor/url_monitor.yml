@@ -8,3 +8,4 @@ metadata:
   up:          
     label: Url Reachable
     precision: 0
+    larger_is_better: true

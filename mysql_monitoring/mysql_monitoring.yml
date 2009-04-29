@@ -33,7 +33,7 @@ metadata:
 
 triggers:    
   - type: trend
-    data_series_name: total
+    dname: total
     direction: UP                            
     percentage_change: 30                    
     duration: 60                           

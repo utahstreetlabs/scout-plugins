@@ -29,11 +29,11 @@ metadata:
 
 triggers:
   - type: peak
-    data_series_name: capacity
+    dname: capacity
     max_value: 85
   # available disk space decreases by 10% compared to last week
   - type: trend
-    data_series_name: avail
+    dname: avail
     direction: DOWN
     percentage_change: 10
     duration: 60

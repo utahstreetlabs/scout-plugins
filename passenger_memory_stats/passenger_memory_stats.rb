@@ -1,4 +1,4 @@
-class PassengerMemoryStats < Scout::Plugin
+class PassengerMemoryStats < ScoutAgent::Plugin
   def build_report
     cmd  = option(:passenger_memory_stats_command) || "passenger-memory-stats"
     data = `#{cmd} 2>&1`
@@ -16,10 +16,10 @@ class PassengerMemoryStats < Scout::Plugin
                                 gsub(/_([a-z])/) { " #{$1.capitalize}"}.
                                 gsub("Vms", "VMS")
         if num > max and not memory(mem_name)
-          alert(:subject => "Maximum #{human_name} Exceeded (#{total})")
+          alert "Maximum #{human_name} Exceeded (#{total})", ''
           remember(mem_name => true)
         elsif num < max and memory(mem_name)
-          alert(:subject => "Maximum #{human_name} Has Dropped Below Limit (#{total})")
+          alert "Maximum #{human_name} Has Dropped Below Limit (#{total})", ''
           memory.delete(mem_name)
         else
           remember(mem_name => memory(mem_name))

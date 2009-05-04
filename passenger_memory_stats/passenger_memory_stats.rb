@@ -1,4 +1,4 @@
-class PassengerMemoryStats < ScoutAgent::Plugin
+class PassengerMemoryStats < Scout::Plugin
   def build_report
     cmd  = option(:passenger_memory_stats_command) || "passenger-memory-stats"
     data = `#{cmd} 2>&1`

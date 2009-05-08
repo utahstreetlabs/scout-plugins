@@ -188,9 +188,9 @@ class RailsAnalyzer
           duration=query.duration.to_i
           if query.explain_issues? # slow & explain issues. we can give more details.
             importance = 0
-            importance += 1 if duration > 100
-            importance += 1 if duration > 200
-            importance += 1 if duration > 300
+            importance += 1 if duration > 600
+            importance += 1 if duration > 900
+            importance += 1 if duration > 1200
             importance = 3 if importance > 3 # importance maxes out at 3
             add_hint(
                   :title => "A #{duration}ms query in the #{query.table} table may be able to be optimized.",
@@ -205,9 +205,9 @@ class RailsAnalyzer
           else # just slow
             # calculate importance
             importance = 0
-            importance += 1 if duration > 100
-            importance += 1 if duration > 200
-            importance += 1 if duration > 300
+            importance += 1 if duration > 600
+            importance += 1 if duration > 900
+            importance += 1 if duration > 1200
             add_hint(
                   :title => "A slow query occurred (#{duration} ms).",
                   :description => "This query exceeds the maximum specified duration of #{MAX_QUERY_TIME}ms.",

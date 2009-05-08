@@ -7,6 +7,10 @@ options:
     name: The Process Status (ps) Command
     notes: The command with options. The default works on most systems.
     default: ps axucww
+  ps_regex:
+    name: The regex used to match a command name.
+    notes: "By default, this matches a command with options at the end of a line.  The word COMMAND get's replaced with the command you gave (regex escaped).  You may wish to try the following pattern if you have trouble matching dynamic options:  (?i:\\bCOMMAND\\b)"
+    default: "(?i:COMMAND\\s+$)"
     
 metadata:
   memory:          

@@ -8,11 +8,4 @@ metadata:
   up:          
     label: Url Reachable
     precision: 0
-            
-triggers:
-  - type: trend
-    data_series_name: up
-    direction: EITHER
-    percentage_change: 20
-    duration: 60
-    window_reference: LAST_WEEK
+    larger_is_better: true

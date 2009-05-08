@@ -20,10 +20,10 @@ metadata:
     
 triggers:
   - type: peak
-    data_series_name: memory
+    dname: memory
     max_value: 10
   - type: trend
-    data_series_name: memory
+    dname: memory
     direction: UP
     percentage_change: 20
     duration: 60

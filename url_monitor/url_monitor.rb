@@ -1,13 +1,14 @@
 require 'net/http'
 require 'uri'
 
-class UrlMonitor < Scout::Plugin
+class UrlMonitor < ScoutAgent::Plugin
   include Net
   
   TEST_USAGE = "#{File.basename($0)} url URL last_run LAST_RUN"
   TIMEOUT_LENGTH = 50 # seconds
   
   def build_report
+    @options["url"] ="http://hotspotr.com/app/ping_"
     if @options["url"].strip.length == 0
       return error(:subject => "A url wasn't provided.")
     end
@@ -19,17 +20,35 @@ class UrlMonitor < Scout::Plugin
     response = http_response
     report(:status => response.class.to_s)
     
-    if valid_http_response?(response)
-      report(:up => 1)
-    else 
-      report(:up => 0)
-      alert(:subject => "The URL [#{@options['url']}] is not responding",
-            :body => "URL: #{@options['url']}\n\nStatus: #{report[:report][:status]}"
-            )
+    is_up = valid_http_response?(response) ? 1 : 0
+    report(:up => is_up)
+    
+    if is_up != memory(:was_up)
+      if is_up == 0
+        alert(:subject => "The URL [#{@options['url']}] is not responding",
+              :body => "URL: #{@options['url']}\n\nStatus: #{response.to_s}"
+              ) 
+        remember(:down_at => Time.now)
+      else
+        if memory(:was_up) && memory(:down_at)
+          alert(:subject => "The URL [#{@options['url']}] is responding again",
+                :body => "URL: #{@options['url']}\n\nStatus: #{response.to_s}. " +
+                          "Was unresponsive for #{(Time.now - memory(:down_at)).to_i} seconds"
+                )
+        else
+          alert(:subject => "The URL [#{@options['url']}] is responding",
+                :body => "URL: #{@options['url']}\n\nStatus: #{response.to_s}. "
+               )
+        end
+        memory.delete(:down_at)
+            
+      end
     end
+    
+    remember(:was_up => is_up)
   rescue
     error(:subject => "Error monitoring url [#{@options['url']}]",
-          :body    => $!.message)
+          :body    => $!.message + '<br\><br\>' + $!.backtrace.join('<br/>'))
   end
   
   def valid_http_response?(result)
@@ -46,7 +65,7 @@ class UrlMonitor < Scout::Plugin
     retry_url_trailing_slash = true
     retry_url_execution_expired = true
     begin
-      Net::HTTP.start(uri.host) {|http|
+      Net::HTTP.start(uri.host,uri.port) {|http|
             http.open_timeout = TIMEOUT_LENGTH
             req = Net::HTTP::Get.new((uri.path != '' ? uri.path : '/' ) + (uri.query ? ('?' + uri.query) : ''))
             if uri.user && uri.password

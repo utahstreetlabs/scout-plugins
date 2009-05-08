@@ -21,11 +21,11 @@ metadata:
     
 triggers:
   - type: peak
-    data_series_name: % Swap Used
+    dname: % Swap Used
     max_value: 50
   # swap usage increases by 30% compared to last week
   - type: trend
-    data_series_name: % Swap Used
+    dname: % Swap Used
     direction: UP
     percentage_change: 30
     duration: 60

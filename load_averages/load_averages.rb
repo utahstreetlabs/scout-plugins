@@ -3,7 +3,7 @@
 # 
 #   http://scoutapp.com/plugin_urls/static/creating_a_plugin
 # 
-class LoadAverages < ScoutAgent::Plugin
+class LoadAverages < Scout::Plugin
   TEST_USAGE = "#{File.basename($0)} max_load MAX_LOAD"
 
    def build_report

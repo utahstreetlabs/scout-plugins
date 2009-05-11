@@ -55,7 +55,9 @@ class MysqlQueryStatistics < Scout::Plugin
   # Returns nil if an empty string
   def get_option(opt_name)
     val = option(opt_name)
-    (val.is_a?(String) and val.strip == '') ? nil : val
+    val = (val.is_a?(String) and val.strip == '') ? nil : val
+    logger.info "Set #{opt_name}: #{val}"
+    return val
   end
   
   # Note this calculates the difference between the last run and the current run.

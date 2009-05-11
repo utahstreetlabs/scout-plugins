@@ -16,3 +16,25 @@ options:
   socket:
     name: MySQL socket
     notes: Specify the location of the MySQL socket
+    
+metadata:
+  select:
+    units: queries/sec
+  delete:
+    units: queries/sec
+  update:
+    units: queries/sec
+  insert:
+    units: queries/sec
+  replace:
+    units: queries/sec
+  total:
+    units: queries/sec
+
+triggers:    
+  - type: trend
+    data_series_name: total
+    direction: UP                            
+    percentage_change: 30                    
+    duration: 60                           
+    window_reference: LAST_WEEK

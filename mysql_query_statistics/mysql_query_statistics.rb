@@ -7,7 +7,7 @@ require 'set'
 class MysqlQueryStatistics < Scout::Plugin
   ENTRIES = %w(Com_insert Com_select Com_update Com_delete).to_set
 
-  def run
+  def build_report
     begin
       require 'mysql'
     rescue LoadError => e
@@ -32,39 +32,40 @@ class MysqlQueryStatistics < Scout::Plugin
     end
     result.free
 
-    report = {}
+    report_hash = {}
     rows.each do |row|
       name = row.first[/_(.*)$/, 1]
-      report[name] = calculate_counter(now, name, row.last.to_i)
+      value = calculate_counter(now, name, row.last.to_i)
+      # only report if a value is calculated
+      next unless value
+      report(name => value)
     end
 
-    report['total'] = calculate_counter(now, 'total', total)
 
-    { :report => report, :memory => @memory }
+    total_val = calculate_counter(now, 'total', total)
+    report('total' => total_val) if total_val
   end
 
   private
+  # Note this calculates the difference between the last run and the current run.
   def calculate_counter(current_time, name, value)
     result = nil
-
-    if @memory[name] && @memory[name].is_a?(Hash)
-      last_time, last_value = @memory[name].values_at(:time, :value)
-
+    # only check if a past run has a value for the specified query type
+    if memory(name) && memory(name).is_a?(Hash)
+      last_time, last_value = memory(name).values_at('time', 'value')
       # We won't log it if the value has wrapped
-      if value >= last_value
+      if last_value and value >= last_value
         elapsed_seconds = last_time - current_time
         elapsed_seconds = 1 if elapsed_seconds < 1
-
         result = value - last_value
 
-        if @options['calculate_per_second']
-          result = result / elapsed_seconds.to_f
-        end
+        # calculate per-second
+        result = result / elapsed_seconds.to_f
       end
     end
 
-    @memory[name] = { :time => current_time, :value => value }
-
+    remember(name => {:time => current_time, :value => value})
+    
     result
   end
 end

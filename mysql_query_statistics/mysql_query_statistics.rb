@@ -18,9 +18,14 @@ class MysqlQueryStatistics < Scout::Plugin
 
     user = @options['user'] || 'root'
     password, host, port, socket = @options.values_at( *%w(password host port socket) )
+    logger.info @options.values_at( *%w(password host port socket) ).inspect
+    password = nil if blank?(password)
+    host     = nil if blank?(host)
+    port     = nil if blank?(port)
+    socket   = nil if blank?(socket)
     
     now = Time.now
-    mysql = Mysql.connect(host, user, password, nil, (port.to_s.strip.length.zero? ? nil : port.to_i), socket)
+    mysql = Mysql.connect(host, user, password, nil, (port.nil? ? nil : port.to_i), socket)
     result = mysql.query('SHOW /*!50002 GLOBAL */ STATUS')
 
     rows = []

@@ -9,6 +9,7 @@ class MysqlQueryStatistics < Scout::Plugin
 
   def build_report
     begin
+      require 'rubygems'
       require 'mysql'
     rescue LoadError => e
       return { :error => { :subject => "Unable to gather Mysql query statistics",

@@ -15,7 +15,7 @@ class MysqlQueryStatistics < Scout::Plugin
         :body => "Unable to find a mysql library. Please install the library to use this plugin" }
       }
     end
-
+    logger.info @options.inspect
     user = @options['user'] || 'root'
     password, host, port, socket = @options.values_at( *%w(password host port socket) )
     

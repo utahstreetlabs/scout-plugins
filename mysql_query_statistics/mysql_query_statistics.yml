@@ -19,17 +19,23 @@ options:
     
 metadata:
   select:
-    units: queries/sec
+    label: Select Queries
+    units: /sec
   delete:
-    units: queries/sec
+    label: Delete Queries
+    units: /sec
   update:
-    units: queries/sec
+    label: Update Queries
+    units: /sec
   insert:
-    units: queries/sec
+    label: Insert Queries
+    units: /sec
   replace:
-    units: queries/sec
+    label: Replace Queries
+    units: /sec
   total:
-    units: queries/sec
+    label: Total Queries
+    units: /sec
 
 triggers:    
   - type: trend

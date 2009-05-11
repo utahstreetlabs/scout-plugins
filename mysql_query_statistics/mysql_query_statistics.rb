@@ -56,7 +56,6 @@ class MysqlQueryStatistics < Scout::Plugin
   def get_option(opt_name)
     val = option(opt_name)
     val = (val.is_a?(String) and val.strip == '') ? nil : val
-    logger.info "Set #{opt_name}: #{val}"
     return val
   end
   

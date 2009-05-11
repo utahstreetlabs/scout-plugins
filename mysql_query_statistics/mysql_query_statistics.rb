@@ -16,13 +16,12 @@ class MysqlQueryStatistics < Scout::Plugin
       }
     end
 
-    user = @options['user'] || 'root'
-    password, host, port, socket = @options.values_at( *%w(password host port socket) )
-    logger.info @options.values_at( *%w(password host port socket) ).inspect
-    password = nil if blank?(password)
-    host     = nil if blank?(host)
-    port     = nil if blank?(port)
-    socket   = nil if blank?(socket)
+    # get_option returns nil if the option value is blank
+    user     = get_option(:user) || 'root'
+    password = get_option(:password)
+    host     = get_option(:host)
+    port     = get_option(:port)
+    socket   = get_option(:socket)
     
     now = Time.now
     mysql = Mysql.connect(host, user, password, nil, (port.nil? ? nil : port.to_i), socket)
@@ -53,8 +52,10 @@ class MysqlQueryStatistics < Scout::Plugin
 
   private
   
-  def blank?(val)
-    val.is_a?(String) and val.strip == ''
+  # Returns nil if an empty string
+  def get_option(opt_name)
+    val = option(opt_name)
+    (val.is_a?(String) and val.strip == '') ? nil : val
   end
   
   # Note this calculates the difference between the last run and the current run.

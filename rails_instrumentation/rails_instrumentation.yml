@@ -71,14 +71,14 @@ metadata:
 #
 #triggers:
 #  - type: peak
-#    data_series_name: throughput             # a shallow data series
+#    dname: throughput             # a shallow data series
 #    max_value: 200
 #  - type: plateau
-#    data_series_name: actions.runtime_max    # a deep data series
+#    dname: actions.runtime_max    # a deep data series
 #    max_value: 1000
 #    duration: 10                             # in minutes
 #  - type: trend
-#    data_series_name: actions.runtime_avg
+#    dname: actions.runtime_avg
 #    direction: UP                            # UP, DOWN, EITHER
 #    percentage_change: 10                    # greater than 0
 #    duration: 120                            # a number (in minutes) or: DAY_SO_FAR
@@ -86,10 +86,10 @@ metadata:
 
 triggers:
   - type: peak
-    data_series_name: actions.runtime_max
+    dname: actions.runtime_max
     max_value: 4000
   - type: trend
-    data_series_name: actions.runtime_avg
+    dname: actions.runtime_avg
     direction: UP
     percentage_change: 30
     duration: 120

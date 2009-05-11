@@ -8,6 +8,7 @@ class UrlMonitor < ScoutAgent::Plugin
   TIMEOUT_LENGTH = 50 # seconds
   
   def build_report
+    @options["url"] ="http://hotspotr.com/app/ping_"
     if @options["url"].strip.length == 0
       return error(:subject => "A url wasn't provided.")
     end

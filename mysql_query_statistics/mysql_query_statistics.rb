@@ -18,9 +18,14 @@ class MysqlQueryStatistics < Scout::Plugin
 
     user = @options['user'] || 'root'
     password, host, port, socket = @options.values_at( *%w(password host port socket) )
-
+    
+    password = nil if blank?(password)
+    host     = nil if blank?(host)
+    port     = nil if blank?(port)
+    socket   = nil if blank?(socket)
+    
     now = Time.now
-    mysql = Mysql.connect(host, user, password, nil, port.to_i, socket)
+    mysql = Mysql.connect(host, user, password, nil, (port ? port.to_i : nil), socket)
     result = mysql.query('SHOW /*!50002 GLOBAL */ STATUS')
 
     rows = []
@@ -47,6 +52,11 @@ class MysqlQueryStatistics < Scout::Plugin
   end
 
   private
+  
+  def blank?(val)
+    val.is_a?(String) and val.strip == ''
+  end
+  
   # Note this calculates the difference between the last run and the current run.
   def calculate_counter(current_time, name, value)
     result = nil

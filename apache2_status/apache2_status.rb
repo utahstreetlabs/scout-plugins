@@ -17,12 +17,13 @@ class Apache2Status < Scout::Plugin
   end
   
   def requests_being_processed
+	  
     total_requests_being_processed = 0
-    sample_size = options('sample_size').to_i
-    
+    sample_size = option('sample_size').to_i
+
     sample_size.times do
      total_requests_being_processed += fetch_requests_being_processed
-     sleep(options('sample_sleep').to_f)
+     sleep(option('sample_sleep').to_f)
     end
     
     average_requests_being_processed = (total_requests_being_processed / sample_size)

@@ -68,9 +68,8 @@ class ScoutMysqlSlow < Scout::Plugin
 
     elapsed_seconds = current_time - last_run
     elapsed_seconds = 1 if elapsed_seconds < 1
-
     # calculate per-second
-    report(:slow_queries => slow_query_count/elapsed_seconds.to_f)
+    report(:slow_queries => slow_query_count/(elapsed_seconds/60.to_f))
     
     remember(:last_run,Time.now)
   end

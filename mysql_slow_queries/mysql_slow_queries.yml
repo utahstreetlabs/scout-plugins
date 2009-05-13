@@ -5,12 +5,12 @@ options:
 
 metadata:
   slow_queries:
-    units: /sec
+    units: /min
     precision: 2
 triggers:
   - type: peak
     dname: slow_queries
-    max_value: 1
+    max_value: 0
   - type: trend
     dname: slow_queries
     direction: UP

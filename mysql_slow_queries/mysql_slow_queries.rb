@@ -1,4 +1,5 @@
 require "time"
+require "digest/md5"
 
 # MySQL Slow Queries Monitoring plug in for scout.
 # Created by Robin "Evil Trout" Ward for Forumwarz, based heavily on the Rails Request
@@ -23,59 +24,54 @@ class ScoutMysqlSlow < Scout::Plugin
     end
             
     if option("mysql_slow_log").nil? or option("mysql_slow_log").strip.length == 0
-      return error(:subject => "A path to the MySQL Slow Query log file wasn't provided.")
+      return error(:subject => "A path to the MySQL Slow Query log file wasn't provided.",
+      :body => "The full path to the slow queries log must be provided. Learn more about enabling the slow queries log here: http://dev.mysql.com/doc/refman/5.1/en/slow-query-log.html")
     end
 
-  
+    slow_query_count = 0
     slow_queries = []
     sql = []
-    very_slow_query_count = 0
-    slow_query_count = 0
-    
-    slow_queries_text = ''
-    report_data = { :slow_query_count => 0,
-                    :very_slow_query_count => 0 }
-    
-    max_query_time = option("max_query_time").to_i
+    last_run = memory(:last_run) || Time.now
+    current_time = Time.now
     Elif.foreach(option("mysql_slow_log")) do |line|
       if line =~ /^# Query_time: (\d+) .+$/
-        slow_query_count += 1
         query_time = $1.to_i
-        if (max_query_time > 0) and (query_time > max_query_time)
-          slow_queries << {:time => query_time, :sql => sql.reverse}
-          very_slow_query_count += 1
-        end
+        slow_queries << {:time => query_time, :sql => sql.reverse}
         sql = []
       elsif line =~ /^\# Time: (.*)$/
         t = Time.parse($1) {|y| y < 100 ? y + 2000 : y}
         
-        t2 = memory(:last_run) || Time.now
+        t2 = last_run
         if t < t2
           break
         else
           slow_queries.each do |sq|
-            slow_queries_text += "#{sq[:sql]}Took: #{sq[:time]}s\n\n"
+            slow_query_count +=1
+            # calculate importance
+            importance = 0
+            importance += 1 if sq[:time] > 3
+            importance += 1 if sq[:time] > 10
+            importance += 1 if sq[:time] > 30
+            parsed_sql = sq[:sql].join
+            hint(:title => "#{sq[:time]}s: #{parsed_sql[0..50]}...",
+                 :description => sq[:sql],
+                 :token => Digest::MD5.hexdigest("slow_query_#{parsed_sql.size > 250 ? parsed_sql[0..250] + '...' : parsed_sql}"),
+                 :importance=> importance,
+                 :tag_list=>'slow_query')
           end
-          report_data[:very_slow_query_count] += very_slow_query_count
-          report_data[:slow_query_count] += slow_query_count
-          
-          very_slow_query_count = slow_query_count = 0
         end
         
       elsif line !~ /^\#/
         sql << line
       end
     end  
-    
-    if report_data and (count = report_data[:very_slow_query_count].to_i and count > 0)
-      alert(:subject => "Maximum Query Time (#{option("max_query_time").to_s} sec) exceeded on #{count} #{count > 1 ? 'queries' : 'query'}",
-            :body => slow_queries_text)
-    end
-    remember(:last_run,Time.now)
-    report(report_data)
 
-    rescue
-      error(:subject => "Couldn't parse log file.",
-                    :body    => $!.message)
+    elapsed_seconds = current_time - last_run
+    elapsed_seconds = 1 if elapsed_seconds < 1
+
+    # calculate per-second
+    report(:slow_queries => slow_query_count/elapsed_seconds.to_f)
+    
+    remember(:last_run,Time.now)
   end
 end

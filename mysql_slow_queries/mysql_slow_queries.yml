@@ -1,7 +1,20 @@
 options:
   mysql_slow_log:
-    default: /var/log/mysql/mysql-slow.log
+    default: /var/log/mysql/mysql-slow.log #/var/log/mysql/mysql-slow.log
     name: Full path to the MySQL slow queries log file
-  max_query_time:
-    default: 3
-    notes: Alert if the query goes longer than this time in seconds.
+
+metadata:
+  slow_queries:
+    units: /sec
+    precision: 2
+triggers:
+  - type: peak
+    dname: slow_queries
+    max_value: 1
+  - type: trend
+    dname: slow_queries
+    direction: UP
+    percentage_change: 30
+    duration: 120
+    window_reference: LAST_WEEK
+    min_value: 100

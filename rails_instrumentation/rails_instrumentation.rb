@@ -41,7 +41,9 @@ class SqlQuery
   
   # From Rails Query Review Plugin
   def self.sanitize_sql(sql)
-    new_sql = sql.dup
+    # TODO - See why this isn't a string
+    return "Unable to sanitize SQL" if !sql.is_a?(String)
+    new_sql = sql.dup 
     new_sql.gsub!(/\b(?:0x[0-9A-Fa-f]+|\d+)\b/, "?")
     new_sql.gsub!(/'(?>[^']*)(?>''[^']*)*'/,    "?")
     new_sql.gsub!(/"(?>[^"]*)(?>""[^"]*)*"/,    "?")

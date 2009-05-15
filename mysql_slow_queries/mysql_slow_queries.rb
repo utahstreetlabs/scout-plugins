@@ -58,7 +58,7 @@ class ScoutMysqlSlow < Scout::Plugin
                  :token => Digest::MD5.hexdigest("slow_query_#{parsed_sql.size > 250 ? parsed_sql[0..250] + '...' : parsed_sql}"),
                  :importance=> importance,
                  :time => Time.now.utc,
-                 :tag_list=>'slow_query')
+                 :tag_list=>'slow')
           end
         end
         

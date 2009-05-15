@@ -53,10 +53,11 @@ class ScoutMysqlSlow < Scout::Plugin
             importance += 1 if sq[:time] > 10
             importance += 1 if sq[:time] > 30
             parsed_sql = sq[:sql].join
-            hint(:title => "#{sq[:time]}s: #{parsed_sql[0..50]}...",
-                 :description => sq[:sql],
+            hint(:title => "#{sq[:time]} sec Query: #{parsed_sql[0..80]}...",
+                 :additional_info => sq[:sql],
                  :token => Digest::MD5.hexdigest("slow_query_#{parsed_sql.size > 250 ? parsed_sql[0..250] + '...' : parsed_sql}"),
                  :importance=> importance,
+                 :time => Time.now.utc,
                  :tag_list=>'slow_query')
           end
         end

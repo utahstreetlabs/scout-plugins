@@ -10,7 +10,7 @@ metadata:
 triggers:
   - type: peak
     dname: slow_queries
-    max_value: 0.001
+    max_value: 0.01
   - type: trend
     dname: slow_queries
     direction: UP

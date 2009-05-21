@@ -47,7 +47,7 @@ class DiskUsage < Scout::Plugin
   end
   
   def build_report
-    df_command   = @options["command"] || "df -h"
+    df_command   = option("command") || "df -h"
     df_output    = `#{df_command}`
           
     df_lines = []
@@ -55,9 +55,9 @@ class DiskUsage < Scout::Plugin
     
     # if the user specified a filesystem use that
     df_line = nil
-    if @options["filesystem"]
+    if option("filesystem")
       df_lines.each do |line|
-        if line.has_value?(@options["filesystem"])
+        if line.has_value?(option("filesystem"))
           df_line = line
         end
       end

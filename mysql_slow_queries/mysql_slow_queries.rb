@@ -9,23 +9,13 @@ require "digest/md5"
 #
 
 class ScoutMysqlSlow < Scout::Plugin
+  needs "elif"
+  
   def build_report
-    begin
-      require "elif"
-    rescue LoadError
-      begin
-        require "rubygems"
-        require "elif"
-      rescue LoadError
-        error :subject => "Couldn't load Elif.",
-              :body    => "The Elif library is required by " +
-                           "this plugin." 
-      end
-    end
-            
-    if option("mysql_slow_log").nil? or option("mysql_slow_log").strip.length == 0
-      return error(:subject => "A path to the MySQL Slow Query log file wasn't provided.",
-      :body => "The full path to the slow queries log must be provided. Learn more about enabling the slow queries log here: http://dev.mysql.com/doc/refman/5.1/en/slow-query-log.html")
+    log_file_path = option("mysql_slow_log").to_s.strip
+    if log_file_path.empty?
+      return error( "A path to the MySQL Slow Query log file wasn't provided.",
+                    "The full path to the slow queries log must be provided. Learn more about enabling the slow queries log here: http://dev.mysql.com/doc/refman/5.1/en/slow-query-log.html" )
     end
 
     slow_query_count = 0
@@ -33,7 +23,7 @@ class ScoutMysqlSlow < Scout::Plugin
     sql = []
     last_run = memory(:last_run) || Time.now
     current_time = Time.now
-    Elif.foreach(option("mysql_slow_log")) do |line|
+    Elif.foreach(log_file_path) do |line|
       if line =~ /^# Query_time: (\d+) .+$/
         query_time = $1.to_i
         slow_queries << {:time => query_time, :sql => sql.reverse}

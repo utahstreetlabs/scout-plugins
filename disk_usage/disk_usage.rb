@@ -77,8 +77,5 @@ class DiskUsage < Scout::Plugin
     df_line.each do |name, value|
       report(name.downcase.strip.to_sym => clean_value(value))
     end
-  rescue
-    { :error => { :subject => "Couldn't use `df` as expected.",
-                  :body    => $!.message } }
   end
 end

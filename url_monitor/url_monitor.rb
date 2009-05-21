@@ -8,16 +8,16 @@ class UrlMonitor < ScoutAgent::Plugin
   TIMEOUT_LENGTH = 50 # seconds
   
   def build_report
-    @options["url"] ="http://hotspotr.com/app/ping_"
-    if @options["url"].strip.length == 0
-      return error(:subject => "A url wasn't provided.")
+    url = options("url").to_s.strip
+    if url.empty?
+      return error("A url wasn't provided.")
     end
     
-    unless (@options["url"].index("http://") == 0 || @options["url"].index("https://") == 0)
-      @options["url"] = "http://" + @options["url"]
+    unless url =~ %r{\Ahttps?://}
+      url = "http://#{url}"
     end
     
-    response = http_response
+    response = http_response(url)
     report(:status => response.class.to_s)
     
     is_up = valid_http_response?(response) ? 1 : 0
@@ -25,20 +25,17 @@ class UrlMonitor < ScoutAgent::Plugin
     
     if is_up != memory(:was_up)
       if is_up == 0
-        alert(:subject => "The URL [#{@options['url']}] is not responding",
-              :body => "URL: #{@options['url']}\n\nStatus: #{response.to_s}"
-              ) 
+        alert( "The URL [#{url}] is not responding",
+               "URL: #{url}\n\nStatus: #{response}" ) 
         remember(:down_at => Time.now)
       else
         if memory(:was_up) && memory(:down_at)
-          alert(:subject => "The URL [#{@options['url']}] is responding again",
-                :body => "URL: #{@options['url']}\n\nStatus: #{response.to_s}. " +
-                          "Was unresponsive for #{(Time.now - memory(:down_at)).to_i} seconds"
-                )
+          alert( "The URL [#{url}] is responding again",
+                 "URL: #{url}\n\nStatus: #{response}. " +
+                 "Was unresponsive for #{(Time.now - memory(:down_at)).to_i} seconds" )
         else
-          alert(:subject => "The URL [#{@options['url']}] is responding",
-                :body => "URL: #{@options['url']}\n\nStatus: #{response.to_s}. "
-               )
+          alert( "The URL [#{url}] is responding",
+                 "URL: #{url}\n\nStatus: #{response}. " )
         end
         memory.delete(:down_at)
             
@@ -46,9 +43,9 @@ class UrlMonitor < ScoutAgent::Plugin
     end
     
     remember(:was_up => is_up)
-  rescue
-    error(:subject => "Error monitoring url [#{@options['url']}]",
-          :body    => $!.message + '<br\><br\>' + $!.backtrace.join('<br/>'))
+  rescue Exception => e
+    error( "Error monitoring url [#{url}]",
+           "#{e.message}<br><br>#{e.backtrace.join('<br>')}" )
   end
   
   def valid_http_response?(result)
@@ -56,9 +53,7 @@ class UrlMonitor < ScoutAgent::Plugin
   end
   
   # returns the http response (string) from a url
-  def http_response  
-    url = @options['url']
-
+  def http_response(url)
     uri = URI.parse(url)
 
     response = nil

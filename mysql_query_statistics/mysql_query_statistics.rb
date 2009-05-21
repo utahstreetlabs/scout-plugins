@@ -6,17 +6,10 @@ require 'set'
 
 class MysqlQueryStatistics < Scout::Plugin
   ENTRIES = %w(Com_insert Com_select Com_update Com_delete).to_set
+  
+  needs "mysql"
 
   def build_report
-    begin
-      require 'rubygems'
-      require 'mysql'
-    rescue LoadError => e
-      return { :error => { :subject => "Unable to gather Mysql query statistics",
-        :body => "Unable to find a mysql library. Please install the library to use this plugin" }
-      }
-    end
-
     # get_option returns nil if the option value is blank
     user     = get_option(:user) || 'root'
     password = get_option(:password)

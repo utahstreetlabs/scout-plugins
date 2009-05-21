@@ -1,22 +1,16 @@
 class RailsInstrumentation < ScoutAgent::Plugin
   def build_report
-    begin    
-      # intialize our analyzer 
-      analyzer = RailsAnalyzer.new
-      
-      ### pull in the reports from the message queue and analyze each report
-      each_queued_message do |message, time|
-        report(message.reject { |k,v| k == 'queries'}) # remove the top-level queries key/value...only needed for analysis
-        analyzer.analyze(message)
-      end
-      # create hints based on analysis
-      analyzer.finish!
-      analyzer.hints.each { |h| hint(h) }
-    rescue Exception => e
-      p e
-      p e.backtrace
-      error(:subject => e, :body => e.backtrace)
+    # intialize our analyzer 
+    analyzer = RailsAnalyzer.new
+    
+    ### pull in the reports from the message queue and analyze each report
+    each_queued_message do |message, time|
+      report(message.reject { |k,v| k == 'queries'}) # remove the top-level queries key/value...only needed for analysis
+      analyzer.analyze(message)
     end
+    # create hints based on analysis
+    analyzer.finish!
+    analyzer.hints.each { |h| hint(h) }
   end
 end
 

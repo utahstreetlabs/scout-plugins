@@ -8,7 +8,7 @@ class UrlMonitor < ScoutAgent::Plugin
   TIMEOUT_LENGTH = 50 # seconds
   
   def build_report
-    url = options("url").to_s.strip
+    url = option("url").to_s.strip
     if url.empty?
       return error("A url wasn't provided.")
     end

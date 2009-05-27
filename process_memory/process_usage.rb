@@ -10,8 +10,8 @@ class ProcessUsage < Scout::Plugin
                    gsub("COMMAND", Regexp.escape(@options["command_name"]))
     begin
       ps_output    = `#{ps_command}`
-    rescue
-      error("Couldn't use `ps` as expected.", $!.message)
+    rescue Exception => error
+      error("Couldn't use `ps` as expected.", error.message)
     end
     fields       = ps_output.to_a.first.downcase.split
     memory_index = fields.index("rss") or

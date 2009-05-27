@@ -5,8 +5,8 @@ class ProcessUsage < Scout::Plugin
     if @options["command_name"].nil? or @options["command_name"] == ""
       return error("Please specify the name of the process you want to monitor.")
     end
-    ps_command   = @options["ps_command"] || "ps axucww"
-    ps_regex     = (@options["ps_regex"] || "(?i:COMMAND\\s+$)").to_s.
+    ps_command   = @options["ps_command"] || "ps auxww"
+    ps_regex     = (@options["ps_regex"] || "(?i:\\bCOMMAND\\b)").to_s.
                    gsub("COMMAND", Regexp.escape(@options["command_name"]))
     begin
       ps_output    = `#{ps_command}`

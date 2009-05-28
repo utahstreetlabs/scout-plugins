@@ -34,14 +34,12 @@ class MemoryProfiler < Scout::Plugin
     end
         
   rescue Exception => e
-    body = if e.message =~ /No such file or directory/
-      %Q(Unable to find /proc/meminfo. Please ensure your operationg system supports procfs:
+    if e.message =~ /No such file or directory/
+      error('Unable to find /proc/meminfo',%Q(Unable to find /proc/meminfo. Please ensure your operationg system supports procfs:
          http://en.wikipedia.org/wiki/Procfs)
+      )
     else
-      "An error occurred profiling the memory:\n\n#{e.message}\n\n#{e.backtrace}"
+      raise
     end
-    error(:subject => "Unable to Profile Memory",
-          :body    => body
-         )
   end
 end

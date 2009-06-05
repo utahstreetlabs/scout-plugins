@@ -31,7 +31,7 @@ class RailsInstrumentation < Scout::Plugin
       
       # associates the time w/each action
       actions.each { |k,v| v.merge!( 'scout_time' => get_time(message) ) }
-      logger.info "found #{actions.size} actions"
+      logger.info "Found #{actions.size} actions"
       actions.each do |k,v|
         # if the action hasn't been aggregated yet, add it. otherwise, 
         # merge in the data.
@@ -40,17 +40,16 @@ class RailsInstrumentation < Scout::Plugin
         else
           logger.info "merging #{k}"
           merge_data(k,v)
-        end
-      end
-      
-      average_summed_data
-      # create reports for actions
-      create_action_reports
-      # add in summary data
-      create_summary_report
+        end # if @report_data[k].nil?
+      end # actions.each do |k,v|
       
       analyzer.analyze(message)
     end
+    average_summed_data
+    # create reports for actions
+    create_action_reports
+    # add in summary data
+    create_summary_report
     # create hints based on analysis
     analyzer.finish!
     analyzer.hints.each { |h| hint(h) }
@@ -115,7 +114,8 @@ class RailsInstrumentation < Scout::Plugin
   def create_action_reports
     @report_data.each do |k,v|
       time = v.delete('scout_time')
-      data = {k => v, 'scout_time' => time}
+      data = {'actions' => {k => v}, 'scout_time' => time}
+      logger.info "Reporting data: #{data.inspect}"
       report(data)
     end
   end # end create_action_reports
@@ -127,6 +127,7 @@ class RailsInstrumentation < Scout::Plugin
   def create_summary_report
     sum = @summary_data.delete('avg_request_time_sum')
     @summary_data['avg_request_time'] = sum/@summary_data['num_requests']
+    logger.info "Reporting summary: #{@summary_data.inspect}"
     report(@summary_data)
   end
 end # Scout::Plugin

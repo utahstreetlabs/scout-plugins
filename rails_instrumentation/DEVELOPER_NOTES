@@ -1,0 +1,30 @@
+This is what an example message looks like:
+
+{"actions"=>
+# action-specific
+{"info/support"=>{"runtime_max"=>487.0, "num_requests"=>6, 
+"render_runtime_avg"=>193.676233291626, "db_runtime_avg"=>9.69983333333333, 
+"other_runtime_max"=>68.7489188537598, "runtime_avg"=>265.0, 
+"other_runtime_avg"=>61.6239333750407, 
+"queries"=>[[[2.579, 0], [0.662, 1], [0.195, 2], [0.125, 3], [0.195, 4], [0.471, 5]], 
+[[2.588, 0], [0.664, 1], [0.526, 2], [0.16, 3], [0.197, 4], [0.601, 5]], [[5.751, 0], 
+[0.933, 1], [0.201, 2], [0.175, 3], [0.192, 4], [0.417, 5]], [[12.458, 0], [5.031, 1], 
+[0.185, 2], [0.151, 3], [0.19, 4], [0.42, 5]], [[14.049, 0], [1.146, 1], [0.21, 2], 
+[0.16, 3], [0.193, 4], [0.435, 5]], [[11.301, 0], [1.037, 1], [0.183, 2], [0.162, 3]]], 
+"render_runtime_max"=>403.141021728516, "db_runtime_max"=>17.489}, 
+# action-specific
+"info/index"=>{"runtime_max"=>501.0, "num_requests"=>1, 
+"render_runtime_avg"=>421.083927154541, 
+"db_runtime_avg"=>4.47, 
+"other_runtime_max"=>75.446072845459, 
+"runtime_avg"=>501.0, "other_runtime_avg"=>75.446072845459, 
+"queries"=>[[[3.743, 0], [0.727, 1], [0.224, 2], [0.165, 3], [0.237, 4], [0.489, 5]]], 
+"render_runtime_max"=>421.083927154541, "db_runtime_max"=>4.47}}, 
+
+# summary data, across all requests
+"num_requests"=>7, 
+"scout_time"=>"Wed Jun 03 20:37:57 UTC 2009", 
+"queries"=>["SHOW FIELDS FROM `accounts`", 
+"SELECT * FROM `accounts` WHERE (`accounts`.`deleted_at` IS NULL AND `accounts`.`param` IS NULL) LIMIT ?", 
+"BEGIN", "COMMIT", "SET SQL_AUTO_IS_NULL=?", "SELECT * FROM `sessions` WHERE (session_id = ?) LIMIT ?"], 
+"avg_request_time"=>298.714285714286}

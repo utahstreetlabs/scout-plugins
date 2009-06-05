@@ -1,18 +1,135 @@
-class RailsInstrumentation < ScoutAgent::Plugin
+class RailsInstrumentation < Scout::Plugin
+  # These are fields that need to be averaged
+  AVG_FIELDS = %w(render_runtime_avg db_runtime_avg runtime_avg other_runtime_avg)
+  # These are fields where the max value will be kept
+  MAX_FIELDS = %w(runtime_max other_runtime_max render_runtime_max db_runtime_max)
+  
+  # This assembles 1 report for each action, 1 high-level summary report, and adds any hints. 
+  #
+  # For example, if a single processing is serving the Rails app, the agent reports every
+  # 3 minutes, and the same action is requested every 30 seconds (and it's the only request),
+  # 1 report will be created for the action-specific data and another with the summary data. 
+  #
+  # If 2 processes are serving the app but with the exact same conditions, the same number
+  # of reports is created. 
+  #
+  # If another unique action is requested, then another report will be created (total of 3 reports).
   def build_report
     # intialize our analyzer 
     analyzer = RailsAnalyzer.new
     
+    # these hold report data while messages are parsed
+    @report_data = Hash.new
+    @summary_data = {'num_requests' => 0,'avg_request_time_sum' => 0,'scout_time' => nil}
+    
     ### pull in the reports from the message queue and analyze each report
     each_queued_message do |message, time|
-      report(message.reject { |k,v| k == 'queries'}) # remove the top-level queries key/value...only needed for analysis
+      merge_summary_data(message)
+      
+      # from all of the reports, creates 1 report for each action.       
+      actions = message['actions']
+      
+      # associates the time w/each action
+      actions.each { |k,v| v.merge!( 'scout_time' => get_time(message) ) }
+      logger.info "found #{actions.size} actions"
+      actions.each do |k,v|
+        # if the action hasn't been aggregated yet, add it. otherwise, 
+        # merge in the data.
+        if @report_data[k].nil?
+          @report_data[k] = v
+        else
+          logger.info "merging #{k}"
+          merge_data(k,v)
+        end
+      end
+      
+      average_summed_data
+      # create reports for actions
+      create_action_reports
+      # add in summary data
+      create_summary_report
+      
       analyzer.analyze(message)
     end
     # create hints based on analysis
     analyzer.finish!
     analyzer.hints.each { |h| hint(h) }
   end
-end
+  
+  # Updates the summary report with data from the most recent message. 
+  def merge_summary_data(message)
+    @summary_data['num_requests'] += message['num_requests']
+    @summary_data['avg_request_time_sum'] += message['avg_request_time']*message['num_requests']
+    @summary_data['scout_time'] = message['scout_time']
+  end
+  
+  # Older versions of the rails instrumentation plugin use +time+, newer versions use +scout_time+. 
+  def get_time(message)
+    message['scout_time'] || message['time']
+  end
+  
+  # Merges data from the +k+ controller/action as the value.
+  def merge_data(k,v)
+    data = @report_data[k]
+    
+    # MAX FIELDS
+    # compares the value for each of these fields with the existing value, keeping the max value
+    MAX_FIELDS.each do |field|
+      if v[field] > data[field] 
+        data[field] = v[field]
+        # marks the maximum runtime w/the scout_time - needed for peak triggers on runtime_max
+        if field == 'runtime_max'
+          data['scout_time'] = v['scout_time']
+        end
+      end
+    end
+
+    # AVERAGE FIELDS
+    # sum the values of these ... before reporting, divide by the num_requests to record avg, 
+    # dropping the sum key
+    AVG_FIELDS.each do |field|
+      data[field+'_sum'] ||= data[field]*data['num_requests']
+      data[field+'_sum'] += v[field]*v['num_requests']
+    end
+
+    # SUM FIELDS
+    %w(num_requests).each do |field|
+      data[field] += v[field]
+    end
+
+    @report_data[k] = data
+  end # end merge_data
+  
+  # For all fields that contains averages, divides the sum by / num_requests to obtain
+  # the final average.
+  def average_summed_data
+    AVG_FIELDS.each do |field|
+      @report_data.each do |action,data|
+        if sum = data.delete(field+'_sum')
+          data[field] = sum/data['num_requests']
+        end
+      end
+    end
+  end # end average_summed_data
+  
+  def create_action_reports
+    @report_data.each do |k,v|
+      time = v.delete('scout_time')
+      data = {k => v, 'scout_time' => time}
+      report(data)
+    end
+  end # end create_action_reports
+
+  # Builds up the summary data:
+  # - num_requests
+  # - avg_request_time
+  # - scout_time (most recent)
+  def create_summary_report
+    sum = @summary_data.delete('avg_request_time_sum')
+    @summary_data['avg_request_time'] = sum/@summary_data['num_requests']
+    report(@summary_data)
+  end
+end # Scout::Plugin
 
 require "digest/md5"
 

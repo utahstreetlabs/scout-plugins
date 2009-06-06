@@ -31,14 +31,12 @@ class RailsInstrumentation < Scout::Plugin
       
       # associates the time w/each action
       actions.each { |k,v| v.merge!( 'scout_time' => get_time(message) ) }
-      logger.info "Found #{actions.size} actions"
       actions.each do |k,v|
         # if the action hasn't been aggregated yet, add it. otherwise, 
         # merge in the data.
         if @report_data[k].nil?
           @report_data[k] = v
         else
-          logger.info "merging #{k}"
           merge_data(k,v)
         end # if @report_data[k].nil?
       end # actions.each do |k,v|
@@ -115,7 +113,6 @@ class RailsInstrumentation < Scout::Plugin
     @report_data.each do |k,v|
       time = v.delete('scout_time')
       data = {'actions' => {k => v}, 'scout_time' => time}
-      logger.info "Reporting data: #{data.inspect}"
       report(data)
     end
   end # end create_action_reports
@@ -127,7 +124,6 @@ class RailsInstrumentation < Scout::Plugin
   def create_summary_report
     sum = @summary_data.delete('avg_request_time_sum')
     @summary_data['avg_request_time'] = sum/@summary_data['num_requests']
-    logger.info "Reporting summary: #{@summary_data.inspect}"
     report(@summary_data)
   end
 end # Scout::Plugin

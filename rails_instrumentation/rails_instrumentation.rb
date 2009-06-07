@@ -43,6 +43,10 @@ class RailsInstrumentation < Scout::Plugin
       
       analyzer.analyze(message)
     end
+    
+    # if no requests, exit
+    return if @summary_data['num_requests'].zero?
+    
     average_summed_data
     # create reports for actions
     create_action_reports

@@ -61,7 +61,7 @@ class MysqlQueryStatistics < Scout::Plugin
       last_time, last_value = memory(name).values_at('time', 'value')
       # We won't log it if the value has wrapped
       if last_value and value >= last_value
-        elapsed_seconds = last_time - current_time
+        elapsed_seconds = current_time - last_time
         elapsed_seconds = 1 if elapsed_seconds < 1
         result = value - last_value
 

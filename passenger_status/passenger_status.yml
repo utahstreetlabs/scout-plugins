@@ -3,3 +3,42 @@ options:
     name: The Passenger Status Command
     notes: The full path to the passenger-status command (possibly with sudo).
     default: sudo /usr/bin/passenger-status
+
+schema:
+  - current
+  - max
+  - active
+  - inactive
+  - gq_wait
+
+metadata:
+  current: 
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Current Passengers
+  max: 
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Max Passengers
+  active: 
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Active Passengers
+  inactive: 
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Inactive Passengers    
+  gq_wait: 
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Req. waiting on global queue

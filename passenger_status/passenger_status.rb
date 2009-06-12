@@ -18,15 +18,15 @@ class PassengerStatus < Scout::Plugin
     data.each do |line|
       #line = line.gsub(/\e\[\d+m/,'')
       if line =~ /^max\s+=\s(\d+)/
-        stats["max passengers"] = $1
+        stats["max"] = $1
       elsif line =~ /^count\s+=\s(\d+)/
-        stats["current passengers "] = $1
+        stats["current"] = $1
       elsif line =~ /^active\s+=\s(\d+)/
-        stats["active passengers"] = $1
+        stats["active"] = $1
       elsif line =~ /^inactive\s+=\s(\d+)/
-        stats["inactive passengers"] = $1
+        stats["inactive"] = $1
       elsif line =~ /^Waiting on global queue: (\d+)/
-        stats["Requests Waiting on global queue"] = $1
+        stats["gq_wait"] = $1
 
       end
     end

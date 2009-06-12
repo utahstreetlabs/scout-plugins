@@ -1,5 +1,5 @@
 options:
   passenger_status_command:
     name: The Passenger Status Command
-    notes: The full path to the passenger-status command.
-    default: /usr/bin/passenger-status
+    notes: The full path to the passenger-status command (possibly with sudo).
+    default: sudo /usr/bin/passenger-status

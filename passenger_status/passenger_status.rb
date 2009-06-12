@@ -26,7 +26,7 @@ class PassengerStatus < Scout::Plugin
       elsif line =~ /^inactive\s+=\s(\d+)/
         stats["inactive passengers"] = $1
       elsif line =~ /^Waiting on global queue: (\d+)/
-        stats["Waiting on global queue"] = $1
+        stats["Requests Waiting on global queue"] = $1
 
       end
     end

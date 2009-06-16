@@ -25,10 +25,12 @@ class Iostat < Scout::Plugin
   private
 
   def iostat_output
-    command = option('command') || 'iostat -dxk'
-    interval = option('interval') || 3
-    iostat_command = "#{command} #{interval} 2"
-    @output ||= `#{iostat_command}`
+    @output ||= lambda do
+      command = option('command') || 'iostat -dxk'
+      interval = option('interval') || 3
+      iostat_command = "#{command} #{interval} 2"
+      `#{iostat_command}`
+    end.call
   end
   
   def device

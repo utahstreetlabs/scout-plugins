@@ -17,9 +17,9 @@ class Iostat < Scout::Plugin
     )
     
   rescue Exception => e
-    error "Unexpected output format: #{e}"
-    logger.error 'Got invalid output:'
-    logger.error iostat_output
+    error "Couldn't parse output. Make sure you have iostat installed. #{e}"
+    logger.error e
+    logger.error "Output: #{iostat_output}"
   end
   
   private

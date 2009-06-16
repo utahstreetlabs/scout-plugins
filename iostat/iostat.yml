@@ -1,0 +1,29 @@
+options:
+  command:
+    name: iostat Command
+    notes: The command used to display IO statistics
+    default: "iostat -dxk"
+  interval:
+    name: iostat Interval
+    notes: Report current usage as the average over this many seconds.
+    default: 3
+  filesystem:
+    name: Device
+    notes: The device to check, eg 'sda1'. If not specified, uses the device mounted at '/'
+    default:
+      
+metadata:
+  await:
+    label: Average I/O Wait (queue + service times)
+    units: ms
+  svctm:
+    label: Average Service Time
+    units: ms
+  util:
+    label: Utilization
+    units: %
+
+triggers:
+  - type: peak
+    dname: util
+    max_value: 80%

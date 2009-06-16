@@ -13,11 +13,21 @@ options:
     default:
       
 metadata:
+  rps:
+    label: Reads/sec
+  wps:
+    label: Writes/sec
+  rkbps:
+    label: Read kBps
+    units: kB/s
+  wkbps:
+    label: Write kBps
+    units: kB/s
   await:
-    label: Average I/O Wait (queue + service times)
+    label: I/O Wait
     units: ms
   svctm:
-    label: Average Service Time
+    label: Service Time
     units: ms
   util:
     label: Utilization

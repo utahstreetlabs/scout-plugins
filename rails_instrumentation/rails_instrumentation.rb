@@ -76,7 +76,7 @@ class RailsInstrumentation < Scout::Plugin
     # MAX FIELDS
     # compares the value for each of these fields with the existing value, keeping the max value
     MAX_FIELDS.each do |field|
-      if v[field] > data[field] 
+      if v[field] and (v[field] > data[field]) 
         data[field] = v[field]
         # marks the maximum runtime w/the scout_time - needed for peak triggers on runtime_max
         if field == 'runtime_max'

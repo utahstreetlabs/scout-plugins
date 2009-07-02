@@ -47,6 +47,7 @@ class DiskUsage < Scout::Plugin
   end
   
   def build_report
+    ENV['lang'] = 'C' # forcing English for parsing
     df_command   = option("command") || "df -h"
     df_output    = `#{df_command}`
           

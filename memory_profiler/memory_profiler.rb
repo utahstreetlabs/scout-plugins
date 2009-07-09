@@ -22,16 +22,20 @@ class MemoryProfiler < Scout::Plugin
     unless swap_total == 0    
       swap_percent_used = (swap_used / swap_total.to_f * 100).to_i
     end
+    
+    # will be passed at the end to report to Scout
+    report_data = Hash.new
 
-    report('Memory Total' => mem_total)
-    report('Memory Used' => mem_used)
-    report('% Memory Used' => mem_percent_used)
+    report_data['Memory Total'] = mem_total
+    report_data['Memory Used'] = mem_used
+    report_data['% Memory Used'] = mem_percent_used
 
-    report('Swap Total' => swap_total)
-    report('Swap Used' => swap_used)
+    report_data['Swap Total'] = swap_total
+    report_data['Swap Used'] = swap_used
     unless  swap_total == 0   
-      report('% Swap Used' => swap_percent_used)
+      report_data['% Swap Used'] = swap_percent_used
     end
+    report(report_data)
         
   rescue Exception => e
     if e.message =~ /No such file or directory/

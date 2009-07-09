@@ -74,9 +74,13 @@ class DiskUsage < Scout::Plugin
     assumed_capacity = df_line.find { |name,value| !['size','used','avail'].include?(name.downcase.gsub(/\n/,''))}
     df_line.delete(assumed_capacity.first)
     df_line['capacity'] = assumed_capacity.last
+    
+    # will be passed at the end to report to Scout
+    report_data = Hash.new
       
     df_line.each do |name, value|
-      report(name.downcase.strip.to_sym => clean_value(value))
+      report_data[name.downcase.strip.to_sym] = clean_value(value)
     end
+    report(report_data)
   end
 end

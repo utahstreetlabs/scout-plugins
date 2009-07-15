@@ -1,0 +1,14 @@
+I/O Statistics Plugin
+=================================
+Created by [Rob Lingle](http://github.com/roblingle)
+
+Reports the current utilization
+
+Dependencies
+------------
+Requires the iostat command, usually provided by the sysstat package.
+
+Compatibility 
+-------------
+
+Works on Linux and OSX. 

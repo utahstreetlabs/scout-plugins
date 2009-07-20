@@ -35,7 +35,7 @@ class RailsInstrumentation < Scout::Plugin
         # if the action hasn't been aggregated yet, add it. otherwise, 
         # merge in the data.
         if @report_data[k].nil?
-          @report_data[k] = v.to_f # value could be nil, make sure it is a float for comparisions
+          @report_data[k] = v
         else
           merge_data(k,v)
         end # if @report_data[k].nil?

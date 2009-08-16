@@ -1,0 +1,10 @@
+options:
+  aws_access_key:
+    name: AWS Access Key
+    notes: Your Amazon Web Services Access key. 20-char alphanumeric, looks like 022QF06E7MXBSH9DHM02
+  aws_secret:
+    name: AWS Secret
+    notes: Your Amazon Web Services Secret key. 40-char alphanumeric, looks like kWcrlUX5JEDGMLtmEENIaVmYvHNif5zBd9ct81S
+  instance_id:
+    name: EC2 Instance ID
+    notes: Get this from the AWS web console or command line tools. Looks like i-48ac4920

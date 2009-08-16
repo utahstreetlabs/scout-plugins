@@ -8,3 +8,38 @@ options:
   instance_id:
     name: EC2 Instance ID
     notes: Get this from the AWS web console or command line tools. Looks like i-48ac4920
+
+
+metadata:
+  CPUUtilization max:
+    label: CPU Utilization (max)
+    units: %
+    precision: 2
+  CPUUtilization avg:
+    label: CPU Utilization (avg)
+    units: %
+    precision: 2
+  NetworkIn max:
+    label: Network In (max)
+    units: bytes
+    precision: 0
+  NetworkIn avg:
+    label: Network In (avg)
+    units: bytes
+    precision: 0
+  NetworkOut max:
+    label: Network Out (max)
+    units: bytes
+    precision: 0
+  NetworkOut avg:
+    label: Network Out (avg)
+    units: bytes
+    precision: 0
+  DiskReadBytes max:
+    label: Disk Reads (max)
+    units: bytes
+    precision: 0
+  DiskReadBytes avg:
+    label: Disk Reads (avg)
+    units: bytes
+    precision: 0

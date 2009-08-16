@@ -43,3 +43,11 @@ metadata:
     label: Disk Reads (avg)
     units: bytes
     precision: 0
+  DiskWriteBytes max:
+    label: Disk Writes (max)
+    units: bytes
+    precision: 0
+  DiskWriteBytes avg:
+    label: Disk Writes (avg)
+    units: bytes
+    precision: 0

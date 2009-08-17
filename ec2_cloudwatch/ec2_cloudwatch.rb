@@ -4,17 +4,28 @@ class E2Cloudwatch < Scout::Plugin
   def build_report
     aws_access_key = option(:aws_access_key)
     aws_secret = option(:aws_secret)
-    instance_id = option(:instance_id)
+    dimension = option(:dimension)
     namespace = 'AWS/EC2'
 
     # Available measures for EC2 instances:
     # NetworkIn NetworkOut DiskReadOps DiskWriteOps DiskReadBytes DiskWriteBytes CPUUtilization
-    measures=%w(NetworkIn NetworkOut DiskReadBytes DiskWriteBytes CPUUtilization)
+    measures=%w(NetworkIn NetworkOut DiskReadOps DiskWriteOps DiskReadBytes DiskWriteBytes CPUUtilization)
 
-    # check that the needed options exist
-    if aws_access_key.to_s == '' or aws_secret.to_s == '' or instance_id.to_s == ''
-      error(:subject=>'Cloudwatch options not set properly', :body=>'Ensure your AWS access info and instance_id are set in plugin options')
+    # validate access keys
+    if aws_access_key.to_s == '' or aws_secret.to_s == ''
+      error(:subject=>'Cloudwatch AWS access not set', :body=>'Ensure your AWS access info is set in plugin options')
       return
+    end
+
+    # validate dimension option
+    if dimension.to_s == ''
+      error(:subject=>'Cloudwatch options not set properly', :body=>'You need a value for InstanceID (dimension)')
+      return
+    elsif dimension.include? '='
+      dimension_name, dimension_value=dimension.split('=',2)
+    else
+      dimension_name='InstanceId'
+      dimension_value=dimension
     end
 
     aws = CloudWatch::AWSAuthConnection.new(aws_access_key, aws_secret)
@@ -42,6 +53,7 @@ class E2Cloudwatch < Scout::Plugin
     end
     remember(:last_run_time, time.to_s)
 
+    # There will be one web service call for each measure
     measures.each do |measure|
       params = {
         :StartTime => start_time.strftime(TIME_FORMAT),
@@ -53,8 +65,8 @@ class E2Cloudwatch < Scout::Plugin
         "Statistics.member.2" => "Maximum",
         #"Statistics.member.3" => "Minimum",
         #"Statistics.member.4" => "Sum",
-        "Dimensions.member.1.Name" => 'InstanceId',
-        "Dimensions.member.1.Value" => instance_id
+        "Dimensions.member.1.Name" => dimension_name,
+        "Dimensions.member.1.Value" => dimension_value
       }
 
       # logger.debug ("getMetricStatistics with parameters: #{params.inspect}")
@@ -63,7 +75,7 @@ class E2Cloudwatch < Scout::Plugin
       # response looks like:
       # ["CPUUtilization", [{:average=>"1.43", :timestamp=>"2009-08-16T06:40:00Z", :unit=>"Percent", :maximum=>"3.57", :samples=>"5.0"}]]
       if response.is_error?
-        error(:subject=>"AWS getMetricStatistic got error", :body=>response.inspect )
+        error(:subject=>"AWS getMetricStatistic error", :body=>response.inspect )
         return
       end
       label, stats = response.structure
@@ -79,7 +91,9 @@ class E2Cloudwatch < Scout::Plugin
 end
 
 
-
+# =======================================================================
+# Below here is EC2 web service library code
+# =======================================================================
 
 # -----------------------------------------------------------------------
 

@@ -5,9 +5,9 @@ options:
   aws_secret:
     name: AWS Secret
     notes: Your Amazon Web Services Secret key. 40-char alphanumeric, looks like kWcrlUX5JEDGMLtmEENIaVmYvHNif5zBd9ct81S
-  instance_id:
-    name: EC2 Instance ID
-    notes: Get this from the AWS web console or command line tools. Looks like i-48ac4920
+  dimension:
+    name: EC2 InstanceId or dimension
+    notes: "Get your InstanceId from the AWS web console or command line tools. It looks like i-48ac4920. OR, specify any dimension as key=value. For example, AutoScalingGroupName=YOUR_GROUP_NAME. See README.
 
 
 metadata:
@@ -50,4 +50,20 @@ metadata:
   DiskWriteBytes avg:
     label: Disk Writes (avg)
     units: bytes
+    precision: 0
+  DiskWriteOps avg:
+    label: Disk Write Ops (avg)
+    units:
+    precision: 0
+  DiskWriteOps max:
+    label: Disk Write Ops (max)
+    units: 
+    precision: 0
+  DiskReadOps avg:
+    label: Disk Read Ops (avg)
+    units:
+    precision: 0
+  DiskReadOps max:
+    label: Disk Read Ops (max)
+    units:
     precision: 0

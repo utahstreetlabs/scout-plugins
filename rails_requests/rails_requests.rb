@@ -10,6 +10,7 @@ class RailsRequests < Scout::Plugin
     unless log_path and not log_path.empty?
       return error("A path to the Rails log file wasn't provided.")
     end
+    max_length = option(:max_request_length).to_f
 
     report_data        = { :slow_request_count     => 0,
                            :request_count          => 0,
@@ -33,8 +34,7 @@ class RailsRequests < Scout::Plugin
           # logger.info 'increment'
           report_data[:request_count] += 1
           total_request_time          += last_completed.first.to_f
-          if option(:max_request_length).to_f > 0 and
-             last_completed.first.to_f > option(:max_request_length).to_f
+          if max_request_length > 0 and last_completed.first > max_request_length
             report_data[:slow_request_count] += 1
             slow_requests                    += "#{last_completed.last}\n"
             slow_requests                    += "Time: #{last_completed.first} sec\n\n"
@@ -54,7 +54,7 @@ class RailsRequests < Scout::Plugin
                                              report_data[:request_count]
       report_data[:average_request_length] = sprintf("%.2f", avg)
     end
-    remember(:last_run,Time.now)
+    remember(:last_run, Time.now)
     report(report_data)
   end
 end

@@ -34,7 +34,7 @@ class RailsRequests < Scout::Plugin
           # logger.info 'increment'
           report_data[:request_count] += 1
           total_request_time          += last_completed.first.to_f
-          if max_request_length > 0 and last_completed.first > max_request_length
+          if max_length > 0 and last_completed.first > max_length
             report_data[:slow_request_count] += 1
             slow_requests                    += "#{last_completed.last}\n"
             slow_requests                    += "Time: #{last_completed.first} sec\n\n"

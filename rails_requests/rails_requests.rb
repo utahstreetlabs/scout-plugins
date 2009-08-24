@@ -56,5 +56,7 @@ class RailsRequests < Scout::Plugin
     end
     remember(:last_run, Time.now)
     report(report_data)
+  rescue Exception => error
+    error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
   end
 end

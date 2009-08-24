@@ -77,7 +77,10 @@ class RailsRequests < Scout::Plugin
   def generate_log_analysis(log_path)
     one_day_ago  = Time.now - (ONE_DAY + 1)
     last_summary = memory(:last_summary_time) || one_day_ago
-    return unless Time.now - last_summary > ONE_DAY
+    unless Time.now - last_summary > ONE_DAY
+      remember(:last_summary_time, last_summary)
+      return
+    end
     
     summary      = StringIO.new
     output       = RequestLogAnalyzer::Output::FixedWidth.new(

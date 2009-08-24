@@ -59,10 +59,10 @@ class RailsRequests < Scout::Plugin
     end
     remember(:last_request_time, Time.now)
     report(report_data)
-    
-    generate_log_analysis(log_path)
   rescue Exception => error
     error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
+  ensure
+    generate_log_analysis(log_path)
   end
   
   private
@@ -108,5 +108,7 @@ class RailsRequests < Scout::Plugin
                          last_summary.strftime('%Y-%m-%d %H:%M:%S') +
                          "' '#{log_path}'",
              :output  => analysis )
+  rescue Exception => error
+    error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
   end
 end

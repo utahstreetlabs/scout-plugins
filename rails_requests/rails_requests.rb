@@ -1,9 +1,12 @@
 require "time"
+require "stringio"
 
 class RailsRequests < Scout::Plugin
+  ONE_DAY    = 60 * 60 * 24
   TEST_USAGE = "#{File.basename($0)} log LOG max_request_length MAX_REQUEST_LENGTH last_run LAST_RUN"
   
   needs "elif"
+  needs "request_log_analyzer"
   
   def build_report
     log_path = option(:log)
@@ -18,7 +21,7 @@ class RailsRequests < Scout::Plugin
     last_completed     = nil
     slow_requests      = ''
     total_request_time = 0.0
-    last_run           = memory(:last_run) || Time.now
+    last_run           = memory(:last_request_time) || Time.now
     
     Elif.foreach(log_path) do |line|
       if line =~ /\ACompleted in (\d+)ms .+ \[(\S+)\]\Z/        # newer Rails
@@ -54,9 +57,53 @@ class RailsRequests < Scout::Plugin
                                              report_data[:request_count]
       report_data[:average_request_length] = sprintf("%.2f", avg)
     end
-    remember(:last_run, Time.now)
+    remember(:last_request_time, Time.now)
     report(report_data)
+    
+    generate_log_analysis(log_path)
   rescue Exception => error
     error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
+  end
+  
+  private
+  
+  def no_warnings
+    old_verbose, $VERBOSE = $VERBOSE, nil
+    yield
+  ensure
+    $VERBOSE = old_verbose
+  end
+  
+  def generate_log_analysis(log_path)
+    one_day_ago  = Time.now - (ONE_DAY + 1)
+    last_summary = memory(:last_summary_time) || one_day_ago
+    return unless Time.now - last_summary > ONE_DAY
+    
+    summary      = StringIO.new
+    output       = RequestLogAnalyzer::Output::FixedWidth.new(
+                     summary,
+                     :width      => 80,
+                     :colors     => false,
+                     :characters => :ascii
+                   )
+    format       = RequestLogAnalyzer::FileFormat.load(:rails)
+    options      = {:source_files => log_path, :output => output}
+    source       = RequestLogAnalyzer::Source::LogParser.new(format, options)
+    control      = RequestLogAnalyzer::Controller.new(source, options)
+    control.add_filter(:timespan, :after => last_summary)
+    control.add_aggregator(:summarizer)
+    source.progress = nil
+    format.setup_environment(control)
+    no_warnings do
+      control.run!
+    end
+    analysis =
+      summary.string.sub(/Need an expert.+\nMail to.+\nThanks.+\Z/, "").strip
+    
+    remember(:last_summary_time, Time.now)
+    summary( :command => "request-log-analyzer --after '"           +
+                         last_summary.strftime('%Y-%m-%d %H:%M:%S') +
+                         "' '#{log_path}'",
+             :output  => analysis )
   end
 end

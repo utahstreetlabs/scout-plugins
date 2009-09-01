@@ -26,10 +26,10 @@ class RailsRequests < Scout::Plugin
     last_run           = memory(:last_request_time) || Time.now
     
     Elif.foreach(log_path) do |line|
-      if line =~ /\ACompleted in (\d+)ms .+ \[(\S+)\]\Z/        # newer Rails
-        last_completed = [$1.to_i / 1000.0, $2]
-      elsif line =~ /\ACompleted in (\d+\.\d+) .+ \[(\S+)\]\Z/  # older Rails
-        last_completed = [$1.to_f, $2]
+      if line =~ /\A(Completed in (\d+)ms .+) \[(\S+)\]\Z/        # newer Rails
+        last_completed = [$2.to_i / 1000.0, $1, $3]
+      elsif line =~ /\A(Completed in (\d+\.\d+) .+) \[(\S+)\]\Z/  # older Rails
+        last_completed = [$2.to_f, $1, $3]
       elsif last_completed and
             line =~ /\AProcessing .+ at (\d+-\d+-\d+ \d+:\d+:\d+)\)/
         time_of_request = Time.parse($1)
@@ -42,7 +42,7 @@ class RailsRequests < Scout::Plugin
           if max_length > 0 and last_completed.first > max_length
             report_data[:slow_request_count] += 1
             slow_requests                    += "#{last_completed.last}\n"
-            slow_requests                    += "Time: #{last_completed.first} sec\n\n"
+            slow_requests                    += "#{last_completed[1]}\n\n"
           end
         end # request should be analyzed
       end

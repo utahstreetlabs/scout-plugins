@@ -9,6 +9,8 @@ class RailsRequests < Scout::Plugin
   needs "request_log_analyzer"
   
   def build_report
+    patch_elif
+    
     log_path = option(:log)
     unless log_path and not log_path.empty?
       return error("A path to the Rails log file wasn't provided.")
@@ -89,8 +91,9 @@ class RailsRequests < Scout::Plugin
                      :colors     => false,
                      :characters => :ascii
                    )
+    log_file     = read_backwards_to_timestamp(log_path, last_summary)
     format       = RequestLogAnalyzer::FileFormat.load(:rails)
-    options      = {:source_files => log_path, :output => output}
+    options      = {:source_files => log_file, :output => output}
     source       = RequestLogAnalyzer::Source::LogParser.new(format, options)
     control      = RequestLogAnalyzer::Controller.new(source, options)
     control.add_filter(:timespan, :after => last_summary)
@@ -110,5 +113,31 @@ class RailsRequests < Scout::Plugin
              :output  => analysis )
   rescue Exception => error
     error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
+  end
+  
+  def patch_elif
+    Elif.send(:define_method, :pos) do
+      @current_pos + @line_buffer.inject(0) { |bytes, line| bytes + line.size }
+    end
+  end
+  
+  def read_backwards_to_timestamp(path, timestamp)
+    start = nil
+    Elif.open(path) do |elif|
+      elif.each do |line|
+        if line =~ /\AProcessing .+ at (\d+-\d+-\d+ \d+:\d+:\d+)\)/
+          time_of_request = Time.parse($1)
+          if time_of_request < timestamp
+            break
+          else
+            start = elif.pos
+          end
+        end
+      end
+    end
+
+    file = open(path)
+    file.seek(start) if start
+    file
   end
 end

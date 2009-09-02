@@ -27,11 +27,11 @@ triggers:
     percentage_change: 200
     duration: 60
     window_reference: LAST_WEEK
-    min_value: 100 # 100 req/min
+    min_value: 100
   - type: trend
     dname: average_request_length
     direction: UP
     percentage_change: 200
     duration: 60
     window_reference: LAST_WEEK
-    min_value: 0.3 # 0.3 sec
+    min_value: 0.3 

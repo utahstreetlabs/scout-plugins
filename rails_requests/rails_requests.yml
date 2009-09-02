@@ -1,7 +1,7 @@
 options:
   log:
     name: Full Path to Rails Log File
-    notes: The full path to the Ruby on Rails log file you wish to analyze (ex: /var/www/app/APP_NAME/log/production.log).
+    notes: "The full path to the Ruby on Rails log file you wish to analyze (ex: /var/www/app/APP_NAME/log/production.log)."
   max_request_length:
     name: Max Request Length (sec)
     notes: If any request length is larger than this amount, an alert is generated

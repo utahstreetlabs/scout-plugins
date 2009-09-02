@@ -9,7 +9,9 @@ Analyzes the performance of a Ruby on Rails application via its log file. Just i
 
 By default, a slow request is any request that is greater than or equal to 3 seconds. This can be modified in the plugin settings. 
 
-Note that the Request Log Analyzer may take a couple of minutes to run on large log files. On the first run, a report will be generated for the previous 2 days.
+Note that the Request Log Analyzer may take a couple of minutes to run on large log files. 
+
+On the first run, a detailed report is generated for the previous 2 days of activity. No metric data is reported on the first run (requests, slow requests, and average request time).
 
 Dependencies
 ------------

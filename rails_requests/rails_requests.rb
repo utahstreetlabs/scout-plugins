@@ -13,18 +13,21 @@ class RailsRequests < Scout::Plugin
     
     log_path = option(:log)
     unless log_path and not log_path.empty?
-      return error("A path to the Rails log file wasn't provided.")
+      return error("A path to the Rails log file wasn't provided.","Please provide the full path to the Rails log file to analyze (ie - /var/www/apps/APP_NAME/log/production.log)")
     end
     max_length = option(:max_request_length).to_f
 
-    report_data        = { :slow_request_count     => 0,
-                           :request_count          => 0,
+    report_data        = { :slow_request_rate     => 0,
+                           :request_rate          => 0,
                            :average_request_length => nil }
+    slow_request_count = 0
+    request_count      = 0
     last_completed     = nil
     slow_requests      = ''
     total_request_time = 0.0
     last_run           = memory(:last_request_time) || Time.now
-    
+    @file_found = true # needed to ensure that the analyzer doesn't run if the log file isn't found.
+
     Elif.foreach(log_path) do |line|
       if line =~ /\A(Completed in (\d+)ms .+) \[(\S+)\]\Z/        # newer Rails
         last_completed = [$2.to_i / 1000.0, $1, $3]
@@ -36,11 +39,10 @@ class RailsRequests < Scout::Plugin
         if time_of_request < last_run
           break
         else
-          # logger.info 'increment'
-          report_data[:request_count] += 1
+          request_count += 1
           total_request_time          += last_completed.first.to_f
           if max_length > 0 and last_completed.first > max_length
-            report_data[:slow_request_count] += 1
+            slow_request_count += 1
             slow_requests                    += "#{last_completed.last}\n"
             slow_requests                    += "#{last_completed[1]}\n\n"
           end
@@ -49,22 +51,46 @@ class RailsRequests < Scout::Plugin
     end
     
     # Create a single alert that holds all of the requests that exceeded the +max_request_length+.
-    if (count = report_data[:slow_request_count]) > 0
+    if (count = slow_request_count) > 0
       alert( "Maximum Time(#{option(:max_request_length)} sec) exceeded on #{count} request#{'s' if count != 1}",
              slow_requests )
     end
-    # Calculate the average request time if there are any requests
-    if report_data[:request_count] > 0
+    # Calculate the average request time and request rate if there are any requests
+    if request_count > 0
+      # calculate the time btw runs in minutes
+      interval = (Time.now-last_run)
+      p "count: #{request_count}"
+      p "interval in seconds: #{interval}"
+      interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
+      interval = interval/60 # convert to minutes
+      
+      # determine the rate of requests and slow requests in requests/min
+      request_rate                         = request_count /
+                                             interval
+      report_data[:request_rate]           = sprintf("%.2f", request_rate)
+      
+      slow_request_rate                    = slow_request_count /
+                                             interval
+      report_data[:slow_request_rate]      = sprintf("%.2f", slow_request_rate)
+      
+      # determine the average request length
       avg                                  = total_request_time /
-                                             report_data[:request_count]
+                                             request_count
       report_data[:average_request_length] = sprintf("%.2f", avg)
     end
     remember(:last_request_time, Time.now)
     report(report_data)
+  rescue Errno::ENOENT => error
+    @file_found = false
+    error("Unable to find the Rails log file", "Could not find a Rails log file at: #{option(:log)}. Please ensure the path is correct.")
   rescue Exception => error
     error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
   ensure
-    generate_log_analysis(log_path)
+    # only run the analyzer if the log file is provided
+    # this make take a couple of minutes on large log files.
+    if @file_found and option(:log) and not option(:log).empty?
+      generate_log_analysis(log_path)
+    end
   end
   
   private

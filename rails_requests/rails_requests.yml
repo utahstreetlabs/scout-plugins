@@ -1,8 +1,37 @@
 options:
   log:
-    name: Log
-    notes: The Rails log file to process
+    name: Full Path to Rails Log File
+    notes: The full path to the Ruby on Rails log file you wish to analyze (ex: /var/www/app/APP_NAME/log/production.log).
   max_request_length:
     name: Max Request Length (sec)
     notes: If any request length is larger than this amount, an alert is generated
     default: 3
+
+metadata:
+  request_rate:
+    precision: 2
+    label: Requests
+    units: req/min
+  average_request_length:
+    precision: 2
+    units: sec
+  slow_request_rate:
+    precision: 2
+    label: Slow Requests
+    units: req/min
+    
+triggers:
+  - type: trend
+    dname: request_rate
+    direction: UP
+    percentage_change: 200
+    duration: 60
+    window_reference: LAST_WEEK
+    min_value: 100 # 100 req/min
+  - type: trend
+    dname: average_request_length
+    direction: UP
+    percentage_change: 200
+    duration: 60
+    window_reference: LAST_WEEK
+    min_value: 0.3 # 0.3 sec

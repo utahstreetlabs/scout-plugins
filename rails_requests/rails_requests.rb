@@ -59,8 +59,7 @@ class RailsRequests < Scout::Plugin
     if request_count > 0
       # calculate the time btw runs in minutes
       interval = (Time.now-last_run)
-      p "count: #{request_count}"
-      p "interval in seconds: #{interval}"
+
       interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
       interval = interval/60 # convert to minutes
       

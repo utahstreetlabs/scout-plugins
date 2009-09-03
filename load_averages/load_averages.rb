@@ -1,8 +1,3 @@
-# 
-# This is a real plugin updated to use our newer interface:
-# 
-#   http://scoutapp.com/plugin_urls/static/creating_a_plugin
-# 
 class LoadAverages < Scout::Plugin
   TEST_USAGE = "#{File.basename($0)} max_load MAX_LOAD"
 

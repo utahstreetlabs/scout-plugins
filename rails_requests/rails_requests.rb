@@ -110,12 +110,7 @@ class RailsRequests < Scout::Plugin
     end
     
     summary      = StringIO.new
-    output       = RequestLogAnalyzer::Output::FixedWidth.new(
-                     summary,
-                     :width      => 80,
-                     :colors     => false,
-                     :characters => :ascii
-                   )
+    output       = RequestLogAnalyzer::Output::HTML.new(summary)
     log_file     = read_backwards_to_timestamp(log_path, last_summary)
     format       = RequestLogAnalyzer::FileFormat.load(:rails)
     options      = {:source_files => log_file, :output => output}

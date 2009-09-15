@@ -1,7 +1,7 @@
 require 'net/http'
 require 'uri'
 
-class UrlMonitor < ScoutAgent::Plugin
+class UrlMonitor < Scout::Plugin
   include Net
   
   TEST_USAGE = "#{File.basename($0)} url URL last_run LAST_RUN"

@@ -47,13 +47,6 @@ class ScoutMysqlSlow < Scout::Plugin
           all_queries.each do |sq|
             # this query occurred after the last time this plugin ran and should be counted.  
             slow_queries << sq.merge({:time_of_query => t})
-            
-            # parsed_sql = sq[:sql].join
-            # hint(:title => "#{sq[:time]} sec Query: #{parsed_sql[0..80]}...",
-            #      :additional_info => sq[:sql],
-            #      :token => Digest::MD5.hexdigest("slow_query_#{parsed_sql.size > 250 ? parsed_sql[0..250] + '...' : parsed_sql}"),
-            #      :importance=> importance,
-            #      :tag_list=>'slow')
           end
         end
       elsif line !~ /^\#/ # an SQL query
@@ -77,11 +70,11 @@ class ScoutMysqlSlow < Scout::Plugin
     subj = "Maximum Query Time exceeded on #{slow_queries.size} #{slow_queries.size > 1 ? 'queries' : 'query'}"
     body = String.new
     slow_queries.each do |sq|
-      body << "#{sq[:query_time]}s query at #{sq[:time_of_query]}:\n\n"
+      body << "<strong>#{sq[:query_time]}s query at #{sq[:time_of_query]}:</strong>\n"
       sql = sq[:sql].join
       sql = sql.size > 500 ? sql[0..500] + '...' : sql
       body << sql
-      body << '\n\n'
+      body << "\n\n"
     end # slow_queries.each
     {:subject => subj, :body => body}
   end # build_alert

@@ -70,7 +70,7 @@ class ScoutMysqlSlow < Scout::Plugin
     subj = "Maximum Query Time exceeded on #{slow_queries.size} #{slow_queries.size > 1 ? 'queries' : 'query'}"
     body = String.new
     slow_queries.each do |sq|
-      body << "<strong>#{sq[:query_time]}s query at #{sq[:time_of_query]}:</strong>\n"
+      body << "<strong>#{sq[:query_time]} sec query on #{sq[:time_of_query]}:</strong>\n"
       sql = sq[:sql].join
       sql = sql.size > 500 ? sql[0..500] + '...' : sql
       body << sql

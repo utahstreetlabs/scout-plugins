@@ -53,6 +53,8 @@ class RailsRequests < Scout::Plugin
         end # request should be analyzed
       end
     end
+    
+    p 'done parsing'
 
     # Create a single alert that holds all of the requests that exceeded the +max_request_length+.
     if (count = slow_request_count) > 0
@@ -81,6 +83,7 @@ class RailsRequests < Scout::Plugin
                                              request_count
       report_data[:average_request_length] = sprintf("%.2f", avg)
     end
+    p 'done calculating data'
     remember(:last_request_time, Time.now)
     report(report_data)
   rescue Errno::ENOENT => error
@@ -89,6 +92,7 @@ class RailsRequests < Scout::Plugin
   rescue Exception => error
     error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
   ensure
+    p 'running request analysis'
     # only run the analyzer if the log file is provided
     # this make take a couple of minutes on large log files.
     if @file_found and option(:log) and not option(:log).empty?

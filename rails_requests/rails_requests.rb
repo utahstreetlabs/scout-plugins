@@ -49,7 +49,7 @@ class RailsRequests < Scout::Plugin
         end # request should be analyzed
       end
     end
-    p "requests: #{request_count}"
+
     # Create a single alert that holds all of the requests that exceeded the +max_request_length+.
     if (count = slow_request_count) > 0
       alert( "Maximum Time(#{option(:max_request_length)} sec) exceeded on #{count} request#{'s' if count != 1}",

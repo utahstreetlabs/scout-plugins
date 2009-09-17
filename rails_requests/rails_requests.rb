@@ -49,7 +49,7 @@ class RailsRequests < Scout::Plugin
         end # request should be analyzed
       end
     end
-    
+    p "requests: #{request_count}"
     # Create a single alert that holds all of the requests that exceeded the +max_request_length+.
     if (count = slow_request_count) > 0
       alert( "Maximum Time(#{option(:max_request_length)} sec) exceeded on #{count} request#{'s' if count != 1}",
@@ -62,7 +62,7 @@ class RailsRequests < Scout::Plugin
 
       interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
       interval = interval/60 # convert to minutes
-      
+      interval = interval.to_f
       # determine the rate of requests and slow requests in requests/min
       request_rate                         = request_count /
                                              interval

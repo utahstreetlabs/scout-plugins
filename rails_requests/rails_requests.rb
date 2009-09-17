@@ -28,10 +28,8 @@ class RailsRequests < Scout::Plugin
     last_run           = memory(:last_request_time) || Time.now
     @file_found = true # needed to ensure that the analyzer doesn't run if the log file isn't found.
 
-    p "last run: #{last_run}"
 
     Elif.foreach(log_path) do |line|
-      p 'l'
       if line =~ /\A(Completed in (\d+)ms .+) \[(\S+)\]\Z/        # newer Rails
         last_completed = [$2.to_i / 1000.0, $1, $3]
       elsif line =~ /\A(Completed in (\d+\.\d+) .+) \[(\S+)\]\Z/  # older Rails
@@ -42,7 +40,6 @@ class RailsRequests < Scout::Plugin
         if time_of_request < last_run
           break
         else
-          p 'a request'
           request_count += 1
           total_request_time          += last_completed.first.to_f
           if max_length > 0 and last_completed.first > max_length
@@ -54,8 +51,6 @@ class RailsRequests < Scout::Plugin
       end
     end
     
-    p 'done parsing'
-
     # Create a single alert that holds all of the requests that exceeded the +max_request_length+.
     if (count = slow_request_count) > 0
       alert( "Maximum Time(#{option(:max_request_length)} sec) exceeded on #{count} request#{'s' if count != 1}",
@@ -83,7 +78,6 @@ class RailsRequests < Scout::Plugin
                                              request_count
       report_data[:average_request_length] = sprintf("%.2f", avg)
     end
-    p 'done calculating data'
     remember(:last_request_time, Time.now)
     report(report_data)
   rescue Errno::ENOENT => error
@@ -92,7 +86,6 @@ class RailsRequests < Scout::Plugin
   rescue Exception => error
     error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
   ensure
-    p 'running request analysis'
     # only run the analyzer if the log file is provided
     # this make take a couple of minutes on large log files.
     if @file_found and option(:log) and not option(:log).empty?

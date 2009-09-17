@@ -28,7 +28,10 @@ class RailsRequests < Scout::Plugin
     last_run           = memory(:last_request_time) || Time.now
     @file_found = true # needed to ensure that the analyzer doesn't run if the log file isn't found.
 
+    p "last run: #{last_run}"
+
     Elif.foreach(log_path) do |line|
+      p 'l'
       if line =~ /\A(Completed in (\d+)ms .+) \[(\S+)\]\Z/        # newer Rails
         last_completed = [$2.to_i / 1000.0, $1, $3]
       elsif line =~ /\A(Completed in (\d+\.\d+) .+) \[(\S+)\]\Z/  # older Rails
@@ -39,6 +42,7 @@ class RailsRequests < Scout::Plugin
         if time_of_request < last_run
           break
         else
+          p 'a request'
           request_count += 1
           total_request_time          += last_completed.first.to_f
           if max_length > 0 and last_completed.first > max_length

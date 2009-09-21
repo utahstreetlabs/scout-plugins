@@ -1,4 +1,5 @@
 require 'net/http'
+require 'net/https'
 require 'uri'
 
 class UrlMonitor < Scout::Plugin
@@ -60,7 +61,9 @@ class UrlMonitor < Scout::Plugin
     retry_url_trailing_slash = true
     retry_url_execution_expired = true
     begin
-      Net::HTTP.start(uri.host,uri.port) {|http|
+      http = Net::HTTP.new(uri.host,uri.port)
+      http.use_ssl = url =~ %r{\Ahttps://}
+      http.start(){|http|
             http.open_timeout = TIMEOUT_LENGTH
             req = Net::HTTP::Get.new((uri.path != '' ? uri.path : '/' ) + (uri.query ? ('?' + uri.query) : ''))
             if uri.user && uri.password

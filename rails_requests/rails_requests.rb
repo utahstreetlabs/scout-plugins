@@ -26,7 +26,8 @@ class RailsRequests < Scout::Plugin
     slow_requests      = ''
     total_request_time = 0.0
     last_run           = memory(:last_request_time) || Time.now
-    @file_found = true # needed to ensure that the analyzer doesn't run if the log file isn't found.
+    # needed to ensure that the analyzer doesn't run if the log file isn't found.
+    @file_found        = true 
 
 
     Elif.foreach(log_path) do |line|
@@ -112,9 +113,29 @@ class RailsRequests < Scout::Plugin
     
     self.class.class_eval(RLA_EXTS)
     
+    analysis = analyze(last_summary, log_path)
+    
+    remember(:last_summary_time, Time.now)
+    summary( :command => "request-log-analyzer --after '"           +
+                         last_summary.strftime('%Y-%m-%d %H:%M:%S') +
+                         "' '#{log_path}'",
+             :output  => analysis )
+  rescue Exception => error
+    error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
+  end
+  
+  def analyze(last_summary, log_path)
+    log_file = read_backwards_to_timestamp(log_path, last_summary)
+    if RequestLogAnalyzer::VERSION <= "1.3.7"
+      analyzer_with_older_rla(last_summary, log_file)
+    else
+      analyzer_with_newer_rla(last_summary, log_file)
+    end
+  end
+  
+  def analyzer_with_older_rla(last_summary, log_file)
     summary  = StringIO.new
     output   = EmbeddedHTML.new(summary)
-    log_file = read_backwards_to_timestamp(log_path, last_summary)
     format   = RequestLogAnalyzer::FileFormat.load(:rails)
     options  = {:source_files => log_file, :output => output}
     source   = RequestLogAnalyzer::Source::LogParser.new(format, options)
@@ -126,15 +147,18 @@ class RailsRequests < Scout::Plugin
     silence do
       control.run!
     end
-    analysis = summary.string.strip
-    
-    remember(:last_summary_time, Time.now)
-    summary( :command => "request-log-analyzer --after '"           +
-                         last_summary.strftime('%Y-%m-%d %H:%M:%S') +
-                         "' '#{log_path}'",
-             :output  => analysis )
-  rescue Exception => error
-    error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
+    summary.string.strip
+  end
+  
+  def analyzer_with_newer_rla(last_summary, log_file)
+    summary = StringIO.new
+    RequestLogAnalyzer::Controller.build(
+      :output       => EmbeddedHTML,
+      :file         => summary,
+      :after        => last_summary, 
+      :source_files => log_file
+    ).run!
+    summary.string.strip
   end
   
   def patch_elif

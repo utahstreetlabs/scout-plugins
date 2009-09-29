@@ -70,7 +70,6 @@ class MysqlQueryStatistics < Scout::Plugin
         result = result / elapsed_seconds.to_f
       end
     end
-    # remember(:last_request_time, Time.now)
     remember(name => {:time => current_time, :value => value})
     
     result

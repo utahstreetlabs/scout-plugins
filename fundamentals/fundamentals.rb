@@ -36,34 +36,53 @@ class Fundamentals < Scout::Plugin
   # ----------------------------------------------------
   # Memory
   def do_memory
-    @reports = {}
-    begin
-      top_output = `top -#{RUBY_PLATFORM.include?('darwin') ? 'l' : 'n'} 1`
-      mem = top_output[/^(?:Phys)?Mem:.+/i] or raise "Missing mem"
-      swap = top_output[/^Swap:.+/i]
-      report_memory(mem, "mem")
-      report_percent("mem")
-      if swap_used = @reports[:swap_used]
-        @reports[:swap_ratio] = ratio = ( swap_used.to_f / @reports[:mem_used] ).round
-      end
+    # will be passed at the end to report to Scout
+    report_data = Hash.new
 
-    rescue => e
-      error "Couldn't use `top` as expected.", "#{e.message} ----- #{e.backtrace}" #$!.message
+    mem_info = {}
+    `cat /proc/meminfo`.each do |line|
+      _, key, value = *line.match(/^(\w+):\s+(\d+)\s/)
+      mem_info[key] = value.to_i
     end
-    return @reports
-  end
 
-  def report_memory(data, type)
-    data.scan(/(\d+|\d+\.\d+)([bkmg])\s+(\w+)/i) do |amount, unit, label|
-      @reports["#{type}_#{label.downcase}".to_sym] =
-        (amount.to_f * UNITS[unit.downcase]).round
+    # memory info is empty - operating system may not support it (why doesn't an exception get raised earlier on mac osx?)
+    if mem_info.empty?
+      raise "No such file or directory"
     end
-  end
 
-  def report_percent(type)
-    used = @reports["#{type}_used".to_sym] or return
-    free = @reports["#{type}_free".to_sym] or return
-    @reports["#{type}_used_percent".to_sym] = (used.to_f / (used + free) * 100).round
+    mem_total = mem_info['MemTotal'] / 1024
+    mem_free = (mem_info['MemFree'] + mem_info['Buffers'] + mem_info['Cached']) / 1024
+    mem_used = mem_total - mem_free
+    mem_percent_used = (mem_used / mem_total.to_f * 100).to_i
+
+    swap_total = mem_info['SwapTotal'] / 1024
+    swap_free = mem_info['SwapFree'] / 1024
+    swap_used = swap_total - swap_free
+    unless swap_total == 0
+      swap_percent_used = (swap_used / swap_total.to_f * 100).to_i
+    end
+
+    report_data['mem_total'] = mem_total
+    report_data['mem_used'] = mem_used
+    report_data['mem_used_percent'] = mem_percent_used
+
+    report_data['mem_swap_total'] = swap_total
+    report_data['mem_swap_used'] = swap_used
+    unless  swap_total == 0
+      report_data['mem_swap_percent'] = swap_percent_used
+    end
+
+
+  rescue Exception => e
+    if e.message =~ /No such file or directory/
+      error('Unable to find /proc/meminfo',%Q(Unable to find /proc/meminfo. Please ensure your operationg system supports procfs:
+         http://en.wikipedia.org/wiki/Procfs)
+      )
+    else
+      raise
+    end
+  ensure
+    return report_data
   end
 
   #---------------------------------------------------------

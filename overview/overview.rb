@@ -22,12 +22,10 @@ class Overview < Scout::Plugin
 
   def build_report
     reports=Hash.new
-    reports.merge!(do_memory())
     reports.merge!(do_disk_usage())
     reports.merge!(do_cpu_load())
+    reports.merge!(do_memory())
 
-    # return a subset of data - uncomment to return al
-    reports.reject!{|k,v| ![:cpu_last_minute, :mem_used_percent, :disk_capacity].include?(k)}
     report(reports)
   end
 

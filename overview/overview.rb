@@ -1,5 +1,5 @@
 #
-# Returns server fundamentals:
+# Provides an overview of basic server health:
 #
 # * Memory
 # * Disk Usage
@@ -8,7 +8,7 @@
 #
 # Options Supported: disk_command, num_processors (leave blank to auto-detect)
 #
-class Fundamentals < Scout::Plugin
+class Overview < Scout::Plugin
 
   # memory contants
   UNITS = { "b" => 1,
@@ -26,6 +26,8 @@ class Fundamentals < Scout::Plugin
     reports.merge!(do_disk_usage())
     reports.merge!(do_cpu_load())
 
+    # return a subset of data - uncomment to return al
+    reports.reject!{|k,v| ![:cpu_last_minute, :mem_used_percent, :disk_capacity].include?(k)}
     report(reports)
   end
 
@@ -62,14 +64,14 @@ class Fundamentals < Scout::Plugin
       swap_percent_used = (swap_used / swap_total.to_f * 100).to_i
     end
 
-    report_data['mem_total'] = mem_total
-    report_data['mem_used'] = mem_used
-    report_data['mem_used_percent'] = mem_percent_used
+    report_data[:mem_total] = mem_total
+    report_data[:mem_used] = mem_used
+    report_data[:mem_used_percent] = mem_percent_used
 
-    report_data['mem_swap_total'] = swap_total
-    report_data['mem_swap_used'] = swap_used
+    report_data[:mem_swap_total] = swap_total
+    report_data[:mem_swap_used] = swap_used
     unless  swap_total == 0
-      report_data['mem_swap_percent'] = swap_percent_used
+      report_data[:mem_swap_percent] = swap_percent_used
     end
 
 

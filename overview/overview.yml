@@ -37,7 +37,7 @@ metadata:
     precision: 2
   cpu_last_fifteen_minutes:
     precision: 2
-  mem_toal:
+  mem_total:
     label: Memory Total
     units: MB
     precision: 0
@@ -58,7 +58,7 @@ metadata:
     label: Swap Used
     units: MB
     precision: 0
-  mem_swap_used_percent:
+  mem_swap_percent:
     label: % Swap Used
     units: %
     precision: 0

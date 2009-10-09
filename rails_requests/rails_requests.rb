@@ -104,6 +104,7 @@ class RailsRequests < Scout::Plugin
   end
   
   def generate_log_analysis(log_path)
+    # decide if it's time to run the analysis yet today
     if option(:rla_run_time) =~ /\A\s*(0?\d|1\d|2[0-3]):(0?\d|[1-4]\d|5[0-9])\s*\z/
       run_hour    = $1.to_i
       run_minutes = $2.to_i

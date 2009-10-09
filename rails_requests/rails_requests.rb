@@ -29,7 +29,6 @@ class RailsRequests < Scout::Plugin
     # needed to ensure that the analyzer doesn't run if the log file isn't found.
     @file_found        = true 
 
-
     Elif.foreach(log_path) do |line|
       if line =~ /\A(Completed in (\d+)ms .+) \[(\S+)\]\Z/        # newer Rails
         last_completed = [$2.to_i / 1000.0, $1, $3]
@@ -104,43 +103,60 @@ class RailsRequests < Scout::Plugin
   end
   
   def generate_log_analysis(log_path)
-    one_day_ago  = Time.now - (ONE_DAY + 1)
-    last_summary = memory(:last_summary_time) || one_day_ago
-    unless Time.now - last_summary > ONE_DAY
+    if option(:rla_run_time) =~ /\A\s*(0?\d|1\d|2[0-3]):(0?\d|[1-4]\d|5[0-9])\s*\z/
+      run_hour    = $1.to_i
+      run_minutes = $2.to_i
+    else
+      run_hour    = 23
+      run_minutes = 45
+    end
+    now = Time.now
+    if last_summary = memory(:last_summary_time)
+      if now.hour > run_hour       or
+        ( now.hour == run_hour     and
+          now.min  >= run_minutes ) and
+         %w[year mon day].any? { |t| last_summary.send(t) != now.send(t) }
+        remember(:last_summary_time, now)
+      else
+        remember(:last_summary_time, last_summary)
+        return
+      end
+    else
+      last_summary = Time.now - ONE_DAY
       remember(:last_summary_time, last_summary)
-      return
     end
     
     self.class.class_eval(RLA_EXTS)
     
-    analysis = analyze(last_summary, log_path)
+    analysis = analyze(last_summary, now, log_path)
     
-    remember(:last_summary_time, Time.now)
-    summary( :command => "request-log-analyzer --after '"           +
-                         last_summary.strftime('%Y-%m-%d %H:%M:%S') +
+    summary( :command => "request-log-analyzer --after '"                   +
+                         last_summary.strftime('%Y-%m-%d %H:%M:%S')         +
+                         "' --before '" + now.strftime('%Y-%m-%d %H:%M:%S') +
                          "' '#{log_path}'",
              :output  => analysis )
   rescue Exception => error
     error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
   end
   
-  def analyze(last_summary, log_path)
+  def analyze(last_summary, stop_time, log_path)
     log_file = read_backwards_to_timestamp(log_path, last_summary)
     if RequestLogAnalyzer::VERSION <= "1.3.7"
-      analyzer_with_older_rla(last_summary, log_file)
+      analyzer_with_older_rla(last_summary, stop_time, log_file)
     else
-      analyzer_with_newer_rla(last_summary, log_file)
+      analyzer_with_newer_rla(last_summary, stop_time, log_file)
     end
   end
   
-  def analyzer_with_older_rla(last_summary, log_file)
+  def analyzer_with_older_rla(last_summary, stop_time, log_file)
     summary  = StringIO.new
     output   = EmbeddedHTML.new(summary)
     format   = RequestLogAnalyzer::FileFormat.load(:rails)
     options  = {:source_files => log_file, :output => output}
     source   = RequestLogAnalyzer::Source::LogParser.new(format, options)
     control  = RequestLogAnalyzer::Controller.new(source, options)
-    control.add_filter(:timespan, :after => last_summary)
+    control.add_filter(:timespan, :after  => last_summary)
+    control.add_filter(:timespan, :before => stop_time)
     control.add_aggregator(:summarizer)
     source.progress = nil
     format.setup_environment(control)
@@ -150,20 +166,24 @@ class RailsRequests < Scout::Plugin
     summary.string.strip
   end
   
-  def analyzer_with_newer_rla(last_summary, log_file)
+  def analyzer_with_newer_rla(last_summary, stop_time, log_file)
     summary = StringIO.new
     RequestLogAnalyzer::Controller.build(
       :output       => EmbeddedHTML,
       :file         => summary,
       :after        => last_summary, 
+      :before       => stop_time,
       :source_files => log_file
     ).run!
     summary.string.strip
   end
   
   def patch_elif
-    Elif.send(:define_method, :pos) do
-      @current_pos + @line_buffer.inject(0) { |bytes, line| bytes + line.size }
+    if Elif::VERSION < "0.2.0"
+      Elif.send(:define_method, :pos) do
+        @current_pos +
+        @line_buffer.inject(0) { |bytes, line| bytes + line.size }
+      end
     end
   end
   

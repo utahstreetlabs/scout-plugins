@@ -13,6 +13,7 @@ class RailsRequests < Scout::Plugin
     
     log_path = option(:log)
     unless log_path and not log_path.empty?
+      @file_found = false
       return error("A path to the Rails log file wasn't provided.","Please provide the full path to the Rails log file to analyze (ie - /var/www/apps/APP_NAME/log/production.log)")
     end
     max_length = option(:max_request_length).to_f

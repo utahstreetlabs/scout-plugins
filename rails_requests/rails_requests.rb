@@ -124,8 +124,12 @@ class RailsRequests < Scout::Plugin
         return
       end
     else
-      last_summary = Time.now - ONE_DAY
+      last_summary = now - ONE_DAY
       remember(:last_summary_time, last_summary)
+    end
+    # make sure we get a full run
+    if now - last_summary < 60 * 60 * 22
+      last_summary = now - ONE_DAY
     end
     
     self.class.class_eval(RLA_EXTS)

@@ -1,0 +1,6 @@
+options:
+  path_to_database_yml:
+    name: Full Path to the Rails Application
+  rails_env:
+    name: Rails environment that should be used
+    default: production

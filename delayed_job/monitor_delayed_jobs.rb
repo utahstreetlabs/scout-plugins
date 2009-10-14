@@ -1,3 +1,7 @@
+require 'rubygems'
+require 'activerecord'
+require 'yaml'
+
 class DelayedJob < ActiveRecord::Base; end
 
 class MonitorDelayedJobs < Scout::Plugin

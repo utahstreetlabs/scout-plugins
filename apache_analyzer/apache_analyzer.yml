@@ -1,0 +1,12 @@
+options:
+  log:
+    name: Full Path to Apache Log File
+    notes: "The full path to the Apache log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/access_log)."
+  format:
+    name: Apache Log format
+    notes: defaults to 'common'. Or specify custom log format, like %v %h %l %u %t \"%r\" %>s %b time:%D
+    default: common
+  rla_run_time:
+    name: Request Log Analyzer Run Time (HH:MM)
+    notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
+    default: '23:45'

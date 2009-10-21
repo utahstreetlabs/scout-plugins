@@ -13,13 +13,17 @@ class ApacheAnalyzer < Scout::Plugin
     log_path = option(:log)
     format = option(:format) || 'common'
     request_count = 0
-    report_data = { :request_rate     => 0 }
-    last_run = memory(:last_request_time) || Time.now
+    lines_scanned = 0
+    report_data = { :request_rate     => 0, :lines_scanned => 0 }
+    last_run = memory(:last_request_time) || Time.now-60*1
 
     # read backward, counting lines
     Elif.foreach(log_path) do |line|
-      if line =~ /\[(\d{2}\/[A-Za-z]{3}\/\d{4}.\d{2}:\d{2}:\d{2})(?: .\d{4})?\]/
-        time_of_request = Time.parse($1)
+      lines_scanned += 1
+      if line =~ /(\d{2}\/[A-Za-z]{3}\/\d{4})(.)(\d{2}:\d{2}:\d{2})(?: .\d{4})?/
+        # some apache configs log time time with a ':' between date and time
+        time_of_request = Time.parse("#{$1} #{$3}")
+
         if time_of_request < last_run
           break
         else
@@ -45,7 +49,8 @@ class ApacheAnalyzer < Scout::Plugin
 
     # report data
     remember(:last_request_time, Time.now)
-    report(report_data)    
+    report_data[:lines_scanned] = lines_scanned
+    report(report_data)
 
     if log_path && !log_path.empty?
       generate_log_analysis(log_path, format)

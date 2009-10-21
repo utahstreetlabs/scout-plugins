@@ -12,6 +12,41 @@ class ApacheAnalyzer < Scout::Plugin
 
     log_path = option(:log)
     format = option(:format) || 'common'
+    request_count = 0
+    report_data = { :request_rate     => 0 }
+    last_run = memory(:last_request_time) || Time.now
+
+    # read backward, counting lines
+    Elif.foreach(log_path) do |line|
+      if line =~ /\[(\d{2}\/[A-Za-z]{3}\/\d{4}.\d{2}:\d{2}:\d{2})(?: .\d{4})?\]/
+        time_of_request = Time.parse($1)
+        if time_of_request < last_run
+          break
+        else
+          request_count += 1
+        end
+      end
+
+    end
+
+    # calculate request_rate
+    if request_count > 0
+      # calculate the time btw runs in minutes
+      interval = (Time.now-last_run)
+      interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
+      interval = interval/60 # convert to minutes
+      interval = interval.to_f
+      # determine the rate of requests and slow requests in requests/min
+      request_rate                         = request_count /
+                                             interval
+      report_data[:request_rate]           = sprintf("%.2f", request_rate)
+
+    end
+
+    # report data
+    remember(:last_request_time, Time.now)
+    report(report_data)    
+
     if log_path && !log_path.empty?
       generate_log_analysis(log_path, format)
     else

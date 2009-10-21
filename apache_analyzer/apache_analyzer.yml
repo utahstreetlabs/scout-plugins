@@ -10,3 +10,9 @@ options:
     name: Request Log Analyzer Run Time (HH:MM)
     notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
     default: '23:45'
+
+metadata:
+  request_rate:
+    precision: 2
+    label: Requests
+    units: req/min    

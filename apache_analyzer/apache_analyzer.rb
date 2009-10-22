@@ -15,13 +15,13 @@ class ApacheAnalyzer < Scout::Plugin
     request_count = 0
     lines_scanned = 0
     report_data = { :request_rate     => 0, :lines_scanned => 0 }
-    last_run = memory(:last_request_time) || Time.now-60*1
+    last_run = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
 
     # read backward, counting lines
     Elif.foreach(log_path) do |line|
       lines_scanned += 1
       if line =~ /(\d{2}\/[A-Za-z]{3}\/\d{4})(.)(\d{2}:\d{2}:\d{2})(?: .\d{4})?/
-        # some apache configs log time time with a ':' between date and time
+        # CLF logs time with a ':' between date and time; Time.parse doesn't like this
         time_of_request = Time.parse("#{$1} #{$3}")
 
         if time_of_request < last_run

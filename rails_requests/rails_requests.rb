@@ -308,3 +308,4 @@ class RailsRequests < Scout::Plugin
   end
   END_RUBY
 end
+

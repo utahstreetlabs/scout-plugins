@@ -10,6 +10,7 @@ options:
     name: Request Log Analyzer Run Time (HH:MM)
     notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
     default: '23:45'
+    advanced: true
   ignored_actions:
     name: Ignored Actions
     notes: Takes a regex. Any URIs matching this regex will NOT count as slow requests, and you will NOT be notified if they exceed Max Request Length. Matching actions will still be included in daily summaries.

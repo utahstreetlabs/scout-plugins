@@ -10,13 +10,24 @@ class RailsRequests < Scout::Plugin
   
   def build_report
     patch_elif
-    
+
     log_path = option(:log)
     unless log_path and not log_path.empty?
       @file_found = false
       return error("A path to the Rails log file wasn't provided.","Please provide the full path to the Rails log file to analyze (ie - /var/www/apps/APP_NAME/log/production.log)")
     end
     max_length = option(:max_request_length).to_f
+
+    # process the ignored_actions option -- this is a regex provided by users; matching URIs don't get counted as slow
+    ignored_actions=nil
+    if option(:ignored_actions) && option(:ignored_actions).strip != ''
+      begin
+        ignored_actions = Regexp.new(option(:ignored_actions))
+        puts ignored_actions.inspect
+      rescue
+        error("Argument error","Could not understand the regular expression for excluding slow actions: #{option(:ignored_actions)}. #{$!.message}")
+      end
+    end
 
     report_data        = { :slow_request_rate     => 0,
                            :request_rate          => 0,
@@ -44,9 +55,12 @@ class RailsRequests < Scout::Plugin
           request_count += 1
           total_request_time          += last_completed.first.to_f
           if max_length > 0 and last_completed.first > max_length
-            slow_request_count += 1
-            slow_requests                    += "#{last_completed.last}\n"
-            slow_requests                    += "#{last_completed[1]}\n\n"
+            # only test for ignored_actions if we actually have an ignored_actions regex
+            if ignored_actions.nil? || (ignored_actions.is_a?(Regexp) && !ignored_actions.match(last_completed.last))
+              slow_request_count += 1
+              slow_requests                    += "#{last_completed.last}\n"
+              slow_requests                    += "#{last_completed[1]}\n\n"
+            end
           end
         end # request should be analyzed
       end

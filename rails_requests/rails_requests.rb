@@ -193,7 +193,8 @@ class RailsRequests < Scout::Plugin
       :file         => summary,
       :after        => last_summary, 
       :before       => stop_time,
-      :source_files => log_file
+      :source_files => log_file,
+      :format       => RequestLogAnalyzer::FileFormat::Rails
     ).run!
     summary.string.strip
   end

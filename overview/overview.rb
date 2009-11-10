@@ -98,9 +98,9 @@ class Overview < Scout::Plugin
 
     # if the user specified a filesystem use that
     df_line = nil
-    if option(:filesystem)
+    if option(:disk_filesystem)
       df_lines.each do |line|
-        if line.has_value?(option(:filesystem))
+        if line.has_value?(option(:disk_filesystem))
           df_line = line
         end
       end

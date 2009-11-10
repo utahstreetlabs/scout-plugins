@@ -160,13 +160,13 @@ class Overview < Scout::Plugin
   # turned into integers.
   def clean_value(value)
     if value =~ /G/i
-      value.to_i
+      value.to_f
     elsif value =~ /M/i
       (value.to_f/1024.to_f).round
     elsif value =~ /K/i
       (value.to_f/1024.to_f/1024.to_f).round
     else
-      value.to_i
+      value.to_f
     end
   end
 

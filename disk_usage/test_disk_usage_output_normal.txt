@@ -1,5 +1,5 @@
 Filesystem      Size   Used  Avail Capacity  Mounted on
-/dev/disk0s2   233Gi   55Gi  177Gi    24%    /
+/dev/disk0s2   233Gi   55.8Gi  177.2Gi    24%    /
 devfs          112Ki  112Ki    0Bi   100%    /dev
 fdesc          1.0Ki  1.0Ki    0Bi   100%    /dev
 map -hosts       0Bi    0Bi    0Bi   100%    /net

@@ -1,7 +1,7 @@
 class MongrelClusterMonitor < Scout::Plugin
   def build_report
-    mongrel_configuration_dir = option("mongrel_cluster_configuration_dir") ||  "/etc/mongrel_cluster/"
-    mongrel_rails_command = option("mongrel_rails_command") || "mongrel_rails"
+    mongrel_configuration_dir = option(:mongrel_cluster_configuration_dir) ||  "/etc/mongrel_cluster/"
+    mongrel_rails_command = option(:mongrel_rails_command) || "mongrel_rails"
     res={}
     if !File.exist?(mongrel_configuration_dir)
       error(:subject=>"mongrel_configuration_dir: #{mongrel_configuration_dir} does not exist -- check options")
@@ -34,7 +34,8 @@ class MongrelClusterMonitor < Scout::Plugin
         alert(:subject => "No mongrel configuration files found.")
       end
     end
-    report(res)
-
+  report(res)     
+  rescue Exception => e
+    error "Encounterd an exception. #{e}"
   end
 end

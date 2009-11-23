@@ -1,0 +1,73 @@
+options:
+  disk_command:
+    name: df Command
+    notes: The command used to display free disk space
+    default: "df -h"
+  disk_filesystem:
+    name: Filesystem
+    notes: The filesystem to check usage, if none specified, uses the first listed
+    default: 
+  num_processors:
+    name: Number of Processors
+    notes: For calculating CPU load. If left blank, autodetects through /proc/cpuinfo
+    default: 1
+
+
+metadata:
+  disk_used:
+    label: Disk Space Used
+    units: GB
+    precision: 0
+  disk_size:
+    label: Disk Size
+    units: GB
+    precision: 0
+  disk_capacity:
+    label: Disk Capacity
+    units: %
+    precision: 0
+  disk_avail:
+    label: Disk Space Available
+    units: GB
+    precision: 0
+    larger_is_better: true
+  cpu_last_minute:
+    precision: 2
+  cpu_last_five_minutes:
+    precision: 2
+  cpu_last_fifteen_minutes:
+    precision: 2
+  mem_total:
+    label: Memory Total
+    units: MB
+    precision: 0
+    larger_is_better: true
+  mem_used:
+    label: Memory Used
+    units: MB
+    precision: 0
+  mem_used_percent:
+    label: % Memory Used
+    units: %
+    precision: 0
+  mem_swap_total:
+    lable: Swap Total
+    units: MB
+    precision: 0
+  mem_swap_used:
+    label: Swap Used
+    units: MB
+    precision: 0
+  mem_swap_percent:
+    label: % Swap Used
+    units: %
+    precision: 0
+
+
+triggers:
+  - type: peak
+    dname: disk_capacity
+    max_value: 85
+  - type: peak
+    dname: cpu_last_minute
+    max_value: 3

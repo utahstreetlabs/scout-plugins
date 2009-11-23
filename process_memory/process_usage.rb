@@ -7,7 +7,7 @@ class ProcessUsage < Scout::Plugin
     end
     ps_command   = @options["ps_command"] || "ps auxww"
     ps_regex     = (@options["ps_regex"] || "(?i:\\bCOMMAND\\b)").to_s.
-                   gsub("COMMAND", Regexp.escape(@options["command_name"]))
+                   gsub("COMMAND") { Regexp.escape(@options["command_name"]) }
     begin
       ps_output    = `#{ps_command}`
     rescue Exception => error

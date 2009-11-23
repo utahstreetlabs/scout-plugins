@@ -20,7 +20,6 @@ class MysqlQueryStatistics < Scout::Plugin
     now = Time.now
     mysql = Mysql.connect(host, user, password, nil, (port.nil? ? nil : port.to_i), socket)
     result = mysql.query('SHOW /*!50002 GLOBAL */ STATUS')
-
     rows = []
     total = 0
     result.each do |row| 
@@ -36,12 +35,14 @@ class MysqlQueryStatistics < Scout::Plugin
       value = calculate_counter(now, name, row.last.to_i)
       # only report if a value is calculated
       next unless value
-      report(name => value)
+      report_hash[name] = value
     end
 
 
     total_val = calculate_counter(now, 'total', total)
-    report('total' => total_val) if total_val
+    report_hash['total'] = total_val if total_val
+    
+    report(report_hash)
   end
 
   private
@@ -58,7 +59,7 @@ class MysqlQueryStatistics < Scout::Plugin
     result = nil
     # only check if a past run has a value for the specified query type
     if memory(name) && memory(name).is_a?(Hash)
-      last_time, last_value = memory(name).values_at('time', 'value')
+      last_time, last_value = memory(name).values_at(:time, :value)
       # We won't log it if the value has wrapped
       if last_value and value >= last_value
         elapsed_seconds = current_time - last_time
@@ -69,7 +70,6 @@ class MysqlQueryStatistics < Scout::Plugin
         result = result / elapsed_seconds.to_f
       end
     end
-
     remember(name => {:time => current_time, :value => value})
     
     result

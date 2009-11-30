@@ -1,0 +1,5 @@
+options:
+  uri:
+    name: URI
+    notes: URI of the haproxy CSV stats url. See the 'CSV Export' link on your haproxy stats page
+    default: 

@@ -90,7 +90,7 @@ class Overview < Scout::Plugin
 
  def do_disk_usage
     ENV['lang'] = 'C' # forcing English for parsing
-    df_command   = option("disk_command") || "df -h"
+    df_command   = option(:disk_command) || "df -h"
     df_output    = `#{df_command}`
 
     df_lines = []
@@ -98,9 +98,9 @@ class Overview < Scout::Plugin
 
     # if the user specified a filesystem use that
     df_line = nil
-    if option("filesystem")
+    if option(:disk_filesystem)
       df_lines.each do |line|
-        if line.has_value?(option("filesystem"))
+        if line.has_value?(option(:disk_filesystem))
           df_line = line
         end
       end
@@ -160,13 +160,13 @@ class Overview < Scout::Plugin
   # turned into integers.
   def clean_value(value)
     if value =~ /G/i
-      value.to_i
+      value.to_f
     elsif value =~ /M/i
       (value.to_f/1024.to_f).round
     elsif value =~ /K/i
       (value.to_f/1024.to_f/1024.to_f).round
     else
-      value.to_i
+      value.to_f
     end
   end
 

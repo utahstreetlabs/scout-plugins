@@ -19,5 +19,9 @@ class PowermtaStats < Scout::Plugin
       "Spool Files" => status.xpath('//rsp/data/status/spool/files/total').children.first.content,
       "Spool Initialization" => status.xpath('//rsp/data/status/spool/initPct').children.first.content
     })
+    vmtas = Nokogiri::XML(open(uri+'vmtas?format=xml'))
+    vmtas.xpath('//rsp/data').children.each do |vmta|
+      report(('VMTA Queue Size: ' + vmta.xpath('name').first.content) => vmta.xpath('rcp').first.content)
+    end
   end
 end

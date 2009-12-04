@@ -2,7 +2,7 @@ options:
   server_url:
     name: Server URL
     notes: Specify URL of the server-status page to check.
-    default: "http://www.j-14.com/server-status?auto"
+    default: "http://www.example.com/server-status?auto"
 
 metadata:
   current_load:          

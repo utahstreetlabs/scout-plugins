@@ -1,0 +1,11 @@
+options:
+  server_url:
+    name: Server URL
+    notes: Specify URL of the server-status page to check.
+    default: "http://www.j-14.com/server-status?auto"
+
+metadata:
+  current_load:          
+    label: Requests Per Second
+    units: req / s
+    precision: 2

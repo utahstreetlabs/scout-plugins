@@ -3,3 +3,82 @@ options:
     name: URI
     notes: URI of the PowerMTA Web Interface url
     default: http://127.0.0.1:8080/
+metadata:
+  "Out: Messages/min":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "1"
+    label: "Out: messages/min"
+  "In: SMTP Connections/min":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: "In: smtp connections/min"
+  "In: Messages/min":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "1"
+    label: "In: messages/min"
+  "Out: SMTP Connections/min":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: "Out: smtp connections/min"
+  "Queued Domains":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Queued domains
+  "Spool Files":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Spool files
+  "Spool Initialization":
+    units: "%"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Spool initialization
+  "Out: KB/min":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "1"
+    label: "Out: kb/min"
+  "In: Recipients/min":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "1"
+    label: "In: recipients/min"
+  "Queued KB":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "1"
+    label: Queued kb
+  "In: KB/min":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "1"
+    label: "In: kb/min"
+  "Out: Recipients/min":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "1"
+    label: "Out: recipients/min"
+  "Queued Recpipents":
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Queued recpipents

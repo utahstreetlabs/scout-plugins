@@ -40,7 +40,7 @@ class Overview < Scout::Plugin
     report_data = Hash.new
 
     mem_info = {}
-    `cat /proc/meminfo`.each do |line|
+    `cat /proc/meminfo`.each_line do |line|
       _, key, value = *line.match(/^(\w+):\s+(\d+)\s/)
       mem_info[key] = value.to_i
     end
@@ -142,7 +142,7 @@ class Overview < Scout::Plugin
     headers      =   nil
 
     row = ""
-    io.each do |line|
+    io.each_line do |line|
       if headers.nil? and line =~ /\AFilesystem/
         headers = line.split(" ", 6)
       else

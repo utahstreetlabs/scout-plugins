@@ -1,7 +1,7 @@
 class MemoryProfiler < Scout::Plugin
   def build_report
     mem_info = {}
-    `cat /proc/meminfo`.each do |line|
+    `cat /proc/meminfo`.each_line do |line|
       _, key, value = *line.match(/^(\w+):\s+(\d+)\s/)
       mem_info[key] = value.to_i
     end

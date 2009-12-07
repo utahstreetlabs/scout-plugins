@@ -18,7 +18,7 @@ class DiskUsage < Scout::Plugin
     headers      =   nil
 
     row = ""
-    io.each do |line|
+    io.each_line do |line|
       if headers.nil? and line =~ /\AFilesystem/
         headers = line.split(" ", 6)
       else

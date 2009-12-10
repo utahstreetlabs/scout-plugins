@@ -42,5 +42,7 @@ class ProcessUsage < Scout::Plugin
       error( "Command not found.",
              "No processes found matching #{option(:command_name)}." )
     end
+  rescue Exception => e
+    error("Error when executing: #{e.class}", e.message)
   end
 end

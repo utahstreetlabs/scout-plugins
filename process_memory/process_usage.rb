@@ -28,14 +28,24 @@ class ProcessUsage < Scout::Plugin
       pids       = process_lines.map { |com| Integer(com.split[pid_index]) }
       highest    = rss_values.max
       total      = rss_values.inject(0){|s,value| s + value }
+      restarts   = 0
 
       if remembered_pids = memory(:pids)
-        report(:restarts => (pids - remembered_pids).length)
+        # Find how many new pids we haven't seen before
+        new_pids     = (pids - remembered_pids).length
+
+        # Find how many more pids we have now than before
+        started_pids = pids.length - remembered_pids.length
+        started_pids = 0 if started_pids < 1
+
+        # Don't include newly started processes as restarts
+        restarts = new_pids - started_pids
       end
 
       report(:memory        => (highest/MEM_CONVERSION).to_i,
              :total_rss     => (total/MEM_CONVERSION).to_i,
-             :num_processes => process_lines.size)
+             :num_processes => process_lines.size,
+             :restarts      => restarts)
 
       remember(:pids => pids)
     else

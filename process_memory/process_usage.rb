@@ -14,8 +14,8 @@ class ProcessUsage < Scout::Plugin
     end
 
     ps_lines = ps_output.split(/\n/)
-    fields   = ps_lines.first.downcase.split
-    unless memory_index = fields.index("rss") && pid_index = fields.index('pid')
+    fields   = ps_lines.shift.downcase.split
+    unless (memory_index = fields.index("rss")) && (pid_index = fields.index('pid'))
       return error( "RSS or PID field not found.",
                     "The output from `#{ps_command}` did not include the needed RSS and PID fields." )
     end

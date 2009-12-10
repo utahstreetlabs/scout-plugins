@@ -17,7 +17,11 @@ metadata:
     label: Memory Usage
     units: MB
     precision: 0
-    
+  restarts:          
+    label: Restarts
+    units: ""
+    precision: 0
+     
 triggers:
   - type: peak
     dname: memory

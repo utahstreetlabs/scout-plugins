@@ -1,0 +1,21 @@
+options:
+  database:
+    name: Mongo Database
+    notes: Name of the MongoDB database to profile
+  threshold:
+    name: Threshold (millisecs)
+    notes: Slow queries are >= this time in milliseconds to execute (min. 100)
+    default: 100
+
+metadata:
+  slow_queries:
+    units: /min
+    precision: 2
+triggers:
+  - type: trend
+    dname: slow_queries
+    direction: UP
+    percentage_change: 30
+    duration: 120
+    window_reference: LAST_WEEK
+    min_value: 100

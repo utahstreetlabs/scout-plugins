@@ -3,7 +3,7 @@ class Iostat < Scout::Plugin
     stats = iostat(device)
 
     counter(:rps,   stats['rio'],        :per => :second)
-    counter(:rps,   stats['wio'],        :per => :second)
+    counter(:wps,   stats['wio'],        :per => :second)
     counter(:rkbps, stats['rsect'] / 2,  :per => :second)
     counter(:wkbps, stats['wsect'] / 2,  :per => :second)
     counter(:util,  stats['use'] / 10.0, :per => :second)

@@ -1,0 +1,15 @@
+Redis Info Plugin
+======================
+Created by [Matt Todd](http://twitter.com/mtodd)
+
+Overview
+------------
+
+Reports Redis memory used and changes since the last save.
+
+Dependencies
+------------
+
+Requires access to the `redis-cli info` command.
+
+

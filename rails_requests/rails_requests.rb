@@ -3,8 +3,26 @@ require "stringio"
 
 class RailsRequests < Scout::Plugin
   ONE_DAY    = 60 * 60 * 24
-  TEST_USAGE = "#{File.basename($0)} log LOG max_request_length MAX_REQUEST_LENGTH last_run LAST_RUN"
-  
+
+  OPTIONS=<<-EOS
+  log:
+    name: Full Path to Rails Log File
+    notes: "The full path to the Ruby on Rails log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/production.log)."
+  max_request_length:
+    name: Max Request Length (sec)
+    notes: If any request length is larger than this amount, an alert is generated (see Advanced for more options)
+    default: 3
+  rla_run_time:
+    name: Request Log Analyzer Run Time (HH:MM)
+    notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
+    default: '23:45'
+    attributes: advanced
+  ignored_actions:
+    name: Ignored Actions
+    notes: Takes a regex. Any URIs matching this regex will NOT count as slow requests, and you will NOT be notified if they exceed Max Request Length. Matching actions will still be included in daily summaries.
+    attributes: advanced
+  EOS
+
   needs "elif"
   needs "request_log_analyzer"
   
@@ -92,6 +110,9 @@ class RailsRequests < Scout::Plugin
       avg                                  = total_request_time /
                                              request_count
       report_data[:average_request_length] = sprintf("%.2f", avg)
+
+      report_data[:slow_requests_percentage] = (request_count == 0) ? 0 : (slow_request_count.to_f / request_count.to_f) * 100.0
+
     end
     remember(:last_request_time, Time.now)
     report(report_data)

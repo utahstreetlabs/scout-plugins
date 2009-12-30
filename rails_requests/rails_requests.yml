@@ -1,21 +1,3 @@
-options:
-  log:
-    name: Full Path to Rails Log File
-    notes: "The full path to the Ruby on Rails log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/production.log)."
-  max_request_length:
-    name: Max Request Length (sec)
-    notes: If any request length is larger than this amount, an alert is generated (see Advanced for more options)
-    default: 3
-  rla_run_time:
-    name: Request Log Analyzer Run Time (HH:MM)
-    notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
-    default: '23:45'
-    advanced: true
-  ignored_actions:
-    name: Ignored Actions
-    notes: Takes a regex. Any URIs matching this regex will NOT count as slow requests, and you will NOT be notified if they exceed Max Request Length. Matching actions will still be included in daily summaries.
-    advanced: true
-
 metadata:
   request_rate:
     precision: 2
@@ -28,7 +10,10 @@ metadata:
     precision: 2
     label: Slow Requests
     units: req/min
-    
+  slow_requests_percentage:
+    precision: 0
+    units: "%"
+
 triggers:
   - type: trend
     dname: request_rate

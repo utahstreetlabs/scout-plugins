@@ -5,4 +5,8 @@ Monitors Sphinx, an open-source SQL full-text search engine (http://www.sphinxse
 * Index rebuilds
 * Average results returned
 
+Note that the first run will not return any data.
+
+----
+
 Created by Sam Sinensky (http://github.com/samsinensky) at Code and Beats (http://codeandbeats.com/) 12/29/09

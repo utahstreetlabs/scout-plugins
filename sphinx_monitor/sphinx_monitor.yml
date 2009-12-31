@@ -1,0 +1,27 @@
+metadata:
+  query_rate:
+    precision: 2
+    label: Queries
+    units: queries/min
+  average_query_time:
+    precision: 2
+    units: sec
+  average_time_per_rebuild:
+    precision: 2
+    units: req/min
+
+triggers:
+  - type: trend
+    dname: query_rate
+    direction: UP
+    percentage_change: 300
+    duration: 60
+    window_reference: LAST_WEEK
+    min_value: 3
+  - type: trend
+    dname: average_query_time
+    direction: UP
+    percentage_change: 200
+    duration: 60
+    window_reference: LAST_WEEK
+    min_value: 0.01

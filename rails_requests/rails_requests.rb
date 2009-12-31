@@ -41,7 +41,6 @@ class RailsRequests < Scout::Plugin
     if option(:ignored_actions) && option(:ignored_actions).strip != ''
       begin
         ignored_actions = Regexp.new(option(:ignored_actions))
-        puts ignored_actions.inspect
       rescue
         error("Argument error","Could not understand the regular expression for excluding slow actions: #{option(:ignored_actions)}. #{$!.message}")
       end
@@ -123,7 +122,7 @@ class RailsRequests < Scout::Plugin
     error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
   ensure
     # only run the analyzer if the log file is provided
-    # this make take a couple of minutes on large log files.
+    # this may take a couple of minutes on large log files.
     if @file_found and option(:log) and not option(:log).empty?
       generate_log_analysis(log_path)
     end
@@ -158,9 +157,12 @@ class RailsRequests < Scout::Plugin
         remember(:last_summary_time, last_summary)
         return
       end
-    else
+    else # summary hasn't been run yet ... set last summary time to 1 day ago
       last_summary = now - ONE_DAY
-      remember(:last_summary_time, last_summary)
+      # remember(:last_summary_time, last_summary)
+      # on initial run, save the last summary time as now. otherwise if an error occurs, the 
+      # plugin will attempt to create a summary on each run.
+      remember(:last_summary_time, now) 
     end
     # make sure we get a full run
     if now - last_summary < 60 * 60 * 22

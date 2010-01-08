@@ -55,6 +55,8 @@ class RailsRequests < Scout::Plugin
     slow_requests      = ''
     total_request_time = 0.0
     last_run           = memory(:last_request_time) || Time.now
+    # set to the time of the first request processed (the most recent chronologically)
+    last_request_time  = nil
     # needed to ensure that the analyzer doesn't run if the log file isn't found.
     @file_found        = true 
 
@@ -66,6 +68,7 @@ class RailsRequests < Scout::Plugin
       elsif last_completed and
             line =~ /\AProcessing .+ at (\d+-\d+-\d+ \d+:\d+:\d+)\)/
         time_of_request = Time.parse($1)
+        last_request_time = time_of_request if last_request_time.nil?
         if time_of_request < last_run
           break
         else
@@ -113,7 +116,7 @@ class RailsRequests < Scout::Plugin
       report_data[:slow_requests_percentage] = (request_count == 0) ? 0 : (slow_request_count.to_f / request_count.to_f) * 100.0
 
     end
-    remember(:last_request_time, Time.now)
+    remember(:last_request_time, last_request_time || Time.now)
     report(report_data)
   rescue Errno::ENOENT => error
     @file_found = false

@@ -1,0 +1,49 @@
+metadata:
+  disk_used:
+    label: Disk Space Used
+    units: GB
+    precision: 0
+  disk_size:
+    label: Disk Size
+    units: GB
+    precision: 0
+  disk_capacity:
+    label: Disk Capacity
+    units: %
+    precision: 0
+  disk_avail:
+    label: Disk Space Available
+    units: GB
+    precision: 0
+    larger_is_better: true
+  cpu_last_minute:
+    precision: 2
+  cpu_last_five_minutes:
+    precision: 2
+  cpu_last_fifteen_minutes:
+    precision: 2
+  mem_total:
+    label: Memory Total
+    units: MB
+    precision: 0
+    larger_is_better: true
+  mem_used:
+    label: Memory Used
+    units: MB
+    precision: 0
+  mem_used_percent:
+    label: % Memory Used
+    units: %
+    precision: 0
+  mem_swap_total:
+    lable: Swap Total
+    units: MB
+    precision: 0
+  mem_swap_used:
+    label: Swap Used
+    units: MB
+    precision: 0
+  mem_swap_percent:
+    label: % Swap Used
+    units: %
+    precision: 0

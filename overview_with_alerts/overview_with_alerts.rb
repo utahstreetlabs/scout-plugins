@@ -25,7 +25,7 @@ class Overview < Scout::Plugin
       notes: For calculating CPU load. If left blank, autodetects through /proc/cpuinfo
       default: 1
   EOS
-  
+
   # memory contants
   UNITS = { "b" => 1,
             "k" => 1024,

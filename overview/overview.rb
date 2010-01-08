@@ -10,6 +10,22 @@
 #
 class Overview < Scout::Plugin
 
+  OPTIONS=<<-EOS
+  options:
+    disk_command:
+      name: df Command
+      notes: The command used to display free disk space
+      default: "df -h"
+    disk_filesystem:
+      name: Filesystem
+      notes: The filesystem to check usage, if none specified, uses the first listed
+      default:
+    num_processors:
+      name: Number of Processors
+      notes: For calculating CPU load. If left blank, autodetects through /proc/cpuinfo
+      default: 1
+  EOS
+  
   # memory contants
   UNITS = { "b" => 1,
             "k" => 1024,

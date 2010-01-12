@@ -29,6 +29,12 @@ metadata:
     delimiter: ","
     precision: "0"
     label: Total
+  scheduled: 
+    units: "jobs"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Scheduled
   failing: 
     units: "jobs"
     larger_is_better: "1"
@@ -39,5 +45,5 @@ metadata:
     units: "minutes"
     larger_is_better: "1"
     delimiter: ","
-    precision: "0"
+    precision: "2"
     label: Oldest Waiting

@@ -1,25 +1,23 @@
-require 'rubygems'
-require 'activerecord'
-require 'yaml'
-
-class DelayedJob < ActiveRecord::Base; end
 
 class MonitorDelayedJobs < Scout::Plugin
-  needs 'active_record', 'yaml'
+  needs 'activerecord', 'yaml'
+  
+  require 'activerecord'
+
+  class DelayedJob < ActiveRecord::Base; end
+  
   def build_report
     db_config = YAML::load(File.open(@options['path_to_app'] + '/config/database.yml'))
     ActiveRecord::Base.establish_connection(db_config[@options['rails_env']])
     
-    report 'No. of Jobs' => DelayedJob.count
+    report :total   => DelayedJob.count
+    report :running => DelayedJob.count(:conditions => 'locked_at IS NOT NULL')
+    report :waiting => DelayedJob.count(:conditions => [ 'run_at <= ? AND locked_at IS NULL', Time.now.utc ])
+    report :failing => DelayedJob.count(:conditions => 'attempts > 0')
+    report :failed  => DelayedJob.count(:conditions => 'failed_at IS NOT NULL')
     
-    jobs_by_prio.each do |job|
-      report "Priority #{job.priority} Jobs" => job.count.to_i
+    if oldest = DelayedJob.find(:first, :conditions => [ 'run_at <= ? AND locked_at IS NULL', Time.now.utc ], :order => :id)
+      report :oldest => (Time.now.utc - oldest.created_at) / 60
     end
-  end
-  
-  private
-  
-  def jobs_by_prio
-    DelayedJob.all(:select => 'priority, count(1) AS count', :group => 'priority')
   end
 end

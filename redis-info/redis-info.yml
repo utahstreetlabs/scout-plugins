@@ -1,0 +1,24 @@
+metadata:
+  uptime_in_hours:
+    units: hours
+    larger_is_better: 1
+    precision: 2
+    label: Uptime
+  used_memory_in_mb:
+    units: MB
+    precision: 0
+    label: Used Memory (MB)
+  used_memory_in_kb:
+    units: KB
+    precision: 0
+    label: Used Memory (KB)
+  connections_per_sec:
+    units: req/sec
+    precision: 2
+    label: Connections per Second
+  commands_per_sec:
+    units: com/sec
+    precision: 2
+    label: Commands per Second
+  bgsave_in_progress:
+    label: Background Save in Progress?

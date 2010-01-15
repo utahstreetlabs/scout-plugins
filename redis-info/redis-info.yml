@@ -6,19 +6,34 @@ metadata:
     label: Uptime
   used_memory_in_mb:
     units: MB
+    larger_is_better: 0
     precision: 0
     label: Used Memory (MB)
   used_memory_in_kb:
     units: KB
+    larger_is_better: 0
     precision: 0
     label: Used Memory (KB)
   connections_per_sec:
-    units: req/sec
+    units: conn/sec
+    larger_is_better: 0
     precision: 2
     label: Connections per Second
   commands_per_sec:
     units: com/sec
+    larger_is_better: 0
     precision: 2
     label: Commands per Second
+  changes_since_last_save:
+    larger_is_better: 0
+    precision: 0
+  connected_clients:
+    larger_is_better: 0
+    precision: 0
+  connected_slaves:
+    larger_is_better: 0
+    precision: 0
   bgsave_in_progress:
+    larger_is_better: 0
+    precision: 0
     label: Background Save in Progress?

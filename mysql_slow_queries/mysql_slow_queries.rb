@@ -17,6 +17,9 @@ require "digest/md5"
 class ScoutMysqlSlow < Scout::Plugin
   needs "elif"
   
+  # In order to limit the alert body size, only the first +MAX_QUERIES+ are listed in the alert body. 
+  MAX_QUERIES = 10
+  
   def build_report
     log_file_path = option("mysql_slow_log").to_s.strip
     if log_file_path.empty?
@@ -59,23 +62,26 @@ class ScoutMysqlSlow < Scout::Plugin
     # calculate per-second
     report(:slow_queries => slow_queries.size/(elapsed_seconds/60.to_f))
     if slow_queries.any?
-      alert( build_alert(slow_queries) )
+      alert( build_alert(slow_queries,log_file_path) )
     end
     remember(:last_run,Time.now)
   rescue Errno::ENOENT => error
       error("Unable to find the MySQL slow queries log file", "Could not find a MySQL slow queries log file at: #{option(:mysql_slow_log)}. Please ensure the path is correct.")    
   end
   
-  def build_alert(slow_queries)
+  def build_alert(slow_queries,log_file_path)
     subj = "Maximum Query Time exceeded on #{slow_queries.size} #{slow_queries.size > 1 ? 'queries' : 'query'}"
     body = String.new
-    slow_queries.each do |sq|
+    slow_queries[0..(MAX_QUERIES-1)].each do |sq|
       body << "<strong>#{sq[:query_time]} sec query on #{sq[:time_of_query]}:</strong>\n"
       sql = sq[:sql].join
       sql = sql.size > 500 ? sql[0..500] + '...' : sql
       body << sql
       body << "\n\n"
     end # slow_queries.each
+    if slow_queries.size > MAX_QUERIES
+      body << "#{slow_queries.size-MAX_QUERIES} more slow queries occured. See the slow queries log file (located at #{log_file_path}) for more details."
+    end
     {:subject => subj, :body => body}
   end # build_alert
 end

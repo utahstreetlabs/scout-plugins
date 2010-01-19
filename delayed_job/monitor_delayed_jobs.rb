@@ -24,8 +24,8 @@ class MonitorDelayedJobs < Scout::Plugin
     report :failed    => DelayedJob.count(:conditions => 'failed_at IS NOT NULL')
     
     # The oldest job that hasn't yet been run, in minutes
-    if oldest = DelayedJob.find(:first, :conditions => [ 'run_at <= ? AND locked_at IS NULL AND attempts = 0', Time.now.utc ], :order => :id)
-      report :oldest => (Time.now.utc - oldest.created_at) / 60
+    if oldest = DelayedJob.find(:first, :conditions => [ 'run_at <= ? AND locked_at IS NULL AND attempts = 0', Time.now.utc ], :order => :run_at)
+      report :oldest => (Time.now.utc - oldest.run_at) / 60
     else
       report :oldest => 0
     end

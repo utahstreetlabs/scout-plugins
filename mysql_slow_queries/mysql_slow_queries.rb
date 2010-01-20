@@ -31,7 +31,7 @@ class ScoutMysqlSlow < Scout::Plugin
     all_queries = [] # all of the queries from the log file are stored here
     slow_queries = [] # only the slow queries are placed here
     sql = []
-    last_run = Time.now-(60*60*24*365*10)#memory(:last_run) || Time.now
+    last_run = memory(:last_run) || Time.now
     minimum_query_time = option(:minimum_query_time).to_f
     current_time = Time.now
     

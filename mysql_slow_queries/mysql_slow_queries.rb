@@ -37,7 +37,7 @@ class ScoutMysqlSlow < Scout::Plugin
     # starts at the bottom of the log file, moving up
     Elif.foreach(log_file_path) do |line|
       if line =~ /^# Query_time: ([\d\.]+) .+$/
-        query_time = $1.to_i
+        query_time = $1
         all_queries << {:query_time => query_time, :sql => sql.reverse}
         sql = []
       elsif line =~ /^\# Time: (.*)$/

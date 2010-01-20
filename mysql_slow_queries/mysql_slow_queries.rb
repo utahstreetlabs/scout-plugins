@@ -28,16 +28,17 @@ class ScoutMysqlSlow < Scout::Plugin
     end
 
     slow_query_count = 0
-    all_queries = []
-    slow_queries = []
+    all_queries = [] # all of the queries from the log file are stored here
+    slow_queries = [] # only the slow queries are placed here
     sql = []
-    last_run = memory(:last_run) || Time.now
+    last_run = Time.now-(60*60*24*365*10)#memory(:last_run) || Time.now
+    minimum_query_time = option(:minimum_query_time).to_f
     current_time = Time.now
     
     # starts at the bottom of the log file, moving up
     Elif.foreach(log_file_path) do |line|
       if line =~ /^# Query_time: ([\d\.]+) .+$/
-        query_time = $1
+        query_time = $1.to_f
         all_queries << {:query_time => query_time, :sql => sql.reverse}
         sql = []
       elsif line =~ /^\# Time: (.*)$/
@@ -46,8 +47,9 @@ class ScoutMysqlSlow < Scout::Plugin
         t2 = last_run
         if t < t2
           break
-        else
-          all_queries.each do |sq|
+        elsif all_queries.any?
+          sq = all_queries.last
+          if sq[:query_time] >= minimum_query_time
             # this query occurred after the last time this plugin ran and should be counted.  
             slow_queries << sq.merge({:time_of_query => t})
           end

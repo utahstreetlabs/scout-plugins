@@ -17,7 +17,19 @@ metadata:
     label: Memory Usage
     units: MB
     precision: 0
-    
+  total_rss:          
+    label: Total Memory Usage
+    units: MB
+    precision: 0
+  num_processes:          
+    label: Number of Processes
+    units: ""
+    precision: 0
+  restarts:          
+    label: Restarts
+    units: ""
+    precision: 0
+     
 triggers:
   - type: peak
     dname: memory

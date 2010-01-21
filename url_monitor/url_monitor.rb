@@ -1,3 +1,4 @@
+require 'benchmark'
 require 'net/http'
 require 'net/https'
 require 'uri'
@@ -18,28 +19,37 @@ class UrlMonitor < Scout::Plugin
       url = "http://#{url}"
     end
     
-    response = http_response(url)
-    report(:status => response.class.to_s)
+    response = nil
+    response_time = Benchmark.realtime do
+      response = http_response(url)
+    end
+
+    report(:status => response.class.to_s[/^Net::HTTP(.*)$/, 1],
+           :response_time => response_time)
     
     is_up = valid_http_response?(response) ? 1 : 0
     report(:up => is_up)
     
     if is_up != memory(:was_up)
       if is_up == 0
-        alert( "The URL [#{url}] is not responding",
-               "URL: #{url}\n\nStatus: #{response}" ) 
+        alert("The URL [#{url}] is not responding", unindent(<<-EOF))
+            URL: #{url}
+
+            Code: #{response.code}
+            Status: #{response.class.to_s[/^Net::HTTP(.*)$/, 1]}
+            Message: #{response.message}
+          EOF
         remember(:down_at => Time.now)
       else
         if memory(:was_up) && memory(:down_at)
           alert( "The URL [#{url}] is responding again",
-                 "URL: #{url}\n\nStatus: #{response}. " +
-                 "Was unresponsive for #{(Time.now - memory(:down_at)).to_i} seconds" )
+                 "URL: #{url}\n\nStatus: #{response.class.to_s[/^Net::HTTP(.*)$/, 1]}. " +
+                 "Was unresponsive for #{(Time.now - memory(:down_at)).to_i} seconds")
         else
           alert( "The URL [#{url}] is responding",
-                 "URL: #{url}\n\nStatus: #{response}. " )
+                 "URL: #{url}\n\nStatus: #{response.class.to_s[/^Net::HTTP(.*)$/, 1]}. ")
         end
         memory.delete(:down_at)
-            
       end
     end
     
@@ -89,6 +99,9 @@ class UrlMonitor < Scout::Plugin
         
     return response
   end
-  
-  
+
+  def unindent(string)
+    indentation = string[/\A\s*/]
+    string.strip.gsub(/^#{indentation}/, "")
+  end
 end

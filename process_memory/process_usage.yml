@@ -14,7 +14,7 @@ options:
     
 metadata:
   memory:          
-    label: Memory Usage
+    label: Largest Process Memory Usage
     units: MB
     precision: 0
   total_rss:          

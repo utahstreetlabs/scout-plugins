@@ -13,10 +13,10 @@ class NetworkThroughput < Scout::Plugin
 
       in_bytes, in_packets, out_bytes, out_packets = cols.values_at(0, 1, 8, 9).collect { |i| i.to_i }
 
-      counter("#{iface}_in",          in_bytes / 1024.0,  :per => :second, :round => 2)
-      counter("#{iface}_in_packets",  in_packets,         :per => :second, :round => 2)
-      counter("#{iface}_out",         out_bytes / 1024.0, :per => :second, :round => 2)
-      counter("#{iface}_out_packets", out_packets,        :per => :second, :round => 2)
+      local_counter("#{iface}_in",          in_bytes / 1024.0,  :per => :second, :round => 2)
+      local_counter("#{iface}_in_packets",  in_packets,         :per => :second, :round => 2)
+      local_counter("#{iface}_out",         out_bytes / 1024.0, :per => :second, :round => 2)
+      local_counter("#{iface}_out_packets", out_packets,        :per => :second, :round => 2)
     end
   rescue Exception => e
     error("#{e.class}: #{e.message}\n\t#{e.backtrace.join("\n\t")}")
@@ -24,7 +24,7 @@ class NetworkThroughput < Scout::Plugin
 
   private
   # Would be nice to be part of scout internals
-  def counter(name, value, options = {})
+  def local_counter(name, value, options = {})
     current_time = Time.now
 
     if data = memory(name)

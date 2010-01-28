@@ -18,12 +18,12 @@ metadata:
     units: conn/sec
     larger_is_better: 0
     precision: 2
-    label: Connections per Second
+    label: Connections
   commands_per_sec:
     units: com/sec
     larger_is_better: 0
     precision: 2
-    label: Commands per Second
+    label: Commands
   changes_since_last_save:
     larger_is_better: 0
     precision: 0

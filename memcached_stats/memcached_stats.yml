@@ -1,0 +1,86 @@
+--- 
+metadata: !map:HashWithIndifferentAccess 
+  uptime_in_hours: !map:HashWithIndifferentAccess 
+    units: hours
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Uptime
+  used_memory_in_mb: !map:HashWithIndifferentAccess 
+    units: mb
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Used memory
+  sets_per_sec: !map:HashWithIndifferentAccess 
+    units: second
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "2"
+    label: Sets
+  threads: !map:HashWithIndifferentAccess 
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Threads
+  used_memory_in_kb: !map:HashWithIndifferentAccess 
+    units: kb
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "2"
+    label: Used memory
+  limit_maxbytes: !map:HashWithIndifferentAccess 
+    units: bytes
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Limit
+  misses_per_sec: !map:HashWithIndifferentAccess 
+    units: second
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "2"
+    label: Misses
+  hits_per_sec: !map:HashWithIndifferentAccess 
+    units: second
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "2"
+    label: Hits
+  gets_per_sec: !map:HashWithIndifferentAccess 
+    units: second
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "2"
+    label: Gets
+  kilobytes_written_per_sec: !map:HashWithIndifferentAccess 
+    units: kb/second
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "2"
+    label: Written
+  curr_items: !map:HashWithIndifferentAccess 
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Current items
+  curr_connections: !map:HashWithIndifferentAccess 
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Current connections
+  total_items: !map:HashWithIndifferentAccess 
+    units: ""
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Total items
+  kilobytes_read_per_sec: !map:HashWithIndifferentAccess 
+    units: kb/second
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "2"
+    label: Read per sec

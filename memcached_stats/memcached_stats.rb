@@ -33,7 +33,6 @@ class MemcachedStats < Scout::Plugin
     counter(:hits_per_sec,          stats['get_hits'].to_i,      :per => :second)
     counter(:misses_per_sec,        stats['get_misses'].to_i,    :per => :second)
     counter(:evictions_per_sec,     stats['evictions'].to_i,     :per => :second)
-    counter(:evictions_per_sec,     stats['evictions'].to_i,     :per => :second)
 
     counter(:kilobytes_read_per_sec,    (stats['bytes_read'].to_i / KILOBYTE),    :per => :second)
     counter(:kilobytes_written_per_sec, (stats['bytes_written'].to_i / KILOBYTE), :per => :second)

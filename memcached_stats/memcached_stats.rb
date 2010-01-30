@@ -26,7 +26,7 @@ class MemcachedStats < Scout::Plugin
 
     report(:uptime_in_hours   => stats['uptime'].to_f / 60 / 60)
     report(:used_memory_in_mb => stats['bytes'].to_i / MEGABYTE)
-    report(:used_memory_in_kb => stats['bytes'].to_i / KILOBYTE)
+    report(:limit_in_mb       => stats['limit_maxbytes'].to_i / MEGABYTE)
 
     counter(:gets_per_sec,          stats['cmd_get'].to_i,       :per => :second)
     counter(:sets_per_sec,          stats['cmd_set'].to_i,       :per => :second)
@@ -39,7 +39,7 @@ class MemcachedStats < Scout::Plugin
     counter(:kilobytes_written_per_sec, (stats['bytes_written'].to_i / KILOBYTE), :per => :second)
 
     # General Stats
-    %w(curr_items total_items curr_connections threads limit_maxbytes).each do |key|
+    %w(curr_items total_items curr_connections threads).each do |key|
       report(key => stats[key])
     end
   end

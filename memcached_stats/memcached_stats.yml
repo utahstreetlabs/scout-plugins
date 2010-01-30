@@ -13,7 +13,7 @@ metadata: !map:HashWithIndifferentAccess
     precision: "0"
     label: Used memory
   sets_per_sec: !map:HashWithIndifferentAccess 
-    units: second
+    units: / second
     larger_is_better: "0"
     delimiter: ","
     precision: "2"
@@ -24,32 +24,26 @@ metadata: !map:HashWithIndifferentAccess
     delimiter: ","
     precision: "0"
     label: Threads
-  used_memory_in_kb: !map:HashWithIndifferentAccess 
-    units: kb
-    larger_is_better: "0"
-    delimiter: ","
-    precision: "2"
-    label: Used memory
-  limit_maxbytes: !map:HashWithIndifferentAccess 
-    units: bytes
+  limit_in_mb: !map:HashWithIndifferentAccess 
+    units: mb
     larger_is_better: "0"
     delimiter: ","
     precision: "0"
     label: Limit
   misses_per_sec: !map:HashWithIndifferentAccess 
-    units: second
+    units: / second
     larger_is_better: "0"
     delimiter: ","
     precision: "2"
     label: Misses
   hits_per_sec: !map:HashWithIndifferentAccess 
-    units: second
+    units: / second
     larger_is_better: "1"
     delimiter: ","
     precision: "2"
     label: Hits
   gets_per_sec: !map:HashWithIndifferentAccess 
-    units: second
+    units: / second
     larger_is_better: "0"
     delimiter: ","
     precision: "2"
@@ -84,3 +78,9 @@ metadata: !map:HashWithIndifferentAccess
     delimiter: ","
     precision: "2"
     label: Read per sec
+  evictions_per_sec: !map:HashWithIndifferentAccess 
+    units: / second
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "2"
+    label: Evictions

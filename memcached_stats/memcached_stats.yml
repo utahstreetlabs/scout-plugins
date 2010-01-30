@@ -38,7 +38,7 @@ metadata: !map:HashWithIndifferentAccess
     label: Misses
   hits_per_sec: !map:HashWithIndifferentAccess 
     units: per second
-    larger_is_better: "1"
+    larger_is_better: "0"
     delimiter: ","
     precision: "2"
     label: Hits

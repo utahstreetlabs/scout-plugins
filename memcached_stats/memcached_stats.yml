@@ -13,7 +13,7 @@ metadata: !map:HashWithIndifferentAccess
     precision: "0"
     label: Used memory
   sets_per_sec: !map:HashWithIndifferentAccess 
-    units: / second
+    units: per second
     larger_is_better: "0"
     delimiter: ","
     precision: "2"
@@ -31,25 +31,25 @@ metadata: !map:HashWithIndifferentAccess
     precision: "0"
     label: Limit
   misses_per_sec: !map:HashWithIndifferentAccess 
-    units: / second
+    units: per second
     larger_is_better: "0"
     delimiter: ","
     precision: "2"
     label: Misses
   hits_per_sec: !map:HashWithIndifferentAccess 
-    units: / second
+    units: per second
     larger_is_better: "1"
     delimiter: ","
     precision: "2"
     label: Hits
   gets_per_sec: !map:HashWithIndifferentAccess 
-    units: / second
+    units: per second
     larger_is_better: "0"
     delimiter: ","
     precision: "2"
     label: Gets
   kilobytes_written_per_sec: !map:HashWithIndifferentAccess 
-    units: kb/second
+    units: kb per second
     larger_is_better: "0"
     delimiter: ","
     precision: "2"
@@ -73,13 +73,13 @@ metadata: !map:HashWithIndifferentAccess
     precision: "0"
     label: Total items
   kilobytes_read_per_sec: !map:HashWithIndifferentAccess 
-    units: kb/second
+    units: kb per second
     larger_is_better: "0"
     delimiter: ","
     precision: "2"
     label: Read per sec
   evictions_per_sec: !map:HashWithIndifferentAccess 
-    units: / second
+    units: per second
     larger_is_better: "0"
     delimiter: ","
     precision: "2"

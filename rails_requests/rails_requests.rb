@@ -3,8 +3,26 @@ require "stringio"
 
 class RailsRequests < Scout::Plugin
   ONE_DAY    = 60 * 60 * 24
-  TEST_USAGE = "#{File.basename($0)} log LOG max_request_length MAX_REQUEST_LENGTH last_run LAST_RUN"
-  
+
+  OPTIONS=<<-EOS
+  log:
+    name: Full Path to Rails Log File
+    notes: "The full path to the Ruby on Rails log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/production.log)."
+  max_request_length:
+    name: Max Request Length (sec)
+    notes: If any request length is larger than this amount, an alert is generated (see Advanced for more options)
+    default: 3
+  rla_run_time:
+    name: Request Log Analyzer Run Time (HH:MM)
+    notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
+    default: '23:45'
+    attributes: advanced
+  ignored_actions:
+    name: Ignored Actions
+    notes: Takes a regex. Any URIs matching this regex will NOT count as slow requests, and you will NOT be notified if they exceed Max Request Length. Matching actions will still be included in daily summaries.
+    attributes: advanced
+  EOS
+
   needs "elif"
   needs "request_log_analyzer"
   
@@ -23,7 +41,6 @@ class RailsRequests < Scout::Plugin
     if option(:ignored_actions) && option(:ignored_actions).strip != ''
       begin
         ignored_actions = Regexp.new(option(:ignored_actions))
-        puts ignored_actions.inspect
       rescue
         error("Argument error","Could not understand the regular expression for excluding slow actions: #{option(:ignored_actions)}. #{$!.message}")
       end
@@ -38,6 +55,8 @@ class RailsRequests < Scout::Plugin
     slow_requests      = ''
     total_request_time = 0.0
     last_run           = memory(:last_request_time) || Time.now
+    # set to the time of the first request processed (the most recent chronologically)
+    last_request_time  = nil
     # needed to ensure that the analyzer doesn't run if the log file isn't found.
     @file_found        = true 
 
@@ -49,6 +68,7 @@ class RailsRequests < Scout::Plugin
       elsif last_completed and
             line =~ /\AProcessing .+ at (\d+-\d+-\d+ \d+:\d+:\d+)\)/
         time_of_request = Time.parse($1)
+        last_request_time = time_of_request if last_request_time.nil?
         if time_of_request < last_run
           break
         else
@@ -92,8 +112,11 @@ class RailsRequests < Scout::Plugin
       avg                                  = total_request_time /
                                              request_count
       report_data[:average_request_length] = sprintf("%.2f", avg)
+
+      report_data[:slow_requests_percentage] = (request_count == 0) ? 0 : (slow_request_count.to_f / request_count.to_f) * 100.0
+
     end
-    remember(:last_request_time, Time.now)
+    remember(:last_request_time, last_request_time || Time.now)
     report(report_data)
   rescue Errno::ENOENT => error
     @file_found = false
@@ -102,7 +125,7 @@ class RailsRequests < Scout::Plugin
     error("#{error.class}:  #{error.message}", error.backtrace.join("\n"))
   ensure
     # only run the analyzer if the log file is provided
-    # this make take a couple of minutes on large log files.
+    # this may take a couple of minutes on large log files.
     if @file_found and option(:log) and not option(:log).empty?
       generate_log_analysis(log_path)
     end
@@ -137,9 +160,12 @@ class RailsRequests < Scout::Plugin
         remember(:last_summary_time, last_summary)
         return
       end
-    else
+    else # summary hasn't been run yet ... set last summary time to 1 day ago
       last_summary = now - ONE_DAY
-      remember(:last_summary_time, last_summary)
+      # remember(:last_summary_time, last_summary)
+      # on initial run, save the last summary time as now. otherwise if an error occurs, the 
+      # plugin will attempt to create a summary on each run.
+      remember(:last_summary_time, now) 
     end
     # make sure we get a full run
     if now - last_summary < 60 * 60 * 22

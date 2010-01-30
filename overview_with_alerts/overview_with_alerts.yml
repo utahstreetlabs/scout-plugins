@@ -47,12 +47,3 @@ metadata:
     label: % Swap Used
     units: %
     precision: 0
-
-
-triggers:
-  - type: peak
-    dname: disk_capacity
-    max_value: 85
-  - type: peak
-    dname: cpu_last_minute
-    max_value: 3

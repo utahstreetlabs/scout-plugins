@@ -1,0 +1,49 @@
+options:
+  path_to_app:
+    name: Full Path to the Rails Application
+  rails_env:
+    name: Rails environment that should be used
+    default: production
+metadata: 
+  failed:
+    units: "jobs"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Failed
+  running:
+    units: "jobs"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Running
+  waiting:
+    units: "jobs"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Waiting
+  total: 
+    units: "jobs"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Total
+  scheduled: 
+    units: "jobs"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Scheduled
+  failing: 
+    units: "jobs"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Failing
+  oldest: 
+    units: "minutes"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "2"
+    label: Oldest Waiting

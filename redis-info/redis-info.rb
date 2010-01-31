@@ -13,6 +13,9 @@ class RedisMonitor < Scout::Plugin
   client_password:
     name: Password
     notes: If you're using Redis' password authentication.
+  lists:
+    name: Lists to monitor
+    notes: A comma-separated list of list keys to monitor the length of.
   EOS
 
   KILOBYTE = 1024
@@ -39,6 +42,13 @@ class RedisMonitor < Scout::Plugin
     # General Stats
     %w(changes_since_last_save connected_clients connected_slaves bgsave_in_progress).each do |key|
       report(key => info[key.intern])
+    end
+
+    if option(:lists)
+      lists = option(:lists).split(',')
+      lists.each do |list|
+        report("#{list} list length" => redis.llen(list))
+      end
     end
   end
 

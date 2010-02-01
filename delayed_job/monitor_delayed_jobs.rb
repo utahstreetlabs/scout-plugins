@@ -11,7 +11,7 @@ class MonitorDelayedJobs < Scout::Plugin
     default: production
   log:
     name: Full Path to Delayed Job Log File
-    notes: "The full path to the Delayed Job log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/delayed_job.log). If not provided, will look for the log file in RAILS_ROOT/log/delayed_job."
+    notes: "The full path to the Delayed Job log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/delayed_job.log). If not provided, the plugin will look for the log file in RAILS_ROOT/log/delayed_job."
     attributes: advanced
   rla_run_time:
     name: Request Log Analyzer Run Time (HH:MM)

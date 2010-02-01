@@ -11,11 +11,13 @@ class MonitorDelayedJobs < Scout::Plugin
     default: production
   log:
     name: Full Path to Delayed Job Log File
-    notes: "The full path to the Delayed Job log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/delayed_job.log)."
+    notes: "The full path to the Delayed Job log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/delayed_job.log). If not provided, will look for the log file in RAILS_ROOT/log/delayed_job."
+    attributes: advanced
   rla_run_time:
     name: Request Log Analyzer Run Time (HH:MM)
     notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
     default: '23:45'
+    attributes: advanced
   EOS
   
   needs 'activerecord', 'yaml', 'elif', 'request_log_analyzer'
@@ -38,9 +40,7 @@ class MonitorDelayedJobs < Scout::Plugin
     
     db_config = YAML::load(File.open(app_path + '/config/database.yml'))
     ActiveRecord::Base.establish_connection(db_config[option(:rails_env)])
-    
-    log_path = option(:log)
-    
+        
     report_hash = Hash.new
     
     # ALl jobs
@@ -65,10 +65,12 @@ class MonitorDelayedJobs < Scout::Plugin
       report_hash[:oldest] = 0
     end
     
-    if log_path && !log_path.empty?
+    log_path = (option(:log) and !option(:log).empty?) ? option(:log) : app_path + '/log/delayed_job.log'
+
+    if File.exist?(log_path)
       generate_log_analysis(log_path)
     else
-      return error("A path to the Delayed Job log file wasn't provided.","Please provide the full path to the Delayed Job log file to analyze (ie - /var/www/apps/APP_NAME/log/delayed_job.log)")
+      return error("Couldn't find the Delayed Job log file.","The Delayed Job log file wasn't found at this location: #{log_path}. Please provide the full path to the Delayed Job log file to analyze in the advanced options (ie - /var/www/apps/APP_NAME/log/delayed_job.log)")
     end
   end
   

@@ -5,6 +5,7 @@ class MonitorDelayedJobs < Scout::Plugin
   OPTIONS=<<-EOS
   path_to_app:
     name: Full Path to the Rails Application
+    notes: "The full path to the Rails application (ex: /var/www/apps/APP_NAME/current)."
   rails_env:
     name: Rails environment that should be used
     default: production

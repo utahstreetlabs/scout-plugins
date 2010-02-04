@@ -1,0 +1,9 @@
+<% PASSWORD_FILE = File.join(File.dirname(__FILE__), 'dbpassword') %>
+# MySQL 5.x
+production:
+  adapter: mysql
+  encoding: utf8                                              
+  database: ibridge_production_copy
+  pool: 5
+  username: root
+  password: <%= File.read(PASSWORD_FILE).chomp if File.readable? PASSWORD_FILE %>

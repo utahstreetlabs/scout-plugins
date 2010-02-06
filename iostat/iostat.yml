@@ -1,5 +1,4 @@
-
-     metadata:
+metadata:
   rps:
     label: Reads/sec
     precision: 0

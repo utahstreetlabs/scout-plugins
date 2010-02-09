@@ -2,7 +2,7 @@ class ApacheLoad < Scout::Plugin
   needs "net/http", "uri"
 	def build_report
     url = URI.parse(option("server_url"))
-		req = Net::HTTP::Get.new(url.path + "?" + url.query)
+		req = Net::HTTP::Get.new(url.path + "?" + url.query.to_s)
     res = Net::HTTP.start(url.host, url.port) {|http|
       http.request(req)
     }

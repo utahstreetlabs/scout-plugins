@@ -1,3 +1,4 @@
+$VERBOSE=false
 
 class MonitorDelayedJobs < Scout::Plugin
   ONE_DAY    = 60 * 60 * 24
@@ -11,10 +12,10 @@ class MonitorDelayedJobs < Scout::Plugin
     default: production
   EOS
   
-  needs 'activerecord', 'yaml'
   
-  require 'activerecord'
+  needs 'active_record', 'yaml', 'erb'
 
+  require 'active_record'
   class DelayedJob < ActiveRecord::Base; end
   
   def build_report
@@ -32,7 +33,7 @@ class MonitorDelayedJobs < Scout::Plugin
       return error("The database config file could not be found.", "The database config file could not be found at: #{db_config_path}. Please ensure the path to the Rails Application is correct.")
     end
     
-    db_config = YAML::load(File.open(db_config_path))
+    db_config = YAML::load(ERB.new(File.read(db_config_path)).result)
     ActiveRecord::Base.establish_connection(db_config[option(:rails_env)])
         
     report_hash = Hash.new

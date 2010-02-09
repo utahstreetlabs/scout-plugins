@@ -1,6 +1,16 @@
 class Iostat < Scout::Plugin
+
+  OPTIONS=<<-EOS
+  device:
+    name: Device
+    notes: The device to check, eg 'sda1'. If not specified, uses the device mounted at '/'
+  EOS
+
   def build_report
     stats = iostat(device)
+
+    error("Device not found: #{device} -- check your plugin settings.",
+          "FYI, mount returns:\n#{`mount`}") and return if !stats
 
     counter(:rps,   stats['rio'],        :per => :second)
     counter(:wps,   stats['wio'],        :per => :second)
@@ -28,14 +38,14 @@ class Iostat < Scout::Plugin
     IO.foreach('/proc/diskstats') do |line|
       entry = Hash[*COLUMNS.zip(line.strip.split(/\s+/).collect { |v| Integer(v) rescue v }).flatten]
 
-      return entry if entry['name'] == dev
+      return entry if dev.include?(entry['name'])
     end
 
     nil
   end
 
   def device
-    option('device') || `mount`.grep(/ \/ /)[0].split[0].split('/').last
+    option('device') || `mount`.split("\n").grep(/ \/ /)[0].split[0]
   end
 
   # Would be nice to be part of scout internals

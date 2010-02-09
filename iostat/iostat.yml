@@ -1,9 +1,3 @@
-options:
-  device:
-    name: Device
-    notes: The device to check, eg 'sda1'. If not specified, uses the device mounted at '/'
-    default:
-      
 metadata:
   rps:
     label: Reads/sec

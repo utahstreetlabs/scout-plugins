@@ -15,7 +15,7 @@ class PassengerStatus < Scout::Plugin
   def parse_data(data)
     stats = {}
     
-    data.each do |line|
+    data.each_line do |line|
       #line = line.gsub(/\e\[\d+m/,'')
       if line =~ /^max\s+=\s(\d+)/
         stats["max"] = $1

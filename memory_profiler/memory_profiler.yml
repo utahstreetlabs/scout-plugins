@@ -1,37 +1,26 @@
 metadata:
-  Memory Total:          
+  mem_total:
+    label: Memory Total
     units: MB
     precision: 0
     larger_is_better: true
-  Memory Used:          
+  mem_used:
+    label: Memory Used
     units: MB
     precision: 0
-  % Memory Used:          
+  mem_used_percent:
+    label: % Memory Used
     units: %
     precision: 0
-  Swap Total:          
+  mem_swap_total:
+    lable: Swap Total
     units: MB
     precision: 0
-  Swap Used:          
+  mem_swap_used:
+    label: Swap Used
     units: MB
     precision: 0
-  % Swap Used:          
+  mem_swap_percent:
+    label: % Swap Used
     units: %
     precision: 0
-    
-triggers:
-  - type: peak
-    dname: % Swap Used
-    max_value: 50
-  # swap usage increases by 30% compared to last week
-  - type: trend
-    dname: % Swap Used
-    direction: UP
-    percentage_change: 30
-    duration: 60
-    window_reference: LAST_WEEK 
-    min_value: 10
-    
-visualization_options:
-  - % Swap Used
-  - % Memory Used

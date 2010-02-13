@@ -1,26 +1,25 @@
 metadata:
-  mem_total:
-    label: Memory Total
+  Memory Total:
     units: MB
     precision: 0
     larger_is_better: true
-  mem_used:
-    label: Memory Used
+  Memory Used:
     units: MB
     precision: 0
-  mem_used_percent:
-    label: % Memory Used
+  % Memory Used:
     units: %
     precision: 0
-  mem_swap_total:
-    lable: Swap Total
+  Swap Total:
     units: MB
     precision: 0
-  mem_swap_used:
-    label: Swap Used
+  Swap Used:
     units: MB
     precision: 0
-  mem_swap_percent:
-    label: % Swap Used
+  % Swap Used:
     units: %
     precision: 0
+
+triggers:
+  - type: peak
+    dname: % Swap Used
+    max_value: 50

@@ -26,12 +26,12 @@ class MemoryProfiler < Scout::Plugin
     # will be passed at the end to report to Scout
     report_data = Hash.new
 
-    report_data[:mem_total] = mem_total
-    report_data[:mem_used] = mem_used
-    report_data[:mem_used_percent] = mem_percent_used
+    report_data['Memory Total'] = mem_total
+    report_data['Memory Used'] = mem_used
+    report_data['% Memory Used'] = mem_percent_used
 
-    report_data[:mem_swap_total] = swap_total
-    report_data[:mem_swap_used] = swap_used
+    report_data['Swap Total'] = swap_total
+    report_data['Swap Used'] = swap_used
     unless  swap_total == 0   
       report_data['% Swap Used'] = swap_percent_used
     end

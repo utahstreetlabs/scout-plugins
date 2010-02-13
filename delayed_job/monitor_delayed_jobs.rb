@@ -1,3 +1,4 @@
+$VERBOSE=false
 
 class MonitorDelayedJobs < Scout::Plugin
   ONE_DAY    = 60 * 60 * 24
@@ -11,10 +12,10 @@ class MonitorDelayedJobs < Scout::Plugin
     default: production
   EOS
   
-  needs 'activerecord', 'yaml', 'erb'
   
-  require 'activerecord'
+  needs 'active_record', 'yaml', 'erb'
 
+  require 'active_record'
   class DelayedJob < ActiveRecord::Base; end
   
   def build_report

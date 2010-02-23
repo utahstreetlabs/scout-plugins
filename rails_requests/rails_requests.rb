@@ -102,6 +102,7 @@ class RailsRequests < Scout::Plugin
     # Calculate the average request time and request rate if there are any requests
     if request_count > 0
       # calculate the time btw runs in minutes
+      # this is used to generate rates.
       interval = (Time.now-@last_run)
 
       interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second

@@ -22,6 +22,9 @@ class RailsRequests < Scout::Plugin
     notes: Takes a regex. Any URIs matching this regex will NOT count as slow requests, and you will NOT be notified if they exceed Max Request Length. Matching actions will still be included in daily summaries.
     attributes: advanced
   EOS
+  
+  RAILS_22_COMPLETED = /\A(Completed in (\d+)ms .+) \[(\S+)\]\Z/
+  RAILS_21_COMPLETED = /\A(Completed in (\d+\.\d+) .+) \[(\S+)\]\Z/
 
   needs "elif"
   needs "request_log_analyzer"
@@ -60,10 +63,11 @@ class RailsRequests < Scout::Plugin
     # needed to ensure that the analyzer doesn't run if the log file isn't found.
     @file_found        = true 
 
+    p last_run.inspect
     Elif.foreach(log_path) do |line|
-      if line =~ /\A(Completed in (\d+)ms .+) \[(\S+)\]\Z/        # newer Rails
+      if line =~ RAILS_21_COMPLETED        
         last_completed = [$2.to_i / 1000.0, $1, $3]
-      elsif line =~ /\A(Completed in (\d+\.\d+) .+) \[(\S+)\]\Z/  # older Rails
+      elsif line =~ RAILS_21_COMPLETED 
         last_completed = [$2.to_f, $1, $3]
       elsif last_completed and
             line =~ /\AProcessing .+ at (\d+-\d+-\d+ \d+:\d+:\d+)\)/
@@ -85,7 +89,7 @@ class RailsRequests < Scout::Plugin
         end # request should be analyzed
       end
     end
-    
+    p request_count.inspect
     # Create a single alert that holds all of the requests that exceeded the +max_request_length+.
     if (count = slow_request_count) > 0
       alert( "Maximum Time(#{option(:max_request_length)} sec) exceeded on #{count} request#{'s' if count != 1}",
@@ -127,7 +131,8 @@ class RailsRequests < Scout::Plugin
     # only run the analyzer if the log file is provided
     # this may take a couple of minutes on large log files.
     if @file_found and option(:log) and not option(:log).empty?
-      generate_log_analysis(log_path)
+      p 'enable daily report!!!!'
+      #generate_log_analysis(log_path)
     end
   end
   

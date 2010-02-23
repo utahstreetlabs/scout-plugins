@@ -23,8 +23,12 @@ class RailsRequests < Scout::Plugin
     attributes: advanced
   EOS
   
-  RAILS_22_COMPLETED = /\A(Completed in (\d+)ms .+) \[(\S+)\]\Z/
-  RAILS_21_COMPLETED = /\A(Completed in (\d+\.\d+) .+) \[(\S+)\]\Z/
+  # These regexes should handle standard rails logger and syslogger
+  RAILS_22_COMPLETED = /(Completed in (\d+)ms .+) \[(\S+)\]\Z/
+  RAILS_21_COMPLETED = /(Completed in (\d+\.\d+) .+) \[(\S+)\]\Z/
+  
+  PROCESSING = /Processing .+ at (\d+-\d+-\d+ \d+:\d+:\d+)\)/
+  
 
   needs "elif"
   needs "request_log_analyzer"
@@ -58,22 +62,22 @@ class RailsRequests < Scout::Plugin
     slow_requests      = ''
     total_request_time = 0.0
     last_run           = memory(:last_request_time) || Time.now
+    last_run_as_timestamp = last_run.strftime('%Y%m%d%H%M%S').to_i
     # set to the time of the first request processed (the most recent chronologically)
     last_request_time  = nil
     # needed to ensure that the analyzer doesn't run if the log file isn't found.
     @file_found        = true 
 
-    p last_run.inspect
     Elif.foreach(log_path) do |line|
-      if line =~ RAILS_21_COMPLETED        
+      if line =~ RAILS_22_COMPLETED        
         last_completed = [$2.to_i / 1000.0, $1, $3]
       elsif line =~ RAILS_21_COMPLETED 
         last_completed = [$2.to_f, $1, $3]
       elsif last_completed and
-            line =~ /\AProcessing .+ at (\d+-\d+-\d+ \d+:\d+:\d+)\)/
-        time_of_request = Time.parse($1)
+            line =~ PROCESSING
+        time_of_request = convert_timestamp($1)
         last_request_time = time_of_request if last_request_time.nil?
-        if time_of_request < last_run
+        if time_of_request < last_run_as_timestamp
           break
         else
           request_count += 1
@@ -89,7 +93,7 @@ class RailsRequests < Scout::Plugin
         end # request should be analyzed
       end
     end
-    p request_count.inspect
+
     # Create a single alert that holds all of the requests that exceeded the +max_request_length+.
     if (count = slow_request_count) > 0
       alert( "Maximum Time(#{option(:max_request_length)} sec) exceeded on #{count} request#{'s' if count != 1}",
@@ -98,7 +102,7 @@ class RailsRequests < Scout::Plugin
     # Calculate the average request time and request rate if there are any requests
     if request_count > 0
       # calculate the time btw runs in minutes
-      interval = (Time.now-last_run)
+      interval = (Time.now-@last_run)
 
       interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
       interval = interval/60 # convert to minutes
@@ -120,7 +124,7 @@ class RailsRequests < Scout::Plugin
       report_data[:slow_requests_percentage] = (request_count == 0) ? 0 : (slow_request_count.to_f / request_count.to_f) * 100.0
 
     end
-    remember(:last_request_time, last_request_time || Time.now)
+    remember(:last_request_time, Time.parse(last_request_time.to_s) || Time.now)
     report(report_data)
   rescue Errno::ENOENT => error
     @file_found = false
@@ -131,12 +135,16 @@ class RailsRequests < Scout::Plugin
     # only run the analyzer if the log file is provided
     # this may take a couple of minutes on large log files.
     if @file_found and option(:log) and not option(:log).empty?
-      p 'enable daily report!!!!'
-      #generate_log_analysis(log_path)
+      generate_log_analysis(log_path)
     end
   end
   
   private
+  
+  # Time.parse is slow...useses this to compare times.
+  def convert_timestamp(value)
+    value.gsub(/[^0-9]/, '')[0...14].to_i
+  end
   
   def silence
     old_verbose, $VERBOSE, $stdout = $VERBOSE, nil, StringIO.new

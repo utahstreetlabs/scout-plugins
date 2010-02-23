@@ -142,7 +142,7 @@ class RailsRequests < Scout::Plugin
   
   private
   
-  # Time.parse is slow...useses this to compare times.
+  # Time.parse is slow...uses this to compare times.
   def convert_timestamp(value)
     value.gsub(/[^0-9]/, '')[0...14].to_i
   end

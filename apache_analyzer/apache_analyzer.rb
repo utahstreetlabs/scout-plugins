@@ -37,7 +37,13 @@ class ApacheAnalyzer < Scout::Plugin
     Elif.foreach(log_path) do |line|
       lines_scanned += 1
       if line =~ /(\d{2}\/[A-Za-z]{3}\/\d{4})(.)(\d{2}:\d{2}:\d{2})(?: .\d{4})?/
+        # OPTIMIZE - use custom date parsing as Time.parse is 50% - 66% slower. See rails_requests.rb
         # CLF logs time with a ':' between date and time; Time.parse doesn't like this
+        # 24/Feb/2010:14:04:57
+        # >> $1
+        # => "24/Feb/2010"
+        # >> $3
+        # => "14:04:57"
         time_of_request = Time.parse("#{$1} #{$3}")
         last_request_time = time_of_request if last_request_time.nil?
         if time_of_request <= previous_last_request_time

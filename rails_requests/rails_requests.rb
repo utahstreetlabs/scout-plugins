@@ -61,8 +61,9 @@ class RailsRequests < Scout::Plugin
     last_completed     = nil
     slow_requests      = ''
     total_request_time = 0.0
-    last_run           = memory(:last_request_time) || Time.now
-    last_run_as_timestamp = last_run.strftime('%Y%m%d%H%M%S').to_i
+    previous_last_request_time = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
+    # Time#parse is slow so uses a specially-formatted integer to compare request times.
+    previous_last_request_time_as_timestamp = previous_last_request_time.strftime('%Y%m%d%H%M%S').to_i
     # set to the time of the first request processed (the most recent chronologically)
     last_request_time  = nil
     # needed to ensure that the analyzer doesn't run if the log file isn't found.
@@ -77,7 +78,7 @@ class RailsRequests < Scout::Plugin
             line =~ PROCESSING
         time_of_request = convert_timestamp($1)
         last_request_time = time_of_request if last_request_time.nil?
-        if time_of_request < last_run_as_timestamp
+        if time_of_request <= previous_last_request_time_as_timestamp
           break
         else
           request_count += 1
@@ -103,7 +104,7 @@ class RailsRequests < Scout::Plugin
     if request_count > 0
       # calculate the time btw runs in minutes
       # this is used to generate rates.
-      interval = (Time.now-@last_run)
+      interval = (Time.now-(@last_run || previous_last_request_time))
 
       interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
       interval = interval/60 # convert to minutes

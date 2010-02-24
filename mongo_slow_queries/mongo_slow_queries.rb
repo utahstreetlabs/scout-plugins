@@ -7,15 +7,21 @@ require "digest/md5"
 class ScoutMongoSlow < Scout::Plugin
   needs "mongo"
   
-  def enable_profiling(admin)
+  def enable_profiling(db)
     # set to slow_only or higher (>100ms)
-    if admin.profiling_level == :off
-      admin.profiling_level = :slow_only
+    if db.profiling_level == :off
+      db.profiling_level = :slow_only
     end
   end
   
   def build_report
     database = option("database").to_s.strip
+    server = option("server").to_s.strip
+    
+    if server.empty?
+      server ||= "localhost"
+    end
+    
     if database.empty?
       return error( "A Mongo database name was not provided.",
                     "Slow query logging requires you to specify the database to profile." )
@@ -28,10 +34,8 @@ class ScoutMongoSlow < Scout::Plugin
       threshold = threshold_str.to_i
     end
 
-    db = Mongo::Connection.new.db(database)
-    admin = db.admin
-    
-    enable_profiling(admin)
+    db = Mongo::Connection.new(server).db(database)
+    enable_profiling(db)
     
     slow_query_count = 0
     slow_queries = []
@@ -45,7 +49,7 @@ class ScoutMongoSlow < Scout::Plugin
     # reads most recent first
     # {"ts"=>Wed Dec 16 02:44:03 UTC 2009, "info"=>"query twitter_follow.system.profile ntoreturn:0 reslen:1236 nscanned:8  \nquery: { query: { millis: { $gte: 5 } }, orderby: { $natural: -1 } }  nreturned:8 bytes:1220", "millis"=>57.0}
     cursor.each do |prof|
-      ts = Time.parse(prof['ts'])
+      ts = prof['ts']
       break if ts < last_run
       
       slow_queries << prof

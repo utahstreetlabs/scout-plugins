@@ -5,6 +5,11 @@ options:
     default: "http://www.scoutapp.com/"
 
 metadata:
+  response_time:          
+    label: Response Time
+    units: secs
+    precision: 2
+    larger_is_better: false
   up:          
     label: Url Reachable
     precision: 0

@@ -1,15 +1,22 @@
 Redis Info Plugin
 ======================
 Created by [Matt Todd](http://twitter.com/mtodd)
+Extended by [Ches Martin](http://whiskeyandgrits.net)
 
 Overview
 ------------
 
-Reports Redis memory used and changes since the last save.
+Reports Redis metrics extracted from Redis' `info` command:
+
+ * Uptime
+ * Memory Used
+ * Connections per Second
+ * Commands per Second
+ * Connected Clients
+ * Connected Slaves
+ * Changes Since Last Save
 
 Dependencies
 ------------
 
-Requires access to the `redis-cli info` command.
-
-
+Requires the ruby Redis client library ('redis' gem).

@@ -1,36 +1,25 @@
-options:
-  command:
-    name: iostat Command
-    notes: The command used to display IO statistics
-    default: "iostat -dxk"
-  interval:
-    name: iostat Interval
-    notes: Report current usage as the average over this many seconds.
-    default: 3
-  device:
-    name: Device
-    notes: The device to check, eg 'sda1'. If not specified, uses the device mounted at '/'
-    default:
-      
 metadata:
   rps:
     label: Reads/sec
+    precision: 0
   wps:
     label: Writes/sec
+    precision: 0
   rkbps:
     label: Read kBps
+    precision: 1
     units: kB/s
   wkbps:
     label: Write kBps
+    precision: 1
     units: kB/s
   await:
     label: I/O Wait
-    units: ms
-  svctm:
-    label: Service Time
+    precision: 1
     units: ms
   util:
     label: Utilization
+    precision: 0
     units: %
 
 triggers:

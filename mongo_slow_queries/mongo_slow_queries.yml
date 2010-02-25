@@ -2,11 +2,3 @@ metadata:
   slow_queries:
     units: /min
     precision: 2
-triggers:
-  - type: trend
-    dname: slow_queries
-    direction: UP
-    percentage_change: 30
-    duration: 120
-    window_reference: LAST_WEEK
-    min_value: 100

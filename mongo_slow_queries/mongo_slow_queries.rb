@@ -8,18 +8,17 @@ class ScoutMongoSlow < Scout::Plugin
   needs "mongo"
 
   OPTIONS=<<-EOS
-    options:
-      database:
-        name: Mongo Database
-        notes: Name of the MongoDB database to profile
-      server:
-        name: Mongo Server
-        notes: Where mongodb is running
-        default: localhost
-      threshold:
-        name: Threshold (millisecs)
-        notes: Slow queries are >= this time in milliseconds to execute (min. 100)
-        default: 100
+    database:
+      name: Mongo Database
+      notes: Name of the MongoDB database to profile
+    server:
+      name: Mongo Server
+      notes: Where mongodb is running
+      default: localhost
+    threshold:
+      name: Threshold (millisecs)
+      notes: Slow queries are >= this time in milliseconds to execute (min. 100)
+      default: 100
   EOS
 
   def enable_profiling(db)

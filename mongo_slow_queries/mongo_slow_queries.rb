@@ -6,7 +6,22 @@ require "digest/md5"
 
 class ScoutMongoSlow < Scout::Plugin
   needs "mongo"
-  
+
+  OPTIONS=<<-EOS
+    options:
+      database:
+        name: Mongo Database
+        notes: Name of the MongoDB database to profile
+      server:
+        name: Mongo Server
+        notes: Where mongodb is running
+        default: localhost
+      threshold:
+        name: Threshold (millisecs)
+        notes: Slow queries are >= this time in milliseconds to execute (min. 100)
+        default: 100
+  EOS
+
   def enable_profiling(db)
     # set to slow_only or higher (>100ms)
     if db.profiling_level == :off
@@ -36,8 +51,7 @@ class ScoutMongoSlow < Scout::Plugin
 
     db = Mongo::Connection.new(server).db(database)
     enable_profiling(db)
-    
-    slow_query_count = 0
+
     slow_queries = []
     last_run = memory(:last_run) || Time.now
     current_time = Time.now

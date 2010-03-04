@@ -8,10 +8,9 @@
 #
 # Options Supported: disk_command, num_processors (leave blank to auto-detect)
 #
-class Overview < Scout::Plugin
+class OverviewWithAlerts < Scout::Plugin
 
   OPTIONS=<<-EOS
-  options:
     disk_command:
       name: df Command
       notes: The command used to display free disk space
@@ -24,6 +23,17 @@ class Overview < Scout::Plugin
       name: Number of Processors
       notes: For calculating CPU load. If left blank, autodetects through /proc/cpuinfo
       default: 1
+    disk_used_threshold:
+      name: Disk Used Threshold
+      notes: Alert me when disk used % exceeds this
+      default: 85
+    memory_used_threshold:
+      name: Memory Used Threshold
+      notes: "Alert me when memory used + swap used exceeds this"
+      default: 95
+    minutes_between_notifications:
+      notes: Alert emails will be sent out every X minutes while a threshold is exceeded
+      default: 29
   EOS
 
   # memory contants
@@ -52,11 +62,14 @@ class Overview < Scout::Plugin
   # ----------------------------------------------------
   # Memory
   def do_memory
+    memory_used_threshold=option(:memory_used_threshold).to_i
+    minutes_between_notifications=option(:minutes_between_notifications).to_i
+
     # will be passed at the end to report to Scout
     report_data = Hash.new
 
     mem_info = {}
-    `cat /proc/meminfo`.each_line do |line|
+    shell("cat /proc/meminfo").each_line do |line|
       _, key, value = *line.match(/^(\w+):\s+(\d+)\s/)
       mem_info[key] = value.to_i
     end
@@ -74,9 +87,6 @@ class Overview < Scout::Plugin
     swap_total = mem_info['SwapTotal'] / 1024
     swap_free = mem_info['SwapFree'] / 1024
     swap_used = swap_total - swap_free
-    unless swap_total == 0
-      swap_percent_used = (swap_used / swap_total.to_f * 100).to_i
-    end
 
     report_data[:mem_total] = mem_total
     report_data[:mem_used] = mem_used
@@ -85,13 +95,41 @@ class Overview < Scout::Plugin
     report_data[:mem_swap_total] = swap_total
     report_data[:mem_swap_used] = swap_used
     unless  swap_total == 0
+      swap_percent_used = (swap_used / swap_total.to_f * 100).to_i
       report_data[:mem_swap_percent] = swap_percent_used
     end
 
+    # Send memory alert if needed
+    mem_exceeded = (mem_used + swap_used).to_f/(swap_total + mem_total).to_f*100.0 >= memory_used_threshold
+    if mem_exceeded
+
+      remember(:mem_exceeded_at => Time.now) if !memory(:mem_exceeded_at)
+
+      minutes_since_mem_exceeded = memory(:mem_exceeded_at) ? ((Time.now - memory(:mem_exceeded_at)).to_i / 60) : 0
+      minutes_since_mem_notification = ((Time.now - memory(:mem_notification_sent_at)).to_i / 60) if memory(:mem_notification_sent_at)
+
+      if !memory(:mem_notification_sent_at) or (minutes_since_mem_notification >= minutes_between_notifications)
+        body="Memory + swap usage has exceeded #{memory_used_threshold}%. Memory: #{mem_total}KB. Swap: #{swap_total}KB. "
+        subject="Memory Usage Alert"
+        if minutes_since_mem_exceeded > 1 # adjustments if this is a continuation email
+          body<< "Duration: #{minutes_since_mem_exceeded} minutes."
+          subject = "Memory Usage Alert CONT"
+        end
+        alert(subject, body)
+        remember(:mem_notification_sent_at => Time.now)
+      end
+
+      remember(:mem_exceeded_at => memory(:mem_exceeded_at)) if memory(:mem_exceeded_at)
+      remember(:mem_notification_sent_at => memory(:mem_notification_sent_at)) if memory(:mem_notification_sent_at)
+    else
+      if memory(:mem_exceeded_at)
+        alert("Memory Usage OK", "Memory + swap usage is below #{memory_used_threshold}%")
+      end
+    end
 
   rescue Exception => e
     if e.message =~ /No such file or directory/
-      error('Unable to find /proc/meminfo',%Q(Unable to find /proc/meminfo. Please ensure your operationg system supports procfs:
+      error('Unable to find /proc/meminfo',%Q(Unable to find /proc/meminfo. Please ensure your operating system supports procfs:
          http://en.wikipedia.org/wiki/Procfs)
       )
     else
@@ -104,10 +142,12 @@ class Overview < Scout::Plugin
   #---------------------------------------------------------
   # Disk Usage
 
- def do_disk_usage
+  def do_disk_usage
     ENV['lang'] = 'C' # forcing English for parsing
+    disk_used_threshold=option(:disk_used_threshold).to_i
+    minutes_between_notifications=option(:minutes_between_notifications).to_i
     df_command   = option(:disk_command) || "df -h"
-    df_output    = `#{df_command}`
+    df_output    = shell(df_command)
 
     df_lines = []
     parse_file_systems(df_output) { |row| df_lines << row }
@@ -131,7 +171,7 @@ class Overview < Scout::Plugin
     # capacity on osx = Use% on Linux ... convert anything that isn't size, used, or avail to capacity ... a big assumption?
     assumed_capacity = df_line.find { |name,value| !['size','used','avail'].include?(name.downcase.gsub(/\n/,''))}
     df_line.delete(assumed_capacity.first)
-    df_line['capacity'] = assumed_capacity.last
+    df_line['capacity'] = percent_used = assumed_capacity.last
 
     # will be passed at the end to report to Scout
     report_data = Hash.new
@@ -139,6 +179,33 @@ class Overview < Scout::Plugin
     df_line.each do |name, value|
       report_data["disk_#{name.downcase.strip}".to_sym] = clean_value(value)
     end
+
+    if percent_used.to_f > option(:disk_used_threshold).to_f
+      remember(:disk_exceeded_at => Time.now) if !memory(:disk_exceeded_at)
+
+      minutes_since_disk_exceeded = memory(:disk_exceeded_at) ? ((Time.now - memory(:disk_exceeded_at)).to_i / 60) : 0
+      minutes_since_disk_notification = ((Time.now - memory(:disk_notification_sent_at)).to_i / 60) if memory(:disk_notification_sent_at)
+
+      if !memory(:disk_notification_sent_at) or (minutes_since_disk_notification >= minutes_between_notifications)
+        body="Disk usage has exceeded #{disk_used_threshold}%, at #{percent_used}%. "
+        body<< "Duration: #{minutes_since_disk_exceeded} minutes." if minutes_since_disk_exceeded > 1
+        subject="Disk Usage Alert"
+        if minutes_since_disk_exceeded > 1 # adjustments if this is a continuation email
+          body<< "Duration: #{minutes_since_disk_exceeded} minutes."
+          subject = "Disk Usage Alert CONT"
+        end
+        alert(subject, body)
+        remember(:disk_notification_sent_at => Time.now)
+      end
+
+      remember(:disk_exceeded_at => memory(:disk_exceeded_at)) if memory(:disk_exceeded_at)
+      remember(:disk_notification_sent_at => memory(:disk_notification_sent_at)) if memory(:disk_notification_sent_at)
+    else
+      if memory(:disk_exceeded_at)
+        alert("Disk Usage OK", "Disk usage below #{disk_used_threshold}%, at #{percent_used}%")
+      end
+    end
+
     return report_data
   end
 
@@ -192,7 +259,7 @@ class Overview < Scout::Plugin
   def do_cpu_load
     result={}
     begin
-      if `uptime` =~ /load average(s*): ([\d.]+)(,*) ([\d.]+)(,*) ([\d.]+)\Z/
+      if shell("uptime") =~ /load average(s*): ([\d.]+)(,*) ([\d.]+)(,*) ([\d.]+)\Z/
         result = {:cpu_last_minute          => $2.to_f/get_num_processors,
                   :cpu_last_five_minutes    => $4.to_f/get_num_processors,
                   :cpu_last_fifteen_minutes => $6.to_f/get_num_processors}
@@ -216,7 +283,7 @@ class Overview < Scout::Plugin
 
     # if we didn't get it from memory, try to auto-detect through /proc/cpuinfo
     unless processors && processors > 0
-      if `cat /proc/cpuinfo | grep 'model name' | wc -l` =~ /(\d+)/
+      if shell("cat /proc/cpuinfo | grep 'model name' | wc -l") =~ /(\d+)/
         processors = $1.to_i
       else
         raise "Couldn't use /proc/cpuinfo as expected."
@@ -227,8 +294,10 @@ class Overview < Scout::Plugin
     return processors
   end
 
+  # Use this instead of backticks. It's made a separate method so it can be stubbed
+  def shell(cmd)
+    `#{cmd}`
+  end
+
 end
-
-
-
 

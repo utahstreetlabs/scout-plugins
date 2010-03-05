@@ -1,0 +1,4 @@
+metadata:
+  slow_queries:
+    units: /min
+    precision: 2

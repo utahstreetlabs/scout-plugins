@@ -1,0 +1,49 @@
+metadata:
+  messages_ready:
+    units: "msg"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Messages Ready
+  messages_unacknowledged:
+    units: "msg"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Messages Unacked
+  messages_uncommitted:
+    units: "msg"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Messages Uncommitted
+  messages:
+    units: "msg"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Messages
+  acks_uncommitted:
+    units: "acks"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Acks Uncommitted
+  consumers:
+    units: "consumers"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Consumers
+  transactions:
+    units: "txns"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Transactions
+  memory:
+    units: "MB"
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "2"
+    label: Memory

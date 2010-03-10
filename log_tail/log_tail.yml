@@ -1,0 +1,14 @@
+options:
+  logfile:
+    default: /var/log/system.log
+    name: Full path to the log file you'd like to monitor
+  date_regex:
+    default: (^\w*\b \d{1,2} [\d:]{8})
+    name: Regular Expression to extract the date from the logfile. Detects the syslog format by default.
+  alert_regex:
+    default: 
+    name: Generate an alert for all log entries matching this regular expression (optional)
+metadata:
+  lines:
+    units: /min
+    precision: 2

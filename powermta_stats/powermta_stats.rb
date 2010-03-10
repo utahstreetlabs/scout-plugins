@@ -1,6 +1,14 @@
-%w( nokogiri open-uri ).each { |f| require f }
-
 class PowermtaStats < Scout::Plugin
+
+  needs 'nokogiri','open-uri'
+
+  OPTIONS=<<-EOS
+    uri:
+    name: URI
+    notes: URI of the PowerMTA Web Interface url
+    default: http://127.0.0.1:8080/
+  EOS
+
   def build_report
     uri = option(:uri) || "http://127.0.0.1:8080/"
     status = Nokogiri::XML(open(uri+'status?format=xml'))

@@ -18,10 +18,13 @@ metadata:
     larger_is_better: true
   cpu_last_minute:
     precision: 2
+    label: CPU Last Minute
   cpu_last_five_minutes:
     precision: 2
+    label: CPU Last Five Minutes
   cpu_last_fifteen_minutes:
     precision: 2
+    label: CPU Last Fifteen Minutes
   mem_total:
     label: Memory Total
     units: MB

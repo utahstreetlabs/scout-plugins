@@ -1,3 +1,6 @@
+# This will scan an entire log file and generate an RLA report on the file with no date restrictions. Used for 
+# testing.
+
 require "time"
 require "stringio"
 
@@ -62,7 +65,8 @@ class RailsRequests < Scout::Plugin
     last_completed     = nil
     slow_requests      = ''
     total_request_time = 0.0
-    previous_last_request_time = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
+    p 'Testing - setting previous request last time to 1/1/2010'
+    previous_last_request_time = Time.parse('2010-01-01')
     
     # Time#parse is slow so uses a specially-formatted integer to compare request times.
     previous_last_request_time_as_timestamp = previous_last_request_time.strftime('%Y%m%d%H%M%S').to_i
@@ -138,7 +142,9 @@ class RailsRequests < Scout::Plugin
   ensure
     # only run the analyzer if the log file is provided
     # this may take a couple of minutes on large log files.
-    if @file_found and option(:log) and not option(:log).empty?
+    
+    # Testing - running log analysis
+    if true #@file_found and option(:log) and not option(:log).empty?
       generate_log_analysis(log_path)
     end
   end
@@ -167,7 +173,8 @@ class RailsRequests < Scout::Plugin
       run_minutes = 45
     end
     now = Time.now
-    if last_summary = memory(:last_summary_time)
+    p 'Testing - Running RLA'
+    if false #last_summary = memory(:last_summary_time)
       if now.hour > run_hour       or
         ( now.hour == run_hour     and
           now.min  >= run_minutes ) and

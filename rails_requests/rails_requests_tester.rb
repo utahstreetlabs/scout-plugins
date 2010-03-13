@@ -371,7 +371,7 @@ class Elif
     # beginning of the file, send the last line in the buffer to the caller.  
     # (This may be +nil+, if the buffer has been exhausted.)
     # 
-    return @line_buffer.pop if @line_buffer.size > 2 or @current_pos.zero?
+    return @line_buffer.pop if @line_buffer.size > 2 or @current_pos <= 0
         
     # 
     # Read more bytes and prepend them to the first (likely partial) line in the
@@ -386,7 +386,7 @@ class Elif
       # back a step, to give us new bytes to read.
       #
       @current_pos -= @read_size
-      if @current_pos >= 0  
+      if @current_pos > 0
         @file.seek(@current_pos, IO::SEEK_SET) 
         chunk = @file.read(@read_size)
       end

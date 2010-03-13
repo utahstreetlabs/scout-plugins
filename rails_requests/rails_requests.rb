@@ -364,7 +364,7 @@ class Elif
     # beginning of the file, send the last line in the buffer to the caller.  
     # (This may be +nil+, if the buffer has been exhausted.)
     # 
-    return @line_buffer.pop if @line_buffer.size > 2 or @current_pos.zero?
+    return @line_buffer.pop if @line_buffer.size > 2 or @current_pos <= 0
         
     # 
     # Read more bytes and prepend them to the first (likely partial) line in the
@@ -372,17 +372,17 @@ class Elif
     # 
     chunk = String.new
     # read from the file and exit when a segment is read that contains the +set_string+.
-    while chunk and chunk !~ /#{sep_string}/ and @current_pos >= 0   
+    while chunk and chunk !~ /#{sep_string}/ and @current_pos > 0   
       # 
       # If we made it this far, we need to read more data to try and find the 
       # beginning of a line or the beginning of the file.  Move the file pointer
       # back a step, to give us new bytes to read.
       #
       @current_pos -= @read_size
-      if @current_pos >= 0  
+      if @current_pos > 0
         @file.seek(@current_pos, IO::SEEK_SET) 
         chunk = @file.read(@read_size)
-      end      
+      end
     end
     
     @line_buffer[0] = "#{chunk}#{@line_buffer[0]}"

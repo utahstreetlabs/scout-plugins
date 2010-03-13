@@ -3,6 +3,20 @@ require "stringio"
 
 class ApacheAnalyzer < Scout::Plugin
   ONE_DAY    = 60 * 60 * 24
+  
+  OPTIONS=<<-EOS
+  log:
+    name: Full Path to Apache Log File
+    notes: "The full path to the Apache log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/access_log)."
+  format:
+    name: Apache Log format
+    notes: defaults to 'common'. Or specify custom log format, like %v %h %l %u %t \"%r\" %>s %b time:%D
+    default: common
+  rla_run_time:
+    name: Request Log Analyzer Run Time (HH:MM)
+    notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
+    default: '23:45'
+  EOS
 
   needs "elif"
   needs "request_log_analyzer"
@@ -15,16 +29,24 @@ class ApacheAnalyzer < Scout::Plugin
     request_count = 0
     lines_scanned = 0
     report_data = { :request_rate     => 0, :lines_scanned => 0 }
-    last_run = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
+    previous_last_request_time = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
+    # set to the time of the first request processed (the most recent chronologically)
+    last_request_time  = nil  
 
     # read backward, counting lines
     Elif.foreach(log_path) do |line|
       lines_scanned += 1
       if line =~ /(\d{2}\/[A-Za-z]{3}\/\d{4})(.)(\d{2}:\d{2}:\d{2})(?: .\d{4})?/
+        # OPTIMIZE - use custom date parsing as Time.parse is 50% - 66% slower. See rails_requests.rb
         # CLF logs time with a ':' between date and time; Time.parse doesn't like this
+        # 24/Feb/2010:14:04:57
+        # >> $1
+        # => "24/Feb/2010"
+        # >> $3
+        # => "14:04:57"
         time_of_request = Time.parse("#{$1} #{$3}")
-
-        if time_of_request < last_run
+        last_request_time = time_of_request if last_request_time.nil?
+        if time_of_request <= previous_last_request_time
           break
         else
           request_count += 1
@@ -36,7 +58,7 @@ class ApacheAnalyzer < Scout::Plugin
     # calculate request_rate
     if request_count > 0
       # calculate the time btw runs in minutes
-      interval = (Time.now-last_run)
+      interval = (Time.now-(@last_run || previous_last_request_time))
       interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
       interval = interval/60 # convert to minutes
       interval = interval.to_f
@@ -48,7 +70,7 @@ class ApacheAnalyzer < Scout::Plugin
     end
 
     # report data
-    remember(:last_request_time, Time.now)
+    remember(:last_request_time, Time.parse(last_request_time.to_s) || Time.now)
     report_data[:lines_scanned] = lines_scanned
     report(report_data)
 

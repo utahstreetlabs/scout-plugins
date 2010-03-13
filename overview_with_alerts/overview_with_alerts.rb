@@ -82,11 +82,13 @@ class OverviewWithAlerts < Scout::Plugin
     mem_total = mem_info['MemTotal'] / 1024
     mem_free = (mem_info['MemFree'] + mem_info['Buffers'] + mem_info['Cached']) / 1024
     mem_used = mem_total - mem_free
-    mem_percent_used = (mem_used / mem_total.to_f * 100).to_i
+    #mem_percent_used = (mem_used / mem_total.to_f * 100).to_i # old_way
 
     swap_total = mem_info['SwapTotal'] / 1024
     swap_free = mem_info['SwapFree'] / 1024
     swap_used = swap_total - swap_free
+
+    mem_percent_used = (mem_used + swap_used).to_f/(swap_total + mem_total).to_f*100.0
 
     report_data[:mem_total] = mem_total
     report_data[:mem_used] = mem_used
@@ -100,7 +102,7 @@ class OverviewWithAlerts < Scout::Plugin
     end
 
     # Send memory alert if needed
-    mem_exceeded = (mem_used + swap_used).to_f/(swap_total + mem_total).to_f*100.0 >= memory_used_threshold
+    mem_exceeded = mem_percent_used >= memory_used_threshold
     if mem_exceeded
 
       remember(:mem_exceeded_at => Time.now) if !memory(:mem_exceeded_at)
@@ -187,7 +189,7 @@ class OverviewWithAlerts < Scout::Plugin
       minutes_since_disk_notification = ((Time.now - memory(:disk_notification_sent_at)).to_i / 60) if memory(:disk_notification_sent_at)
 
       if !memory(:disk_notification_sent_at) or (minutes_since_disk_notification >= minutes_between_notifications)
-        body="Disk usage has exceeded #{disk_used_threshold}%, at #{percent_used}%. "
+        body="Disk usage has exceeded #{disk_used_threshold}%, currently at #{percent_used} "
         body<< "Duration: #{minutes_since_disk_exceeded} minutes." if minutes_since_disk_exceeded > 1
         subject="Disk Usage Alert"
         if minutes_since_disk_exceeded > 1 # adjustments if this is a continuation email
@@ -202,7 +204,7 @@ class OverviewWithAlerts < Scout::Plugin
       remember(:disk_notification_sent_at => memory(:disk_notification_sent_at)) if memory(:disk_notification_sent_at)
     else
       if memory(:disk_exceeded_at)
-        alert("Disk Usage OK", "Disk usage below #{disk_used_threshold}%, at #{percent_used}%")
+        alert("Disk Usage OK", "Disk usage below #{disk_used_threshold}%, currently at #{percent_used}")
       end
     end
 

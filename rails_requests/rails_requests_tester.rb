@@ -379,13 +379,14 @@ class Elif
     # 
     chunk = String.new
     # read from the file and exit when a segment is read that contains the +set_string+.
-    while chunk and chunk !~ /#{sep_string}/ and @current_pos >= 0 
+    while chunk and chunk !~ /#{sep_string}/
       # 
       # If we made it this far, we need to read more data to try and find the 
       # beginning of a line or the beginning of the file.  Move the file pointer
       # back a step, to give us new bytes to read.
       #
       @current_pos -= @read_size
+      exit if @current_pos < 0  
       @file.seek(@current_pos, IO::SEEK_SET) 
       chunk = @file.read(@read_size)
     end

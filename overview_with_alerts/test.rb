@@ -132,6 +132,32 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
     end
   end
 
+  def test_vps
+    File.stubs(:exist?).with('/proc/user_beancounters').returns(true).once
+    @plugin=OverviewWithAlerts.new(nil,{},@options)
+    @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
+    @plugin.stubs(:shell).with("sudo cat /proc/user_beancounters").returns(FIXTURES[:beancounters]).once
+    @plugin.stubs(:shell).with("uptime").returns(FIXTURES[:uptime]).once
+    res= @plugin.run()
+    assert_equal 512, res[:reports].first[:mem_total]
+    assert_equal 47, res[:reports].first[:mem_used]
+    assert_equal 0, res[:alerts].size
+  end
+
+  def test_vps_host
+    File.stubs(:exist?).with('/proc/user_beancounters').returns(true).once
+    @plugin=OverviewWithAlerts.new(nil,{},@options)
+    @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
+    @plugin.stubs(:shell).with("sudo cat /proc/user_beancounters").returns(FIXTURES[:beancounters_host]).once
+    @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo]).once
+    @plugin.stubs(:shell).with("uptime").returns(FIXTURES[:uptime]).once
+    res= @plugin.run()
+
+    assert_equal 1024, res[:reports].first[:mem_total]
+    assert_equal 421, res[:reports].first[:mem_used]
+
+    assert_equal 0, res[:alerts].size
+  end
 
   FIXTURES=YAML.load(<<-EOS)
     :meminfo: |
@@ -200,6 +226,60 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
       devshm                513M     0  513M   0% /dev/shm
     :uptime: |
       15:36  up 33 days,  3:29, 4 users, load averages: 1.77 0.90 0.64
+    :beancounters: |
+      Version: 2.5
+             uid  resource                     held              maxheld              barrier                limit              failcnt
+           9833:  kmemsize                  3318833              4634057             33554432             37748736                    0
+                  lockedpages                     0                    0                   32                   32                    0
+                  privvmpages                 12032                26321               262144               294912                    0
+                  shmpages                      641                 1297                65536                65536                    0
+                  dummy                           0                    0                    0                    0                    0
+                  numproc                        16                   23                  512                  512                    0
+                  physpages                    4626                15124               131072  9223372036854775807                    0
+                  vmguarpages                     0                    0               262144  9223372036854775807                    0
+                  oomguarpages                 4627                15125               131072  9223372036854775807                    0
+                  numtcpsock                      4                    7                  512                  512                    0
+                  numflock                        3                    5                  512                  512                    0
+                  numpty                          1                    2                   32                   32                    0
+                  numsiginfo                      0                    6                  256                  256                    0
+                  tcpsndbuf                   69888              1266992              5242880              7864320                    0
+                  tcprcvbuf                   65536               291584              5242880              7864320                    0
+                  othersockbuf                 9280               284768              1048576              2097152                    0
+                  dgramrcvbuf                     0                16928               131072               131072                    0
+                  numothersock                   13                   23                  512                  512                    0
+                  dcachesize                 282639               307992              1048576              1179648                    0
+                  numfile                       618                  943                 5120                 5120                    0
+                  dummy                           0                    0                    0                    0                    0
+                  dummy                           0                    0                    0                    0                    0
+                  dummy                           0                    0                    0                    0                    0
+                  numiptent                      14                   14                  128                  128                    0
+    :beancounters_host: |
+      Version: 2.5
+             uid  resource                     held              maxheld              barrier                limit              failcnt
+              0:  kmemsize                 29696618             72254634  9223372036854775807  9223372036854775807                    0
+                  lockedpages                  5847                 5855  9223372036854775807  9223372036854775807                    0
+                  privvmpages                469383               633537  9223372036854775807  9223372036854775807                    0
+                  shmpages                      842                 2778  9223372036854775807  9223372036854775807                    0
+                  dummy                           0                    0  9223372036854775807  9223372036854775807                    0
+                  numproc                       152                  290  9223372036854775807  9223372036854775807                    0
+                  physpages                  155069               298835  9223372036854775807  9223372036854775807                    0
+                  vmguarpages                     0                    0  9223372036854775807  9223372036854775807                    0
+                  oomguarpages               155069               298835  9223372036854775807  9223372036854775807                    0
+                  numtcpsock                     13                   98  9223372036854775807  9223372036854775807                    0
+                  numflock                        4                   11  9223372036854775807  9223372036854775807                    0
+                  numpty                          1                    4  9223372036854775807  9223372036854775807                    0
+                  numsiginfo                      1                   27  9223372036854775807  9223372036854775807                    0
+                  tcpsndbuf                  227552               764272  9223372036854775807  9223372036854775807                    0
+                  tcprcvbuf                  212992               684584  9223372036854775807  9223372036854775807                    0
+                  othersockbuf               305912               555576  9223372036854775807  9223372036854775807                    0
+                  dgramrcvbuf                     0                18248  9223372036854775807  9223372036854775807                    0
+                  numothersock                  237                  428  9223372036854775807  9223372036854775807                    0
+                  dcachesize                      0                    0  9223372036854775807  9223372036854775807                    0
+                  numfile                      5967                 8144  9223372036854775807  9223372036854775807                    0
+                  dummy                           0                    0  9223372036854775807  9223372036854775807                    0
+                  dummy                           0                    0  9223372036854775807  9223372036854775807                    0
+                  dummy                           0                    0  9223372036854775807  9223372036854775807                    0
+                  numiptent                      73                   73  9223372036854775807  9223372036854775807                    0
   EOS
 
 end

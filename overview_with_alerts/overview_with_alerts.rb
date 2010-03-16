@@ -65,44 +65,31 @@ class OverviewWithAlerts < Scout::Plugin
     memory_used_threshold=option(:memory_used_threshold).to_i
     minutes_between_notifications=option(:minutes_between_notifications).to_i
 
-    # will be passed at the end to report to Scout
-    report_data = Hash.new
+    # determine whether to use /proc/meminfo or /proc/beancounters
+    if File.exist?('/proc/user_beancounters')
+      lines=shell('sudo cat /proc/user_beancounters').split(/\n/)      
+      lines=lines.slice(2,lines.size-1) # discard the first two lines -- they are version and column headings, respectively
 
-    mem_info = {}
-    shell("cat /proc/meminfo").each_line do |line|
-      _, key, value = *line.match(/^(\w+):\s+(\d+)\s/)
-      mem_info[key] = value.to_i
+      if lines.grep(/^\s*0:/).any? # if a line contains uid=0, this is a VPS host -- use /proc/meminfo instead
+        report_data = use_proc_meminfo()
+      else
+        report_data = {}
+        privvmpages    = lines.grep(/privvmpages/).first.split(/\s+/)
+        oomguarpages   = lines.grep(/oomguarpages/).first.split(/\s+/)
+
+        # values are in pages. Multiply by 4 to get kb, divide 1024 to get MB
+        report_data[:mem_total] = oomguarpages[4].to_i * 4 / 1024
+        report_data[:mem_used]  = privvmpages[2].to_i * 4 / 1024
+        report_data[:mem_used_percent] = (report_data[:mem_used].to_f / report_data[:mem_total].to_f) * 100.0
+        #report_data[:mem_max_burst] = privvmpages[4].to_i * 4 / 1024
+      end
+    else
+      report_data = use_proc_meminfo()
     end
 
-    # memory info is empty - operating system may not support it (why doesn't an exception get raised earlier on mac osx?)
-    if mem_info.empty?
-      raise "No such file or directory"
-    end
-
-    mem_total = mem_info['MemTotal'] / 1024
-    mem_free = (mem_info['MemFree'] + mem_info['Buffers'] + mem_info['Cached']) / 1024
-    mem_used = mem_total - mem_free
-    #mem_percent_used = (mem_used / mem_total.to_f * 100).to_i # old_way
-
-    swap_total = mem_info['SwapTotal'] / 1024
-    swap_free = mem_info['SwapFree'] / 1024
-    swap_used = swap_total - swap_free
-
-    mem_percent_used = (mem_used + swap_used).to_f/(swap_total + mem_total).to_f*100.0
-
-    report_data[:mem_total] = mem_total
-    report_data[:mem_used] = mem_used
-    report_data[:mem_used_percent] = mem_percent_used
-
-    report_data[:mem_swap_total] = swap_total
-    report_data[:mem_swap_used] = swap_used
-    unless  swap_total == 0
-      swap_percent_used = (swap_used / swap_total.to_f * 100).to_i
-      report_data[:mem_swap_percent] = swap_percent_used
-    end
 
     # Send memory alert if needed
-    mem_exceeded = mem_percent_used >= memory_used_threshold
+    mem_exceeded = report_data[:mem_used_percent] >= memory_used_threshold
     if mem_exceeded
 
       remember(:mem_exceeded_at => Time.now) if !memory(:mem_exceeded_at)
@@ -111,7 +98,7 @@ class OverviewWithAlerts < Scout::Plugin
       minutes_since_mem_notification = ((Time.now - memory(:mem_notification_sent_at)).to_i / 60) if memory(:mem_notification_sent_at)
 
       if !memory(:mem_notification_sent_at) or (minutes_since_mem_notification >= minutes_between_notifications)
-        body="Memory + swap usage has exceeded #{memory_used_threshold}%. Memory: #{mem_total}KB. Swap: #{swap_total}KB. "
+        body="Memory usage has exceeded #{memory_used_threshold}%. Memory: #{report_data[:mem_used]}KB."
         subject="Memory Usage Alert"
         if minutes_since_mem_exceeded > 1 # adjustments if this is a continuation email
           body<< "Duration: #{minutes_since_mem_exceeded} minutes."
@@ -125,19 +112,40 @@ class OverviewWithAlerts < Scout::Plugin
       remember(:mem_notification_sent_at => memory(:mem_notification_sent_at)) if memory(:mem_notification_sent_at)
     else
       if memory(:mem_exceeded_at)
-        alert("Memory Usage OK", "Memory + swap usage is below #{memory_used_threshold}%")
+        alert("Memory Usage OK", "Memory usage is below #{memory_used_threshold}%")
       end
     end
 
-  rescue Exception => e
-    if e.message =~ /No such file or directory/
-      error('Unable to find /proc/meminfo',%Q(Unable to find /proc/meminfo. Please ensure your operating system supports procfs:
-         http://en.wikipedia.org/wiki/Procfs)
-      )
-    else
-      raise
+    return report_data
+  end
+
+
+  def use_proc_meminfo
+    report_data={}
+    mem_info = {}
+    shell("cat /proc/meminfo").each_line do |line|
+      _, key, value = *line.match(/^(\w+):\s+(\d+)\s/)
+      mem_info[key] = value.to_i
     end
-  ensure
+
+    mem_total = mem_info['MemTotal'] / 1024
+    mem_free = (mem_info['MemFree'] + mem_info['Buffers'] + mem_info['Cached']) / 1024
+    mem_used = mem_total - mem_free
+
+    swap_total = mem_info['SwapTotal'] / 1024
+    swap_free = mem_info['SwapFree'] / 1024
+    swap_used = swap_total - swap_free
+
+    mem_percent_used = (mem_used + swap_used).to_f/(swap_total + mem_total).to_f*100.0
+
+    report_data[:mem_total] = mem_total
+    report_data[:mem_used] = mem_used
+    report_data[:mem_used_percent] = mem_percent_used
+
+    report_data[:mem_swap_total] = swap_total
+    report_data[:mem_swap_used] = swap_used
+    report_data[:mem_swap_percent] = (swap_used / swap_total.to_f * 100).to_i if  swap_total != 0 # not always set!
+
     return report_data
   end
 

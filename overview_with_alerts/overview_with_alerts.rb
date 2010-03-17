@@ -67,7 +67,7 @@ class OverviewWithAlerts < Scout::Plugin
 
     # determine whether to use /proc/meminfo or /proc/beancounters
     if File.exist?('/proc/user_beancounters')
-      lines=shell('sudo cat /proc/user_beancounters').split(/\n/)      
+      lines=shell('/bin/beanc').split(/\n/)      
       lines=lines.slice(2,lines.size-1) # discard the first two lines -- they are version and column headings, respectively
 
       if lines.grep(/^\s*0:/).any? # if a line contains uid=0, this is a VPS host -- use /proc/meminfo instead

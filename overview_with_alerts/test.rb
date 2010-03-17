@@ -133,7 +133,7 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
   end
 
   def test_vps
-    File.stubs(:exist?).with('/proc/user_beancounters').returns(true).once
+    File.stubs(:exist?).with('/bin/beanc').returns(true).once
     @plugin=OverviewWithAlerts.new(nil,{},@options)
     @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
     @plugin.stubs(:shell).with("/bin/beanc").returns(FIXTURES[:beancounters]).once
@@ -145,7 +145,7 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
   end
 
   def test_vps_host
-    File.stubs(:exist?).with('/proc/user_beancounters').returns(true).once
+    File.stubs(:exist?).with('/bin/beanc').returns(true).once
     @plugin=OverviewWithAlerts.new(nil,{},@options)
     @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
     @plugin.stubs(:shell).with("/bin/beanc").returns(FIXTURES[:beancounters_host]).once

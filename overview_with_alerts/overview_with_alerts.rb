@@ -66,7 +66,7 @@ class OverviewWithAlerts < Scout::Plugin
     minutes_between_notifications=option(:minutes_between_notifications).to_i
 
     # determine whether to use /proc/meminfo or /proc/beancounters
-    if File.exist?('/proc/user_beancounters')
+    if File.exist?('/bin/beanc')
       lines=shell('/bin/beanc').split(/\n/)      
       lines=lines.slice(2,lines.size-1) # discard the first two lines -- they are version and column headings, respectively
 

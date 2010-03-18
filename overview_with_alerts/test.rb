@@ -136,7 +136,7 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
     File.stubs(:exist?).with('/proc/user_beancounters').returns(true).once
     @plugin=OverviewWithAlerts.new(nil,{},@options)
     @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
-    @plugin.stubs(:shell).with("/bin/beanc").returns(FIXTURES[:beancounters]).once
+    @plugin.stubs(:shell).with("beanc").returns(FIXTURES[:beancounters]).once
     @plugin.stubs(:shell).with("uptime").returns(FIXTURES[:uptime]).once
     res= @plugin.run()
     assert_equal 512, res[:reports].first[:mem_total]
@@ -148,7 +148,7 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
     File.stubs(:exist?).with('/proc/user_beancounters').returns(true).once
     @plugin=OverviewWithAlerts.new(nil,{},@options)
     @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
-    @plugin.stubs(:shell).with("/bin/beanc").returns(FIXTURES[:beancounters_host]).once
+    @plugin.stubs(:shell).with("beanc").returns(FIXTURES[:beancounters_host]).once
     @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo]).once
     @plugin.stubs(:shell).with("uptime").returns(FIXTURES[:uptime]).once
     res= @plugin.run()

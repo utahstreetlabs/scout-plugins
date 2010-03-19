@@ -81,6 +81,9 @@ class OverviewWithAlerts < Scout::Plugin
         report_data[:mem_total] = oomguarpages[4].to_i * 4 / 1024
         report_data[:mem_used]  = privvmpages[2].to_i * 4 / 1024
         report_data[:mem_used_percent] = (report_data[:mem_used].to_f / report_data[:mem_total].to_f) * 100.0
+        report_data[:mem_swap_total] = 0
+        report_data[:mem_swap_used] = 0
+        report_data[:mem_swap_percent] = 0
         #report_data[:mem_max_burst] = privvmpages[4].to_i * 4 / 1024
       end
     else

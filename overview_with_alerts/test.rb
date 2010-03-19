@@ -141,7 +141,11 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
     res= @plugin.run()
     assert_equal 512, res[:reports].first[:mem_total]
     assert_equal 47, res[:reports].first[:mem_used]
+    assert_equal 0, res[:reports].first[:mem_swap_total]
+    assert_equal 0, res[:reports].first[:mem_swap_used]
+    assert_equal 0, res[:reports].first[:mem_swap_percent]        
     assert_equal 0, res[:alerts].size
+
   end
 
   def test_vps_host

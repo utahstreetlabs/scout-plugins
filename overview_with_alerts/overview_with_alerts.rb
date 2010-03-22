@@ -33,7 +33,7 @@ class OverviewWithAlerts < Scout::Plugin
       default: 95
     minutes_between_notifications:
       notes: Alert emails will be sent out every X minutes while a threshold is exceeded
-      default: 29
+      default: 720
   EOS
 
   # memory contants

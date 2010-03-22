@@ -41,7 +41,7 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
   def test_memory_alert_repeats
     test_memory_alert
     last_run=Time.now
-    Timecop.travel(Time.now+60*40) do # forty minutes in future
+    Timecop.travel(Time.now+60*60*13) do # 13 hours in future
       @plugin=OverviewWithAlerts.new(last_run,@memory,@options)
       @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
       @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo_alert]).once
@@ -94,7 +94,7 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
   def test_disk_alert_repeats
     test_disk_alert
     last_run=Time.now
-    Timecop.travel(Time.now+60*40) do # forty minutes in future
+    Timecop.travel(Time.now+60*60*13) do # 13 hours in future
       @plugin=OverviewWithAlerts.new(last_run,@memory,@options)
       @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df_alert]).once
       @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo]).once

@@ -30,24 +30,25 @@ class LogWatcher < Scout::Plugin
   def build_report
     return if init()
     
-    last_run = memory(:last_run) || 0
+    last_bytes = memory(:last_bytes) || 0
     current_length = `wc -c #{@log_file_path}`.split(' ')[0].to_i
     count = 0
 
     # don't run it the first time
-    if (last_run > 0 )
-      read_length = current_length - last_run
+    if (last_bytes > 0 )
+      read_length = current_length - last_bytes
       # Check to see if this file was rotated. This occurs when the +current_length+ is less than 
       # the +last_run+. Don't return a count if this occured.
       if read_length >= 0
         count = `tail -c #{read_length} #{@log_file_path} | grep "#{@term}" -c`.strip.to_f
+        p @last_run
         # convert to a rate / min
-        count = count / (Time.now - @last_run)/60
+        count = count / ((Time.now - @last_run)/60)
       else
         count = nil
       end
     end
-    report(:count => count) if count
-    remember(:last_run, current_length)
+    report(:occurances => count) if count
+    remember(:last_bytes, current_length)
   end
 end

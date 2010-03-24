@@ -41,7 +41,7 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
   def test_memory_alert_repeats
     test_memory_alert
     last_run=Time.now
-    Timecop.travel(Time.now+60*40) do # forty minutes in future
+    Timecop.travel(Time.now+60*60*13) do # 13 hours in future
       @plugin=OverviewWithAlerts.new(last_run,@memory,@options)
       @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
       @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo_alert]).once
@@ -94,7 +94,7 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
   def test_disk_alert_repeats
     test_disk_alert
     last_run=Time.now
-    Timecop.travel(Time.now+60*40) do # forty minutes in future
+    Timecop.travel(Time.now+60*60*13) do # 13 hours in future
       @plugin=OverviewWithAlerts.new(last_run,@memory,@options)
       @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df_alert]).once
       @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo]).once
@@ -136,19 +136,23 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
     File.stubs(:exist?).with('/proc/user_beancounters').returns(true).once
     @plugin=OverviewWithAlerts.new(nil,{},@options)
     @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
-    @plugin.stubs(:shell).with("/bin/beanc").returns(FIXTURES[:beancounters]).once
+    @plugin.stubs(:shell).with("beanc").returns(FIXTURES[:beancounters]).once
     @plugin.stubs(:shell).with("uptime").returns(FIXTURES[:uptime]).once
     res= @plugin.run()
     assert_equal 512, res[:reports].first[:mem_total]
     assert_equal 47, res[:reports].first[:mem_used]
+    assert_equal 0, res[:reports].first[:mem_swap_total]
+    assert_equal 0, res[:reports].first[:mem_swap_used]
+    assert_equal 0, res[:reports].first[:mem_swap_percent]        
     assert_equal 0, res[:alerts].size
+
   end
 
   def test_vps_host
     File.stubs(:exist?).with('/proc/user_beancounters').returns(true).once
     @plugin=OverviewWithAlerts.new(nil,{},@options)
     @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
-    @plugin.stubs(:shell).with("/bin/beanc").returns(FIXTURES[:beancounters_host]).once
+    @plugin.stubs(:shell).with("beanc").returns(FIXTURES[:beancounters_host]).once
     @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo]).once
     @plugin.stubs(:shell).with("uptime").returns(FIXTURES[:uptime]).once
     res= @plugin.run()

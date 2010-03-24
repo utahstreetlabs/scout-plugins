@@ -33,7 +33,7 @@ class OverviewWithAlerts < Scout::Plugin
       default: 95
     minutes_between_notifications:
       notes: Alert emails will be sent out every X minutes while a threshold is exceeded
-      default: 29
+      default: 720
   EOS
 
   # memory contants
@@ -67,7 +67,7 @@ class OverviewWithAlerts < Scout::Plugin
 
     # determine whether to use /proc/meminfo or /proc/beancounters
     if File.exist?('/proc/user_beancounters')
-      lines=shell('/bin/beanc').split(/\n/)      
+      lines=shell('beanc').split(/\n/)      
       lines=lines.slice(2,lines.size-1) # discard the first two lines -- they are version and column headings, respectively
 
       if lines.grep(/^\s*0:/).any? # if a line contains uid=0, this is a VPS host -- use /proc/meminfo instead
@@ -81,6 +81,9 @@ class OverviewWithAlerts < Scout::Plugin
         report_data[:mem_total] = oomguarpages[4].to_i * 4 / 1024
         report_data[:mem_used]  = privvmpages[2].to_i * 4 / 1024
         report_data[:mem_used_percent] = (report_data[:mem_used].to_f / report_data[:mem_total].to_f) * 100.0
+        report_data[:mem_swap_total] = 0
+        report_data[:mem_swap_used] = 0
+        report_data[:mem_swap_percent] = 0
         #report_data[:mem_max_burst] = privvmpages[4].to_i * 4 / 1024
       end
     else

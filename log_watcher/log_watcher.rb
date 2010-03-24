@@ -41,7 +41,6 @@ class LogWatcher < Scout::Plugin
       # the +last_run+. Don't return a count if this occured.
       if read_length >= 0
         count = `tail -c #{read_length} #{@log_file_path} | grep "#{@term}" -c`.strip.to_f
-        p @last_run
         # convert to a rate / min
         count = count / ((Time.now - @last_run)/60)
       else

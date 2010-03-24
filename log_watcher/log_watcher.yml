@@ -1,0 +1,11 @@
+metadata:
+  count:
+    unit: /min
+    precision: 2
+triggers:
+  - type: trend
+    dname: count
+    direction: UP
+    percentage_change: 300
+    duration: 60
+    window_reference: LAST_WEEK

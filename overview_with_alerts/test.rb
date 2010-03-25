@@ -49,6 +49,32 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
       res = @plugin.run()
       assert_equal 1, res[:alerts].size
       assert res[:alerts].first[:body].include?("Duration")
+
+      # This nested block tests that a second violation after the first alert (but not yet time for another notification)
+      second_run_memory=res[:memory]
+      last_run=Time.now
+      Timecop.travel(Time.now+60*1) do # another 1 minute in the future
+        @plugin=OverviewWithAlerts.new(last_run,second_run_memory,@options)
+        @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
+        @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo_alert]).once
+        @plugin.stubs(:shell).with("uptime").returns(FIXTURES[:uptime]).once
+
+        res= @plugin.run()
+        assert_equal 0, res[:alerts].size
+
+        # This nested block tests that another violation after the notification period sends another alert
+        third_run_memory=res[:memory]
+        last_run=Time.now
+        Timecop.travel(Time.now+60*60*13) do # another 13 hours in the future
+          @plugin=OverviewWithAlerts.new(last_run,third_run_memory,@options)
+          @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df]).once
+          @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo_alert]).once
+          @plugin.stubs(:shell).with("uptime").returns(FIXTURES[:uptime]).once
+
+          res= @plugin.run()
+          assert_equal 1, res[:alerts].size
+        end
+      end
     end
   end
 
@@ -102,13 +128,39 @@ class OverviewWithAlertsTest < Test::Unit::TestCase
       res = @plugin.run()
       assert_equal 1, res[:alerts].size
       assert res[:alerts].first[:body].include?("Duration")
+
+      # This nested block tests that a second violation after the first alert (but not yet time for another notification)
+      second_run_memory=res[:memory]
+      last_run=Time.now
+      Timecop.travel(Time.now+60*1) do # another 1 minute in the future
+        @plugin=OverviewWithAlerts.new(last_run,second_run_memory,@options)
+        @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df_alert]).once
+        @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo]).once
+        @plugin.stubs(:shell).with("uptime").returns(FIXTURES[:uptime]).once
+
+        res= @plugin.run()
+        assert_equal 0, res[:alerts].size
+
+        # This nested block tests that another violation after the notification period sends another alert
+        third_run_memory=res[:memory]
+        last_run=Time.now
+        Timecop.travel(Time.now+60*60*13) do # another 13 hours in the future
+          @plugin=OverviewWithAlerts.new(last_run,third_run_memory,@options)
+          @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df_alert]).once
+          @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo]).once
+          @plugin.stubs(:shell).with("uptime").returns(FIXTURES[:uptime]).once
+
+          res= @plugin.run()
+          assert_equal 1, res[:alerts].size
+        end
+      end
     end
   end
 
   def test_disk_alert_does_not_repeat_too_soon
     test_disk_alert
     last_run=Time.now
-    Timecop.travel(Time.now+60*5) do # five minutes in future
+    Timecop.travel(Time.now+60*15) do # 15 minutes in future
       @plugin=OverviewWithAlerts.new(last_run,@memory,@options)
       @plugin.stubs(:shell).with("df -h").returns(FIXTURES[:df_alert]).once
       @plugin.stubs(:shell).with("cat /proc/meminfo").returns(FIXTURES[:meminfo]).once

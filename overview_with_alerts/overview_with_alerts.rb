@@ -109,10 +109,11 @@ class OverviewWithAlerts < Scout::Plugin
         end
         alert(subject, body)
         remember(:mem_notification_sent_at => Time.now)
+      else
+        remember(:mem_notification_sent_at => memory(:mem_notification_sent_at)) if memory(:mem_notification_sent_at)
       end
 
-      remember(:mem_exceeded_at => memory(:mem_exceeded_at)) if memory(:mem_exceeded_at)
-      remember(:mem_notification_sent_at => memory(:mem_notification_sent_at)) if memory(:mem_notification_sent_at)
+      remember(:mem_exceeded_at => memory(:mem_exceeded_at)) if memory(:mem_exceeded_at)      
     else
       if memory(:mem_exceeded_at)
         alert("Memory Usage OK", "Memory usage is below #{memory_used_threshold}%")
@@ -209,10 +210,11 @@ class OverviewWithAlerts < Scout::Plugin
         end
         alert(subject, body)
         remember(:disk_notification_sent_at => Time.now)
+      else
+        remember(:disk_notification_sent_at => memory(:disk_notification_sent_at)) if memory(:disk_notification_sent_at)
       end
-
       remember(:disk_exceeded_at => memory(:disk_exceeded_at)) if memory(:disk_exceeded_at)
-      remember(:disk_notification_sent_at => memory(:disk_notification_sent_at)) if memory(:disk_notification_sent_at)
+      
     else
       if memory(:disk_exceeded_at)
         alert("Disk Usage OK", "Disk usage below #{disk_used_threshold}%, currently at #{percent_used}")

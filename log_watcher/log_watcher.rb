@@ -8,6 +8,9 @@ class LogWatcher < Scout::Plugin
     default: "[Ee]rror"
     name: Term
     notes: Returns the number of matches for this term. Use Linux Regex formatting.
+  grep_options:
+    name: Grep Options
+    notes: Provide any options to pass to grep when running. For example, to count non-matching lines, enter 'v'. Use the abbreviated format ('v' and not 'invert-match').
   EOS
   
   def init
@@ -40,7 +43,10 @@ class LogWatcher < Scout::Plugin
       # Check to see if this file was rotated. This occurs when the +current_length+ is less than 
       # the +last_run+. Don't return a count if this occured.
       if read_length >= 0
-        count = `tail -c #{read_length} #{@log_file_path} | grep "#{@term}" -c`.strip.to_f
+        # finds new content from +last_bytes+ to the end of the file, then just extracts from the recorded 
+        # +read_length+. This ignores new lines that are added after finding the +current_length+. Those lines 
+        # will be read on the next run.
+        count = `tail -c +#{last_bytes} #{@log_file_path} | head -c #{read_length} | grep "#{@term}" -#{option(:grep_options).to_s.gsub('-','')}c`.strip.to_f
         # convert to a rate / min
         count = count / ((Time.now - @last_run)/60)
       else

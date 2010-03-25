@@ -34,18 +34,20 @@ class DiskUsage < Scout::Plugin
   
   # Ensures disk space metrics are in GB. Metrics that don't contain 'G,M,or K' are just
   # turned into integers.
-  def clean_value(value)
-    if value =~ /G/i
-      value.to_f
-    elsif value =~ /M/i
-      (value.to_f/1024.to_f).round
-    elsif value =~ /K/i
-      (value.to_f/1024.to_f/1024.to_f).round
-    else
-      value.to_f
-    end
-  end
-  
+   def clean_value(value)
+     if value =~ /G/i
+       value.to_f
+     elsif value =~ /M/i
+       (value.to_f/1024.to_f).round
+     elsif value =~ /K/i
+       (value.to_f/1024.to_f/1024.to_f).round
+     elsif value =~ /T/i
+       (value.to_f*1024.to_f).round
+     else
+       value.to_f
+     end
+   end
+
   def build_report
     ENV['lang'] = 'C' # forcing English for parsing
     df_command   = option("command") || "df -h"

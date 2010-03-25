@@ -1,0 +1,11 @@
+metadata:
+  occurances:
+    unit: /min
+    precision: 2
+triggers:
+  - type: trend
+    dname: occurances
+    direction: UP
+    percentage_change: 300
+    duration: 60
+    window_reference: LAST_WEEK

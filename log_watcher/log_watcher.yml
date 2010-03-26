@@ -1,6 +1,6 @@
 metadata:
   occurances:
-    unit: /min
+    units: /min
     precision: 2
 triggers:
   - type: trend

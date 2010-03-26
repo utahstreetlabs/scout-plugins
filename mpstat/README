@@ -1,4 +1,4 @@
-Improved IO Statistics Plugin
+MPSTAT Plugin
 =================================
 Created by [Yaroslav Lazor](http://github.com/yaroslavlazor)
 
@@ -8,7 +8,7 @@ Dependencies
 ------------
 Requires the mpstat command, usually provided by the sysstat package.
 
-Compatibility 
+Compatibility
 -------------
 
 Works on Linux and OSX.

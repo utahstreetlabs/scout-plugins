@@ -1,15 +1,3 @@
-options:
-  aws_access_key:
-    name: AWS Access Key
-    notes: Your Amazon Web Services Access key. 20-char alphanumeric, looks like 022QF06E7MXBSH9DHM02
-  aws_secret:
-    name: AWS Secret
-    notes: Your Amazon Web Services Secret key. 40-char alphanumeric, looks like kWcrlUX5JEDGMLtmEENIaVmYvHNif5zBd9ct81S
-  dimension:
-    name: EC2 InstanceId or dimension
-    notes: Get your InstanceId from the AWS web console or command line tools. It looks like i-48ac4920. OR, specify any dimension as key=value. For example, AutoScalingGroupName=YOUR_GROUP_NAME. See README.
-
-
 metadata:
   CPUUtilization max:
     label: CPU Utilization (max)

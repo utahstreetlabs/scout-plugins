@@ -1,10 +1,27 @@
 class E2Cloudwatch < Scout::Plugin
   TIME_FORMAT='%Y-%m-%dT%H:%M:%S+00:00' unless const_defined?('TIME_FORMAT')
 
+  OPTIONS=<<-EOS
+    aws_access_key:
+      name: AWS Access Key
+      notes: Your Amazon Web Services Access key. 20-char alphanumeric, looks like 022QF06E7MXBSH9DHM02
+    aws_secret:
+      name: AWS Secret
+      notes: Your Amazon Web Services Secret key. 40-char alphanumeric, looks like kWcrlUX5JEDGMLtmEENIaVmYvHNif5zBd9ct81S
+    dimension:
+      name: EC2 InstanceId or dimension
+      notes: Get your InstanceId from the AWS web console or command line tools. It looks like i-48ac4920. OR, specify any dimension as key=value. For example, AutoScalingGroupName=YOUR_GROUP_NAME. See README.
+    endpoint:
+      name: Monitoring Endpoint
+      notes: Host from which to pull Cloudwatch metrics
+      default: monitoring.amazonaws.com
+  EOS
+
   def build_report
     aws_access_key = option(:aws_access_key)
     aws_secret = option(:aws_secret)
     dimension = option(:dimension)
+    endpoint = option(:endpoint)
     namespace = 'AWS/EC2'
 
     # Available measures for EC2 instances:
@@ -28,7 +45,10 @@ class E2Cloudwatch < Scout::Plugin
       dimension_value=dimension
     end
 
-    aws = CloudWatch::AWSAuthConnection.new(aws_access_key, aws_secret)
+    # protect against blank endpoints
+    error(:subject=>'Cloudwatch options not set properly', :body=>'You need a value for endpoint') and return if endpoint.to_s == ''
+
+    aws = CloudWatch::AWSAuthConnection.new(aws_access_key, aws_secret, false, endpoint)
 
     # Figure out a start and end time for the stats query. If we ran previously and remember the last_run_time,
     # then we just query from then to now. We also set the period to the DIFFERENCE so we only get one report during
@@ -71,7 +91,7 @@ class E2Cloudwatch < Scout::Plugin
 
       # logger.debug ("getMetricStatistics with parameters: #{params.inspect}")
       response = aws.getMetricStatistics(params)
-      # logger.debug response.structure      
+      # logger.debug response.structure
       # response looks like:
       # ["CPUUtilization", [{:average=>"1.43", :timestamp=>"2009-08-16T06:40:00Z", :unit=>"Percent", :maximum=>"3.57", :samples=>"5.0"}]]
       if response.is_error?

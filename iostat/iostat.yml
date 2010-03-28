@@ -21,6 +21,9 @@ metadata:
     label: Utilization
     precision: 0
     units: %
+  aveq:
+    label: Average Queue Size
+    precision: 1
 
 triggers:
   - type: peak

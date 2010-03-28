@@ -8,7 +8,6 @@ class Iostat < Scout::Plugin
 
   def build_report
     stats = iostat(device)
-
     error("Device not found: #{device} -- check your plugin settings.",
           "FYI, mount returns:\n#{`mount`}") and return if !stats
 
@@ -17,6 +16,10 @@ class Iostat < Scout::Plugin
     counter(:rkbps, stats['rsect'] / 2,  :per => :second)
     counter(:wkbps, stats['wsect'] / 2,  :per => :second)
     counter(:util,  stats['use'] / 10.0, :per => :second)
+    # Not 100% sure that average queue length is present on all distros.
+    if stats['aveq']
+      counter(:aveq,  stats['use'], :per => :second)
+    end
 
     if old = memory("#{device}_stats")
       ios = (stats['rio'] - old['rio']) + (stats['wio']  - old['wio'])

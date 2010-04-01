@@ -10,7 +10,7 @@ class ApacheAnalyzer < Scout::Plugin
     notes: "The full path to the Apache log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/access_log)."
   format:
     name: Apache Log format
-    notes: defaults to 'common'. Or specify custom log format, like %v %h %l %u %t \"%r\" %>s %b time:%D
+    notes: defaults to 'common'. Or specify custom log format, like %h %l %u %t \"%r\" %>s %b %D
     default: common
   rla_run_time:
     name: Request Log Analyzer Run Time (HH:MM)
@@ -24,55 +24,24 @@ class ApacheAnalyzer < Scout::Plugin
   def build_report
     patch_elif
 
-    log_path = option(:log)
-    format = option(:format) || 'common'
-    request_count = 0
-    lines_scanned = 0
-    report_data = { :request_rate     => 0, :lines_scanned => 0 }
-    previous_last_request_time = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
-    # set to the time of the first request processed (the most recent chronologically)
-    last_request_time  = nil  
+    log_path                   = option(:log)
+    format                     = option(:format) || 'common'
 
+    init_tracking
+    init_timing
+    
+    # build the line defintion and request using RLA. we'll use this to parse each line.
+    @line_definition = RequestLogAnalyzer::FileFormat::Apache.access_line_definition(option(:format))
+    @request         = RequestLogAnalyzer::FileFormat::Apache.new.request
+    
     # read backward, counting lines
     Elif.foreach(log_path) do |line|
-      lines_scanned += 1
-      if line =~ /(\d{2}\/[A-Za-z]{3}\/\d{4})(.)(\d{2}:\d{2}:\d{2})(?: .\d{4})?/
-        # OPTIMIZE - use custom date parsing as Time.parse is 50% - 66% slower. See rails_requests.rb
-        # CLF logs time with a ':' between date and time; Time.parse doesn't like this
-        # 24/Feb/2010:14:04:57
-        # >> $1
-        # => "24/Feb/2010"
-        # >> $3
-        # => "14:04:57"
-        time_of_request = Time.parse("#{$1} #{$3}")
-        last_request_time = time_of_request if last_request_time.nil?
-        if time_of_request <= previous_last_request_time
-          break
-        else
-          request_count += 1
-        end
-      end
-
+      @lines_scanned += 1
+      break if parse_line(line).nil?
     end
 
-    # calculate request_rate
-    if request_count > 0
-      # calculate the time btw runs in minutes
-      interval = (Time.now-(@last_run || previous_last_request_time))
-      interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
-      interval = interval/60 # convert to minutes
-      interval = interval.to_f
-      # determine the rate of requests and slow requests in requests/min
-      request_rate                         = request_count /
-                                             interval
-      report_data[:request_rate]           = sprintf("%.2f", request_rate)
-
-    end
-
-    # report data
-    remember(:last_request_time, Time.parse(last_request_time.to_s) || Time.now)
-    report_data[:lines_scanned] = lines_scanned
-    report(report_data)
+    remember(:last_request_time, Time.parse(@last_request_time.to_s) || Time.now)
+    report(aggregate)
 
     if log_path && !log_path.empty?
       generate_log_analysis(log_path, format)
@@ -82,6 +51,77 @@ class ApacheAnalyzer < Scout::Plugin
   end
 
   private
+  
+  # Calculates the request rate, number of lines scanned, and average request time (if possible)
+  def aggregate
+    report_data = { :request_rate     => 0, :lines_scanned => 0 }
+    
+    report_data[:lines_scanned] = @lines_scanned
+
+    # calculate request_rate and average request time if any requests were found
+    if @request_count > 0
+      # calculate the time btw runs in minutes
+      interval = (Time.now-(@last_run || @previous_last_request_time))
+      interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
+      interval = interval/60 # convert to minutes
+      interval = interval.to_f
+      # determine the rate of requests and slow requests in requests/min
+      report_data[:request_rate]             = average(@request_count,interval)
+      if @total_request_time > 0
+        # determine the average request length
+        report_data[:average_request_length] = average(@total_request_time,@request_count)
+      end
+    end
+    
+    return report_data
+  end
+  
+  # Given a total and a count, returns a string-formatted average 
+  def average(total,count)
+    avg = total/count
+    sprintf("%.2f", avg)
+  end
+  
+  # The data the plugin tracks
+  def init_tracking
+    @request_count              = 0
+    @total_request_time         = 0.0
+    @bytes_sent                 = 0    
+    @lines_scanned              = 0
+  end
+  
+  def init_timing
+    @previous_last_request_time = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
+    
+    # Time#parse is slow so uses a specially-formatted integer to compare request times.
+    @previous_last_request_time_as_timestamp = @previous_last_request_time.strftime('%Y%m%d%H%M%S').to_i
+    
+    # set to the time of the first request processed (the most recent chronologically)
+    @last_request_time          = nil
+  end
+  
+  # Returns nil if the timestamp is past by the previous last request time
+  def parse_line(line)
+    if matches = @line_definition.matches(line)
+      result = @line_definition.convert_captured_values(matches[:captures],@request)
+      if timestamp = result[:timestamp]
+        @last_request_time = Time.parse(timestamp.to_s) if @last_request_time.nil?
+        
+        if timestamp <= @previous_last_request_time_as_timestamp
+          return nil
+        else
+          @request_count += 1
+          if duration = result[:duration]
+            @total_request_time += result[:duration] 
+          end
+          return true
+        end # checking if the request is past the last request time
+        
+      else # no timestamp...continue
+        return true
+      end # timestamp check
+    end # if matches
+  end # def parse_line
 
   def silence
     old_verbose, $VERBOSE, $stdout = $VERBOSE, nil, StringIO.new

@@ -1,6 +1,6 @@
 metadata:
   failed:
-    units: jobs/min
+    units: jobs/sec
     larger_is_better: "0"
     delimiter: ","
     precision: "1"
@@ -18,7 +18,7 @@ metadata:
     precision: "0"
     label: Queues
   processed:
-    units: jobs/min
+    units: jobs/sec
     larger_is_better: "1"
     delimiter: ","
     precision: "1"

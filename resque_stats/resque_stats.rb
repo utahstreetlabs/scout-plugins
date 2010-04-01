@@ -5,12 +5,12 @@ class ResqueStats < Scout::Plugin
   OPTIONS=<<-EOS
   redis:
     name: Resque.redis
-    notes: Redis connection string: 'hostname:port' or 'hostname:port:db'
+    notes: "Redis connection string: 'hostname:port' or 'hostname:port:db'"
     default: localhost:6379
   namespace:
     name: Namespace
-    notes: Resque namespace: 'resque:production'
-    default: 
+    notes: "Resque namespace: 'resque:production'"
+    default:
   EOS
 
   def build_report

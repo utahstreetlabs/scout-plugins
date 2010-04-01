@@ -1,0 +1,43 @@
+metadata:
+  failed:
+    units: jobs/min
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "1"
+    label: Failed
+  pending:
+    units: jobs
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Pending
+  queues:
+    units: ""
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Queues
+  processed:
+    units: jobs/min
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "1"
+    label: Processed
+  total_failed:
+    units: jobs
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Total failed
+  working:
+    units: ""
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Working
+  workers:
+    units: ""
+    larger_is_better: "1"
+    delimiter: ","
+    precision: "0"
+    label: Workers

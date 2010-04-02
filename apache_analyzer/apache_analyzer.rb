@@ -16,6 +16,10 @@ class ApacheAnalyzer < Scout::Plugin
     name: Request Log Analyzer Run Time (HH:MM)
     notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
     default: '23:45'
+  ignored_paths:
+    name: Ignored Paths
+    notes: Takes a regex. Any URIs matching this regex will be ignored. Matching paths will still be included in daily summaries.
+    attributes: advanced
   EOS
 
   needs "elif"
@@ -26,6 +30,15 @@ class ApacheAnalyzer < Scout::Plugin
 
     log_path                   = option(:log)
     format                     = option(:format) || 'common'
+    
+    @ignored_paths=nil
+    if option(:ignored_paths)
+      begin
+        @ignored_paths = Regexp.new(option(:ignored_paths))
+      rescue
+        error("Argument error","Could not understand the regular expression for ignored paths: #{option(:ignored_paths)}. #{$!.message}")
+      end
+    end
 
     init_tracking
     init_timing
@@ -92,7 +105,8 @@ class ApacheAnalyzer < Scout::Plugin
   
   def init_timing
     @previous_last_request_time = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
-    
+    # For testing.
+    # @previous_last_request_time = Time.now-(60*60*24*300)
     # Time#parse is slow so uses a specially-formatted integer to compare request times.
     @previous_last_request_time_as_timestamp = @previous_last_request_time.strftime('%Y%m%d%H%M%S').to_i
     
@@ -102,6 +116,7 @@ class ApacheAnalyzer < Scout::Plugin
   
   # Returns nil if the timestamp is past by the previous last request time
   def parse_line(line)
+    p @lines_scanned
     if matches = @line_definition.matches(line)
       result = @line_definition.convert_captured_values(matches[:captures],@request)
       if timestamp = result[:timestamp]
@@ -109,11 +124,16 @@ class ApacheAnalyzer < Scout::Plugin
         
         if timestamp <= @previous_last_request_time_as_timestamp
           return nil
-        else
+        elsif @ignored_paths.nil? || ( @ignored_paths.is_a?(Regexp) && !@ignored_paths.match(result[:path]) )
           @request_count += 1
           if duration = result[:duration]
             @total_request_time += result[:duration] 
           end
+          return true
+        else
+          # matched ignored path
+          # p 'matched ignored path'
+          # p result[:path]
           return true
         end # checking if the request is past the last request time
         

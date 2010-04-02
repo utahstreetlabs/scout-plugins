@@ -106,7 +106,9 @@ class ApacheAnalyzer < Scout::Plugin
   def init_timing
     @previous_last_request_time = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
     # For testing.
-    # @previous_last_request_time = Time.now-(60*60*24*300)
+    if option(:log_test)
+      @previous_last_request_time = Time.now-(60*60*24*300)
+    end
     # Time#parse is slow so uses a specially-formatted integer to compare request times.
     @previous_last_request_time_as_timestamp = @previous_last_request_time.strftime('%Y%m%d%H%M%S').to_i
     
@@ -116,7 +118,6 @@ class ApacheAnalyzer < Scout::Plugin
   
   # Returns nil if the timestamp is past by the previous last request time
   def parse_line(line)
-    p @lines_scanned
     if matches = @line_definition.matches(line)
       result = @line_definition.convert_captured_values(matches[:captures],@request)
       if timestamp = result[:timestamp]
@@ -129,11 +130,13 @@ class ApacheAnalyzer < Scout::Plugin
           if duration = result[:duration]
             @total_request_time += result[:duration] 
           end
+          # if testing, show lines that were parsed
+          if option(:log_test)
+            p result[:path]
+          end
           return true
         else
           # matched ignored path
-          # p 'matched ignored path'
-          # p result[:path]
           return true
         end # checking if the request is past the last request time
         

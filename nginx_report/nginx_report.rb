@@ -1,6 +1,12 @@
 require 'open-uri'
 
 class NginxReport < Scout::Plugin
+  
+  OPTIONS=<<-EOS
+  url:
+    name: Status URL
+    default: "http://127.0.0.1/nginx_status"
+  EOS
 
   def build_report	
 	  url = option(:url) || 'http://127.0.0.1/nginx_status'

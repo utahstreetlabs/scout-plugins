@@ -1,5 +1,14 @@
 class DiskUsage < Scout::Plugin
 
+  OPTIONS=<<-EOS
+  command:
+    name: df Command
+    notes: The command used to display free disk space
+    default: df -h
+  filesystem:
+    notes: The filesystem to check usage, if none specified, uses the first listed
+  EOS
+
   # the Disk Freespace RegEx
   DF_RE = /\A\s*(\S.*?)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s*\z/
 
@@ -32,7 +41,7 @@ class DiskUsage < Scout::Plugin
     end
   end
   
-  # Ensures disk space metrics are in GB. Metrics that don't contain 'G,M,or K' are just
+  # Ensures disk space metrics are in GB. Metrics that don't contain 'T,G,M,or K' are just
   # turned into integers.
    def clean_value(value)
      if value =~ /G/i

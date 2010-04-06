@@ -18,7 +18,7 @@ class Iostat < Scout::Plugin
     counter(:util,  stats['use'] / 10.0, :per => :second)
     # Not 100% sure that average queue length is present on all distros.
     if stats['aveq']
-      counter(:aveq,  stats['use'], :per => :second)
+      counter(:aveq,  stats['aveq'], :per => :second)
     end
 
     if old = memory("#{device}_stats")

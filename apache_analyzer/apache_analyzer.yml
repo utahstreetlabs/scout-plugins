@@ -2,4 +2,8 @@ metadata:
   request_rate:
     precision: 2
     label: Requests
-    units: req/min    
+    units: req/min   
+  average_request_length:
+    precision: 2
+    units: sec 
+    

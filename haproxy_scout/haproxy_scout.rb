@@ -1,6 +1,11 @@
 class HaproxyStats < Scout::Plugin
-
-  needs 'fastercsv', 'open-uri'
+  
+  if RUBY_VERSION < "1.9"
+    needs 'fastercsv'
+  else
+    needs 'csv'
+  end
+  needs 'open-uri'
 
   OPTIONS=<<-EOS
   uri:
@@ -9,7 +14,7 @@ class HaproxyStats < Scout::Plugin
   EOS
 
   def build_report
-    FasterCSV.parse(open(option(:uri)), :headers => true) do |row|
+    (RUBY_VERSION < "1.9" ? FasterCSV : CSV).parse(open(option(:uri)), :headers => true) do |row|      
       if row["svname"] == 'FRONTEND' || row["svname"] == 'BACKEND'
         name = row["# pxname"] + ' ' + row["svname"].downcase
         report "#{name} Current Sessions" => row["scur"]

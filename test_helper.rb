@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'rubygems'
 require 'mocha'     # gem install mocha
+require 'fakeweb'   # gem install fakeweb
 require 'timecop'   # gem install timecop
 require 'scout'
 

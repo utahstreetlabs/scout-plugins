@@ -15,6 +15,56 @@ class HaProxyTest < Test::Unit::TestCase
     FakeWeb.register_uri(:get, uri, :body => FIXTURES[:valid])
     @plugin=HaproxyStats.new(nil,{},{:uri=>uri})
     res = @plugin.run()
+    assert_valid_report(res)
+  end
+
+  def test_invalid_csv
+    uri='http://fake'
+    FakeWeb.register_uri(:get, uri, :body => FIXTURES[:invalid])
+    @plugin=HaproxyStats.new(nil,{},{:uri=>uri})
+
+    res = @plugin.run()
+    assert_equal 0, res[:reports].size
+    assert_equal 1, res[:errors].size
+    assert_equal "Error accessing stats page", res[:errors].first[:subject]
+  end
+  
+  def test_blank_uri
+    @plugin=HaproxyStats.new(nil,{},{:uri=>nil})
+
+    res = @plugin.run()
+    assert_equal 0, res[:reports].size
+    assert_equal 1, res[:errors].size
+    assert_equal "URI to HAProxy Stats Required", res[:errors].first[:subject]
+  end
+  
+  def test_invalid_basic_auth
+    uri_no_auth = "http://example.com/secret"
+    uri = "http://user:pass@example.com/secret"
+    FakeWeb.register_uri(:get, uri_no_auth, :body => "Unauthorized", :status => ["401", "Unauthorized"])
+    FakeWeb.register_uri(:get, uri, :body => FIXTURES[:valid])
+    
+    @plugin=HaproxyStats.new(nil,{},{:uri=>uri_no_auth, :user => 'user', :password => 'invalid'})
+    res = @plugin.run()
+    assert_equal 0, res[:reports].size
+    assert_equal 1, res[:errors].size
+    assert_equal "Unable to find the stats page", res[:errors].first[:subject]
+  end
+  
+  def test_valid_basic_auth
+    uri_no_auth = "http://example.com/secret"
+    uri = "http://user:pass@example.com/secret"
+    FakeWeb.register_uri(:get, uri_no_auth, :body => "Unauthorized", :status => ["401", "Unauthorized"])
+    FakeWeb.register_uri(:get, uri, :body => FIXTURES[:valid])
+    
+    @plugin=HaproxyStats.new(nil,{},{:uri=>uri_no_auth, :user => 'user', :password => 'pass'})
+    res = @plugin.run()
+    assert_valid_report(res)
+  end
+  
+  ### helper methods
+  
+  def assert_valid_report(res)
     assert_equal [{"http-in frontend Current Sessions"=>"1"},
                   {"http-in frontend Requests / second"=>"1"},
                   {"www backend Current Sessions"=>"0"},
@@ -28,18 +78,6 @@ class HaProxyTest < Test::Unit::TestCase
                   {"demo backend Requests / second"=>"1"}], res[:reports]
   end
 
-  def test_invalid_csv
-    uri='http://fake'
-    FakeWeb.register_uri(:get, uri, :body => FIXTURES[:invalid])
-    @plugin=HaproxyStats.new(nil,{},{:uri=>uri})
-
-    res = @plugin.run()
-    assert_equal 0, res[:reports].size
-    assert_equal 1, res[:errors].size
-    assert_equal "Error accessing stats page", res[:errors].first[:subject]
-  end
-
-  
   FIXTURES=YAML.load(<<-EOS)
     :valid: |
       # pxname,svname,qcur,qmax,scur,smax,slim,stot,bin,bout,dreq,dresp,ereq,econ,eresp,wretr,wredis,status,weight,act,bck,chkfail,chkdown,lastchg,downtime,qlimit,pid,iid,sid,throttle,lbtot,tracked,type,rate,rate_lim,rate_max,check_status,check_code,check_duration,hrsp_1xx,hrsp_2xx,hrsp_3xx,hrsp_4xx,hrsp_5xx,hrsp_other,hanafail,req_rate,req_rate_max,req_tot,cli_abrt,srv_abrt,

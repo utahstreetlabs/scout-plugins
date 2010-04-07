@@ -1,7 +1,14 @@
 # To test with the sample file, pass sample=true as an option.
 class HaproxyStats < Scout::Plugin
 
-  needs 'fastercsv', 'open-uri'
+  if RUBY_VERSION < "1.9"
+    needs 'fastercsv'
+  else
+    # typically, avoid require. In this case we can't use needs' deferred loading because we need to alias CSV
+    require 'csv'
+    FasterCSV=CSV
+  end
+  needs 'open-uri'
 
   OPTIONS=<<-EOS
   uri:
@@ -11,13 +18,13 @@ class HaproxyStats < Scout::Plugin
   EOS
 
   def build_report
-    
-    unless stats = get_stats
+
+    if option(:uri) == ''
       return error('URI to HAProxy Stats Required', "It looks like the URI to the HAProxy stats page (in csv format) hasn't been provided. Please enter this URI in the plugin settings.")
     end
-    
+
     begin
-      FasterCSV.parse(stats, :headers => true) do |row|
+      FasterCSV.parse(open(option(:uri)), :headers => true) do |row|
         if row["svname"] == 'FRONTEND' || row["svname"] == 'BACKEND'
           name = row["# pxname"] + ' ' + row["svname"].downcase
           report "#{name} Current Sessions" => row["scur"]
@@ -30,15 +37,4 @@ class HaproxyStats < Scout::Plugin
     end
   end
   
-  # For development, pass the sample=true option to use the sample.csv for testing.
-  # Otherwise, requires the +uri+ option.
-  def get_stats
-    if option(:sample)
-      File.read('sample.csv')
-    elsif uri = option(:uri)
-      open(uri)
-    else # a uri wasn't provided. this will generate a friendly error message.
-      nil
-    end
-  end
 end

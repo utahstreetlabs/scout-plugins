@@ -45,7 +45,7 @@ class PassengerMemoryStats < Scout::Plugin
                      "passenger_vmsize_total"  => 0.0,
                      "passenger_private_total" => 0.0 }
 
-    data.each do |line|
+    data.each_line do |line|
       line = line.gsub(/\e\[\d+m/,'')
       if line =~ /^\s*-+\s+(Apache|Passenger|Nginx)\s+processes/
         table        = $1.downcase

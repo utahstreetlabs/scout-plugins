@@ -39,16 +39,13 @@ class HaProxyTest < Test::Unit::TestCase
   end
   
   def test_invalid_basic_auth
-    uri_no_auth = "http://example.com/secret"
-    uri = "http://user:pass@example.com/secret"
-    FakeWeb.register_uri(:get, uri_no_auth, :body => "Unauthorized", :status => ["401", "Unauthorized"])
-    FakeWeb.register_uri(:get, uri, :body => FIXTURES[:valid])
-    
-    @plugin=HaproxyStats.new(nil,{},{:uri=>uri_no_auth, :user => 'user', :password => 'invalid'})
-    res = @plugin.run()
-    assert_equal 0, res[:reports].size
-    assert_equal 1, res[:errors].size
-    assert_equal "Unable to find the stats page", res[:errors].first[:subject]
+    uri_invalid_auth = "http://user:invalid@example.com/secret"
+    FakeWeb.register_uri(:get, uri_invalid_auth, :body => "Unauthorized", :status => ["401", "Unauthorized"])
+
+    @plugin=HaproxyStats.new(nil,{},{:uri=>uri_invalid_auth, :user => 'user', :password => 'invalid'})
+    assert_raises OpenURI::HTTPError do
+      res = @plugin.run()
+    end
   end
   
   def test_valid_basic_auth

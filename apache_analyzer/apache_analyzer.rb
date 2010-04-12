@@ -10,11 +10,11 @@ class ApacheAnalyzer < Scout::Plugin
     notes: "The full path to the Apache log file you wish to analyze (ex: /var/www/apps/APP_NAME/current/log/access_log)."
   format:
     name: Apache Log format
-    notes: defaults to 'common'. Or specify custom log format, like %h %l %u %t \"%r\" %>s %b %D
+    notes: defaults to 'common'. Or specify custom log format, like %h %l %u %t "%r" %>s %b %D
     default: common
   rla_run_time:
     name: Request Log Analyzer Run Time (HH:MM)
-    notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
+    notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in. The time should be in the server timezone.
     default: '23:45'
   ignored_paths:
     name: Ignored Paths
@@ -53,9 +53,8 @@ class ApacheAnalyzer < Scout::Plugin
       break if parse_line(line).nil?
     end
 
-    remember(:last_request_time, Time.parse(@last_request_time.to_s) || Time.now)
+    remember(:last_request_time, @last_request_time || Time.now)
     report(aggregate)
-
     if log_path && !log_path.empty?
       generate_log_analysis(log_path, format)
     else
@@ -122,7 +121,6 @@ class ApacheAnalyzer < Scout::Plugin
       result = @line_definition.convert_captured_values(matches[:captures],@request)
       if timestamp = result[:timestamp]
         @last_request_time = Time.parse(timestamp.to_s) if @last_request_time.nil?
-        
         if timestamp <= @previous_last_request_time_as_timestamp
           return nil
         elsif @ignored_paths.nil? || ( @ignored_paths.is_a?(Regexp) && !@ignored_paths.match(result[:path]) )

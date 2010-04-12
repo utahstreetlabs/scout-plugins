@@ -17,7 +17,7 @@ class RailsRequests < Scout::Plugin
     default: 3
   rla_run_time:
     name: Request Log Analyzer Run Time (HH:MM)
-    notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in.
+    notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in. The time should be in the server timezone.
     default: '23:45'
     attributes: advanced
   ignored_actions:

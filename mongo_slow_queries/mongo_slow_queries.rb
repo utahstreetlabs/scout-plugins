@@ -19,6 +19,10 @@ class ScoutMongoSlow < Scout::Plugin
       name: Threshold (millisecs)
       notes: Slow queries are >= this time in milliseconds to execute (min. 100)
       default: 100
+    username:
+      notes: leave blank unless you have authentication enabled
+    password:
+      notes: leave blank unless you have authentication enabled
   EOS
 
   def enable_profiling(db)
@@ -49,6 +53,7 @@ class ScoutMongoSlow < Scout::Plugin
     end
 
     db = Mongo::Connection.new(server).db(database)
+    db.authenticate(option(:username), option(:password)) if !option(:username).to_s.empty?
     enable_profiling(db)
 
     slow_queries = []
@@ -78,7 +83,14 @@ class ScoutMongoSlow < Scout::Plugin
     end
     remember(:last_run,Time.now)
   rescue Mongo::MongoDBError => error
-    error("A Mongo DB error has occurred.", "A Mongo DB error has occurred")    
+    error("A Mongo DB error has occurred.", "A Mongo DB error has occurred")
+  rescue RuntimeError => error
+    if error.message =~/Error with profile command.+unauthorized/i
+      error("Invalid MongoDB Authentication", "The username/password for your MongoDB database are incorrect")
+      return
+    else
+      raise error
+    end  
   end
   
   def build_alert(slow_queries)

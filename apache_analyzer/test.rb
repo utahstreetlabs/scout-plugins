@@ -17,7 +17,7 @@ class ApacheAnalyzerTest < Test::Unit::TestCase
       plugin=ApacheAnalyzer.new(nil,{},{:log => @utc_log, :format => @duration_format})
       res = plugin.run()
       assert_equal 68, res[:reports].first[:lines_scanned]
-      assert_equal 67.96.to_s, res[:reports].first[:request_rate]
+      assert_in_delta 67.96, res[:reports].first[:request_rate].to_f, 0.5
       assert_equal 0.36.to_s, res[:reports].first[:average_request_length]
       # note - this is stored in the timezone of this server
       assert_equal Time.parse("Sun Apr 11 17:22:04 -0700 2010"), res[:memory][:last_request_time]

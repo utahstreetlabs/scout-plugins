@@ -48,9 +48,7 @@ class ApacheAnalyzer < Scout::Plugin
     # build the line definition and request using RLA. we'll use this to parse each line.
     @line_definition = RequestLogAnalyzer::FileFormat::Apache.access_line_definition(format)
     @request         = RequestLogAnalyzer::FileFormat::Apache.new.request
-    
-    @debug = nil
-    
+        
     # read backward, counting lines
     Elif.foreach(log_path) do |line|
       @lines_scanned += 1
@@ -59,7 +57,6 @@ class ApacheAnalyzer < Scout::Plugin
 
     remember(:last_request_time, @last_request_time || Time.now)
     report(aggregate)
-    alert('debug',@debug)
     if log_path && !log_path.empty?
       generate_log_analysis(log_path, format)
     else
@@ -138,7 +135,6 @@ class ApacheAnalyzer < Scout::Plugin
       if timestamp = result[:timestamp]
         @last_request_time = Time.parse(timestamp.to_s) if @last_request_time.nil?
         if timestamp <= @previous_last_request_time_as_timestamp
-          @debug = "line: #{line} \n previous last request: #{@previous_last_request_time} \n last request time: #{@last_request_time}"
           return nil
         elsif @ignored_paths.nil? || ( @ignored_paths.is_a?(Regexp) && !@ignored_paths.match(result[:path]) )
           @request_count += 1

@@ -17,6 +17,8 @@ class ApacheAnalyzerTest < Test::Unit::TestCase
       plugin=ApacheAnalyzer.new(nil,{},{:log => @utc_log, :format => @duration_format})
       res = plugin.run()
       assert_equal 68, res[:reports].first[:lines_scanned]
+      assert_equal 67.96.to_s, res[:reports].first[:request_rate]
+      assert_equal 0.36.to_s, res[:reports].first[:average_request_length]
       # note - this is stored in the timezone of this server
       assert_equal Time.parse("Sun Apr 11 17:22:04 -0700 2010"), res[:memory][:last_request_time]
     end
@@ -35,6 +37,47 @@ class ApacheAnalyzerTest < Test::Unit::TestCase
       # note - this is stored in the timezone of this server
       assert_equal Time.parse("Sun Apr 11 17:22:04 -0700 2010"), res[:memory][:last_request_time]
     end
+  end
+  
+  # Test handling of a format edge-case. The format we suggest is enclosed in double quotes in 
+  # Apache config. However, options passed down to Scout have single quotes. If the Apache config 
+  # format (double-quoted) is used, parsing will not work. This handles that case. 
+  def test_should_work_with_escaped_r
+    format = '%h %l %u %t \"%r\" %>s %b %D'
+
+    # last time in log file (in UTC)
+    time = Time.parse(@last_request_time) 
+    Timecop.travel(time) do 
+      plugin=ApacheAnalyzer.new(nil,{},{:log => @utc_log, :format => format})
+      res = plugin.run()
+      assert_equal 68, res[:reports].first[:lines_scanned]
+      assert_in_delta 67.96, res[:reports].first[:request_rate].to_f, 0.10
+      assert_equal 0.36, res[:reports].first[:average_request_length].to_f
+      # note - this is stored in the timezone of this server
+      assert_equal Time.parse("Sun Apr 11 17:22:04 -0700 2010"), res[:memory][:last_request_time]
+    end
+  end
+  
+  def test_run_with_common_format
+    format = 'common'
+
+    # last time in log file (in UTC)
+    time = Time.parse(@last_request_time) 
+    Timecop.travel(time) do 
+      plugin=ApacheAnalyzer.new(nil,{},{:log => @utc_log, :format => format})
+      res = plugin.run()
+      assert_equal 68, res[:reports].first[:lines_scanned]
+      assert_nil res[:reports].first[:average_request_length]
+      # note - this is stored in the timezone of this server
+      assert_equal Time.parse("Sun Apr 11 17:22:04 -0700 2010"), res[:memory][:last_request_time]
+    end
+  end
+  
+  def test_format_scanning
+    format = '%h %l %u %t \"%r\" %>s %b %D'
+    
+    plugin=ApacheAnalyzer.new(nil,{},{:log => @utc_log, :format => format})
+    assert_equal '%h %l %u %t "%r" %>s %b %D', plugin.scan_format
   end
   
 end

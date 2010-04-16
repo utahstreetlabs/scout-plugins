@@ -2,7 +2,9 @@ require "time"
 require "stringio"
 
 class ApacheAnalyzer < Scout::Plugin
-  ONE_DAY    = 60 * 60 * 24
+  ONE_DAY                   = 60 * 60 * 24
+  ESCAPED_PEFORMANCE_FORMAT = '%h %l %u %t \"%r\" %>s %b %D'
+  PERFORMACE_FORMAT         = '%h %l %u %t "%r" %>s %b %D'
   
   OPTIONS=<<-EOS
   log:
@@ -29,7 +31,7 @@ class ApacheAnalyzer < Scout::Plugin
     patch_elif
 
     log_path                   = option(:log)
-    format                     = option(:format) || 'common'
+    format                     = scan_format
     
     @ignored_paths=nil
     if option(:ignored_paths)
@@ -43,9 +45,11 @@ class ApacheAnalyzer < Scout::Plugin
     init_tracking
     init_timing
     
-    # build the line defintion and request using RLA. we'll use this to parse each line.
-    @line_definition = RequestLogAnalyzer::FileFormat::Apache.access_line_definition(option(:format))
+    # build the line definition and request using RLA. we'll use this to parse each line.
+    @line_definition = RequestLogAnalyzer::FileFormat::Apache.access_line_definition(format)
     @request         = RequestLogAnalyzer::FileFormat::Apache.new.request
+    
+    @debug = nil
     
     # read backward, counting lines
     Elif.foreach(log_path) do |line|
@@ -55,10 +59,22 @@ class ApacheAnalyzer < Scout::Plugin
 
     remember(:last_request_time, @last_request_time || Time.now)
     report(aggregate)
+    alert('debug',@debug)
     if log_path && !log_path.empty?
       generate_log_analysis(log_path, format)
     else
       return error("A path to the Apache log file wasn't provided.","Please provide the full path to the Apache log file to analyze (ie - /var/www/apps/APP_NAME/log/access_log)")
+    end
+  end
+  
+  def scan_format
+    if option(:format).nil?
+      'common'
+    # handles common error in options - escaping "r", but Scout passes format down in single quotes.
+    elsif option(:format) == ESCAPED_PEFORMANCE_FORMAT
+      PERFORMACE_FORMAT
+    else
+      option(:format)
     end
   end
 
@@ -66,7 +82,7 @@ class ApacheAnalyzer < Scout::Plugin
   
   # Calculates the request rate, number of lines scanned, and average request time (if possible)
   def aggregate
-    report_data = { :request_rate     => 0, :lines_scanned => 0 }
+    report_data = { :request_rate => 0, :lines_scanned => 0 }
     
     report_data[:lines_scanned] = @lines_scanned
 
@@ -122,6 +138,7 @@ class ApacheAnalyzer < Scout::Plugin
       if timestamp = result[:timestamp]
         @last_request_time = Time.parse(timestamp.to_s) if @last_request_time.nil?
         if timestamp <= @previous_last_request_time_as_timestamp
+          @debug = "line: #{line} \n previous last request: #{@previous_last_request_time} \n last request time: #{@last_request_time}"
           return nil
         elsif @ignored_paths.nil? || ( @ignored_paths.is_a?(Regexp) && !@ignored_paths.match(result[:path]) )
           @request_count += 1

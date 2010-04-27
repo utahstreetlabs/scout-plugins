@@ -63,7 +63,9 @@ class RailsRequests < Scout::Plugin
     slow_requests      = ''
     total_request_time = 0.0
     previous_last_request_time = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
-    
+    if option(:log_test)
+      previous_last_request_time = Time.now-(60*60*24*300)
+    end
     # Time#parse is slow so uses a specially-formatted integer to compare request times.
     previous_last_request_time_as_timestamp = previous_last_request_time.strftime('%Y%m%d%H%M%S').to_i
     # set to the time of the first request processed (the most recent chronologically)
@@ -379,7 +381,7 @@ class Elif
       # back a step, to give us new bytes to read.
       #
       @current_pos -= @read_size
-      if @current_pos > 0
+      if @current_pos >= 0
         @file.seek(@current_pos, IO::SEEK_SET) 
         chunk = @file.read(@read_size)
       end

@@ -19,7 +19,7 @@ class MemcachedStats < Scout::Plugin
     connection = MemCache.new "#{option(:host)}:#{option(:port)}"
     begin
       stats = connection.stats["#{option(:host)}:#{option(:port)}"]
-    rescue Errno::ECONNREFUSED, MemCache::MemCacheError => error
+    rescue Errno::ECONNREFUSED, MemCache::MemCacheError => e
       return error( "Could not connect to Memcached.",
                     "Make certain you've specified the correct host and port" )
     end

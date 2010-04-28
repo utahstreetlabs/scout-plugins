@@ -1,0 +1,67 @@
+Processing SpotsController#show (for 66.249.71.115 at 2010-04-26 23:12:48) [GET]
+  Parameters: {"action"=>"show", "id"=>"5624", "controller"=>"spots"}
+Rendering template within layouts/application
+Rendering spots/show
+Completed in 36ms (View: 28, DB: 4) | 200 OK [http://hotspotr.com/spot/5624]
+
+
+Processing SpotsController#map (for 67.195.115.176 at 2010-04-26 23:12:50) [GET]
+  Parameters: {"ll"=>"42.342607,-71.121571", "name"=>"Starbucks at Coolidge Corner", "action"=>"map", "controller"=>"spots", "zoom"=>"15"}
+Rendering template within layouts/application
+Rendering spots/map
+Completed in 56ms (View: 28, DB: 24) | 200 OK [http://hotspotr.com/wifi/map?ll=42.342607%2C-71.121571&name=Starbucks+at+Coolidge+Corner&zoom=15]
+
+
+Processing SpotsController#show (for 207.46.12.67 at 2010-04-26 23:12:54) [GET]
+  Parameters: {"action"=>"show", "id"=>"15929-bluewater-wireless", "controller"=>"spots"}
+Rendering template within layouts/application
+Rendering spots/show
+Completed in 36ms (View: 28, DB: 4) | 200 OK [http://hotspotr.com/spot/15929-bluewater-wireless]
+
+
+Processing SpotsController#map (for 67.195.115.176 at 2010-04-26 23:12:57) [GET]
+  Parameters: {"ll"=>"40.744315,-73.6557227", "name"=>"Panera Bread: Jericho Turnpike aplication job", "action"=>"map", "controller"=>"spots", "zoom"=>"15"}
+Rendering template within layouts/application
+Rendering spots/map
+Completed in 56ms (View: 24, DB: 28) | 200 OK [http://hotspotr.com/wifi/map?ll=40.744315%2C-73.6557227&name=Panera+Bread%3A+Jericho+Turnpike+aplication+job&zoom=15]
+
+
+Processing SpotsController#list (for 67.195.115.176 at 2010-04-26 23:13:22) [GET]
+  Parameters: {"action"=>"list", "controller"=>"spots", "city_id"=>"1586-solana-beach-ca"}
+Rendering template within layouts/application
+Rendering spots/list
+Completed in 212ms (View: 164, DB: 32) | 200 OK [http://hotspotr.com/wifi/list/1586-solana-beach-ca]
+
+
+Processing SpotsController#show (for 67.195.115.176 at 2010-04-26 23:13:24) [GET]
+  Parameters: {"action"=>"show", "id"=>"17160", "controller"=>"spots"}
+Rendering template within layouts/application
+Rendering spots/show
+Completed in 32ms (View: 20, DB: 4) | 200 OK [http://hotspotr.com/spot/17160]
+
+
+Processing ReviewsController#create (for 94.102.49.76 at 2010-04-26 23:19:01) [POST]
+  Parameters: {"commit"=>"Add your review", "spot_id"=>"5277-wauwatosa-public-library", "action"=>"create", "review"=>{"author_name"=>"Aron", "author_email"=>"heel@mail.com", "author_url"=>"Bill"}, "controller"=>"reviews"}
+Redirected to http://hotspotr.com/spot/5277-wauwatosa-public-library?show_review_form=true
+Completed in 40ms (DB: 24) | 302 Found [http://hotspotr.com/spot/5277-wauwatosa-public-library/reviews]
+
+
+Processing AppController#redirect_to_wifi (for 207.81.115.174 at 2010-04-26 23:19:28) [GET]
+  Parameters: {"action"=>"redirect_to_wifi", "controller"=>"app"}
+Redirected to http://hotspotr.com/wifi
+Completed in 0ms (DB: 0) | 302 Found [http://hotspotr.com/]
+
+
+Processing AppController#welcome (for 207.81.115.174 at 2010-04-26 23:19:28) [GET]
+  Parameters: {"action"=>"welcome", "controller"=>"app"}
+Rendering template within layouts/application
+Rendering app/welcome
+Completed in 1001ms (View: 24, DB: 900) | 200 OK [http://hotspotr.com/wifi]
+
+
+Processing SpotsController#map (for 207.81.115.174 at 2010-04-26 23:19:37) [GET]
+  Parameters: {"action"=>"map", "controller"=>"spots", "city_id"=>"660-vancouver-canada"}
+Rendering template within layouts/application
+Rendering spots/map
+Completed in 2100ms (View: 100, DB: 2000) | 200 OK [http://hotspotr.com/wifi/map/660-vancouver-canada]
+

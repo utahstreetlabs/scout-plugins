@@ -355,9 +355,8 @@ class RailsRequests < Scout::Plugin
 end
 
 ### Modifications below for Elif and File to ignore large chunks of data in long lines.
-
+$VERBOSE=nil # prevent method overwrite warnings
 class Elif
-  alias_method :gets_old, :gets
   # This is a modified version of +gets+. It ignores any segments that do not contain the 
   # +sep_string+. This prevents the buffer from growing in size in using more memory.
   def gets(sep_string = $\)
@@ -404,9 +403,8 @@ class Elif
 end
 
 class File
-  alias_method :gets_original, :gets
   # The size of the reads we will use to add to the line buffer.
-  MAX_READ_SIZE=1024*100
+  MAX_READ_SIZE=1024*100 unless const_defined?(:MAX_READ_SIZE)
   
   # 
   # This method returns the next line of the File.
@@ -481,6 +479,5 @@ class File
     
     # We have more data now, so try again to read a line...
     gets(sep_string)
-  end
+  end  
 end
-

@@ -26,6 +26,13 @@ class RailsRequestsTest < Test::Unit::TestCase
     assert_match %r(http://hotspotr.com/wifi/map/660-vancouver-canada), res[:alerts].first[:body] 
   end
 
+  def test_ignored_slow_request_rails_2_3
+    plugin=RailsRequests.new(nil,{:last_request_time=>Time.parse("2010-04-26 00:00:00")},@options.merge(:log => @log, :max_request_length=>2, :ignored_actions=>'map'))
+    res=plugin.run
+    assert_equal 0, res[:reports].first[:slow_requests_percentage]
+    assert_equal 0, res[:alerts].size
+  end
+
   def test_run_with_two_slow_requests_rails_2_3
     plugin=RailsRequests.new(nil,{:last_request_time=>Time.parse("2010-04-26 00:00:00")},@options.merge(:log => @log, :max_request_length=>1))
     res=plugin.run
@@ -47,7 +54,14 @@ class RailsRequestsTest < Test::Unit::TestCase
     assert_equal 10, res[:reports].first[:slow_requests_percentage]
     assert_equal 1, res[:alerts].size
     assert_equal "Maximum Time(2 sec) exceeded on 1 request",res[:alerts].first[:subject]
-    assert_match %r(path: /home), res[:alerts].first[:body]
+    assert_match %r(/home), res[:alerts].first[:body]
+  end
+
+  def test_ignored_slow_request_rails_3
+    plugin=RailsRequests.new(nil,{:last_request_time=>Time.parse("2010-04-26 00:00:00")},@options.merge(:log => @rails3_log, :max_request_length=>2, :ignored_actions=>'home'))
+    res=plugin.run
+    assert_equal 0, res[:reports].first[:slow_requests_percentage]
+    assert_equal 0, res[:alerts].size
   end
 
   def test_wrong_log_path
@@ -64,5 +78,7 @@ class RailsRequestsTest < Test::Unit::TestCase
     assert_equal 1, res[:errors].size
     assert_match /Unknown Rails log format/, res[:errors].first[:subject]
   end
+
+
 
 end

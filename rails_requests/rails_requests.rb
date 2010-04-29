@@ -78,6 +78,7 @@ class RailsRequests < Scout::Plugin
       request             = format.request
 
       time_of_request = nil
+      started={}
 
       # read backward, counting lines
       Elif.foreach(log_path) do |line|
@@ -99,11 +100,12 @@ class RailsRequests < Scout::Plugin
             request_count += 1
             total_request_time     += last_completed[:duration]
             if max_length > 0 and last_completed[:duration] > max_length
+              # url is in :completed in rails2; path is in :started in rails3
+              url= last_completed[:url] || started[:path]
               # only test for ignored_actions if we actually have an ignored_actions regex
-              if ignored_actions.nil? || (ignored_actions.is_a?(Regexp) && !ignored_actions.match(last_completed.last))
-                slow_request_count += 1
-                # url is in :completed in rails2; path is in :started in rails3
-                slow_requests      += "#{last_completed[:url] || "path: "+started[:path]}\n\n"
+              if ignored_actions.nil? || (ignored_actions.is_a?(Regexp) && !ignored_actions.match(url))
+                slow_request_count += 1                
+                slow_requests      += "#{url}\n\n"
               end
             end
           end # request should be analyzed

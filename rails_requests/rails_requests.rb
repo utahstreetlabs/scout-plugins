@@ -48,14 +48,18 @@ class RailsRequests < Scout::Plugin
       end
     end
 
-    report_data        = { :slow_request_rate     => 0,
-                           :request_rate          => 0,
-                           :average_request_length => nil }
+    report_data        = { :slow_request_rate      => 0,
+                           :request_rate           => 0,
+                           :average_request_length => nil,
+                           :average_db_time        => nil,
+                           :average_view_time      => nil }
     slow_request_count = 0
     request_count      = 0
     last_completed     = nil
     slow_requests      = ''
     total_request_time = 0.0
+    total_view_time    = 0.0
+    total_db_time      = 0.0
     previous_last_request_time = memory(:last_request_time) || Time.now-60 # analyze last minute on first invocation
     if option(:log_test)
       previous_last_request_time = Time.now-(60*60*24*300)
@@ -78,11 +82,13 @@ class RailsRequests < Scout::Plugin
       request             = format.request
 
       time_of_request = nil
-      started={}
+      started = {}
+      last_completed_line = ''
 
       # read backward, counting lines
       Elif.foreach(log_path) do |line|
         if matches = completed_line_def.matches(line)
+          last_completed_line = line
           last_completed = completed_line_def.convert_captured_values(matches[:captures],request) # returns a hash, see RequestLogAnalyzer::LineDefinition
         elsif last_completed and started_line_def and matches = started_line_def.matches(line) # In Rails3, timestamp is in :started line
           started = started_line_def.convert_captured_values(matches[:captures],request)
@@ -97,15 +103,17 @@ class RailsRequests < Scout::Plugin
           if time_of_request <= previous_last_request_time_as_timestamp
             break
           else
-            request_count += 1
+            request_count += 1            
             total_request_time     += last_completed[:duration]
+            total_view_time        += (last_completed[:view] || 0.0)
+            total_db_time          += (last_completed[:db] || 0.0) 
             if max_length > 0 and last_completed[:duration] > max_length
               # url is in :completed in rails2; path is in :started in rails3
               url= last_completed[:url] || started[:path]
               # only test for ignored_actions if we actually have an ignored_actions regex
               if ignored_actions.nil? || (ignored_actions.is_a?(Regexp) && !ignored_actions.match(url))
                 slow_request_count += 1                
-                slow_requests      += "#{url}\n\n"
+                slow_requests      += "#{url}\n#{last_completed_line.split('[').first}\n\n"
               end
             end
           end # request should be analyzed
@@ -139,10 +147,10 @@ class RailsRequests < Scout::Plugin
                                              interval
       report_data[:slow_request_rate]      = sprintf("%.2f", slow_request_rate)
       
-      # determine the average request length
-      avg                                  = total_request_time /
-                                             request_count
-      report_data[:average_request_length] = sprintf("%.2f", avg)
+      # determine the average times for the whole request, db, and view
+      report_data[:average_request_length] = sprintf("%.2f", total_request_time / request_count)
+      report_data[:average_db_time] = sprintf("%.2f", total_view_time / request_count)
+      report_data[:average_view_time] = sprintf("%.2f", total_db_time / request_count)
 
       report_data[:slow_requests_percentage] = (request_count == 0) ? 0 : (slow_request_count.to_f / request_count.to_f) * 100.0
 

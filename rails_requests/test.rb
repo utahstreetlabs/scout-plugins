@@ -14,6 +14,8 @@ class RailsRequestsTest < Test::Unit::TestCase
     res=plugin.run
     assert_equal 0.0, res[:reports].first[:slow_requests_percentage]
     assert_equal "0.36", res[:reports].first[:average_request_length]
+    assert_equal "0.04", res[:reports].first[:average_db_time]
+    assert_equal "0.30", res[:reports].first[:average_view_time]
     assert_equal 1, res[:summaries].size
   end
 
@@ -39,13 +41,16 @@ class RailsRequestsTest < Test::Unit::TestCase
     assert_equal 20, res[:reports].first[:slow_requests_percentage]
     assert_equal 1, res[:alerts].size
     assert_equal "Maximum Time(1 sec) exceeded on 2 requests", res[:alerts].first[:subject]
-    assert_equal "http://hotspotr.com/wifi/map/660-vancouver-canada\n\nhttp://hotspotr.com/wifi\n\n", res[:alerts].first[:body]
+    assert_equal "http://hotspotr.com/wifi/map/660-vancouver-canada\nCompleted in 2100ms (View: 100, DB: 2000) | 200 OK \n\nhttp://hotspotr.com/wifi\nCompleted in 1001ms (View: 24, DB: 900) | 200 OK \n\n",
+                  res[:alerts].first[:body]
   end
 
   def test_run_rails_3
     plugin=RailsRequests.new(nil,{:last_request_time=>Time.parse("2010-04-26 00:00:00")},@options.merge(:log => @rails3_log))
     res=plugin.run
-    assert_not_nil res[:reports].first[:average_request_length]
+    assert_equal "0.39", res[:reports].first[:average_request_length]
+    assert_equal "0.00", res[:reports].first[:average_db_time]   # NOTE: the Rails3 Parser doesn't extract these values 4/30/2010
+    assert_equal "0.00", res[:reports].first[:average_view_time] # NOTE: the Rails3 Parser doesn't extract these values 4/30/2010
   end
 
   def test_run_with_slow_request_rails_3
@@ -54,7 +59,7 @@ class RailsRequestsTest < Test::Unit::TestCase
     assert_equal 10, res[:reports].first[:slow_requests_percentage]
     assert_equal 1, res[:alerts].size
     assert_equal "Maximum Time(2 sec) exceeded on 1 request",res[:alerts].first[:subject]
-    assert_match %r(/home), res[:alerts].first[:body]
+    assert_equal "/home\nCompleted 200 OK in 2100ms (Views: 1900ms | ActiveRecord: 100ms)\n\n\n", res[:alerts].first[:body]
   end
 
   def test_ignored_slow_request_rails_3

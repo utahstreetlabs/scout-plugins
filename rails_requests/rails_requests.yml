@@ -6,6 +6,12 @@ metadata:
   average_request_length:
     precision: 2
     units: sec
+  average_db_time:
+    precision: 2
+    units: sec
+  average_view_time:
+    precision: 2
+    units: sec
   slow_request_rate:
     precision: 2
     label: Slow Requests

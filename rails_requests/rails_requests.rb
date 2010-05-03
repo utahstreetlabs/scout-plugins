@@ -120,10 +120,9 @@ class RailsRequests < Scout::Plugin
           time_of_request = nil
         end
       end
-    else
-      error("Unknown Rails log format", "Unknown Rails log format at: #{option(:log)}. Please ensure the path is correct.")  
     end
-    
+    # no else for now -- if format can't be identified, it's often because log is empty immediately after rotation.
+
     # Create a single alert that holds all of the requests that exceeded the +max_request_length+.
     if (count = slow_request_count) > 0
       alert( "Maximum Time(#{option(:max_request_length)} sec) exceeded on #{count} request#{'s' if count != 1}",

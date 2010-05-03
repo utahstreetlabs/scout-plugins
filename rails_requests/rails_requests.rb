@@ -255,6 +255,8 @@ class RailsRequests < Scout::Plugin
   end
   
   def analyzer_with_newer_rla(last_summary, stop_time, log_file)
+    format=RequestLogAnalyzer::FileFormat.autodetect(log_file.path)
+    format= format ? format.class : RequestLogAnalyzer::FileFormat::Rails
     summary = StringIO.new
     RequestLogAnalyzer::Controller.build(
       :output       => EmbeddedHTML,
@@ -262,7 +264,7 @@ class RailsRequests < Scout::Plugin
       :after        => last_summary, 
       :before       => stop_time,
       :source_files => log_file,
-      :format       => RequestLogAnalyzer::FileFormat::Rails
+      :format       => format
     ).run!
     summary.string.strip
   end

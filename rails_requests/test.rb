@@ -80,7 +80,7 @@ class RailsRequestsTest < Test::Unit::TestCase
     plugin=RailsRequests.new(nil,{:last_request_time=>Time.parse("2010-04-26 00:00:00")},
                              @options.merge(:log =>  File.dirname(__FILE__)+"/log/empty.log"))
     res=plugin.run
-    assert_equal 0, res[:errors].size
+    assert_equal 0, res[:errors].size, res.to_yaml
     assert_equal 0, res[:alerts].size
   end
 

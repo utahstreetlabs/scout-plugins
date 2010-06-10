@@ -25,7 +25,8 @@ class RailsRequests < Scout::Plugin
     notes: Takes a regex. Any URIs matching this regex will NOT count as slow requests, and you will NOT be notified if they exceed Max Request Length. Matching actions will still be included in daily summaries.
     attributes: advanced
   rails_version:
-    notes: The version of Ruby on Rails used for this application (examples: 2, 2.2, 3). If none is provided, defaults to 2.
+    notes: "The version of Ruby on Rails used for this application (examples: 2, 2.2, 3). If none is provided, defaults to 2."
+    attributes: advanced
   EOS
 
   needs "request_log_analyzer"

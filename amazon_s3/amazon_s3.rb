@@ -4,16 +4,16 @@ class NumFiles < Scout::Plugin
   OPTIONS=<<-EOS
     username:
       name: AWS Username
-      description: Email address for your AWS account
+      notes: Email address for your AWS account
     password:
       name: AWS Password
     buckets:
       name: S3 Buckets
-      description: Comma-separated list. Leave empty for all buckets.
+      notes: Comma-separated list. Leave empty for all buckets.
       default:
     script_path:
       name: Script path
-      description: Path to check_aws_usage.py
+      notes: Path to check_aws_usage.py
       default: check_aws_usage.py
   EOS
   

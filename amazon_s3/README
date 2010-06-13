@@ -5,6 +5,9 @@ Created by [Koordinates](http://koordinates.com)
 
 Reports on Amazon S3 usage for a particular set of buckets.
 
+You want to increase your reporting interval to something >0 so the AWS 
+reporting service doesn't get hammered with no real reason (data is hourly).
+
 Dependencies
 ------------
 

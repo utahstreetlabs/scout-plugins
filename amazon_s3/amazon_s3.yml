@@ -1,0 +1,48 @@
+metadata:
+  storage:
+    label: Storage
+    units: GB
+    precision: 0.1
+
+  storage:
+    label: Storage Count
+    precision: 0
+
+  data_aws:
+    label: AWS-internal data
+    units: GB/hour
+    precision: 0.1
+  
+  data_out:
+    label: External data out
+    units: GB/hour
+    precision: 0.1
+
+  data_in:
+    label: External data in
+    units: GB/hour
+    precision: 0.1
+    
+  req_list:
+    label: List Requests
+    units: Requests/hour
+
+  req_get:
+    label: GET Requests
+    units: Requests/hour
+
+  req_head:
+    label: HEAD Requests
+    units: Requests/hour
+
+  req_put:
+    label: PUT Requests
+    units: Requests/hour
+
+  req_delete:
+    label: DELETE Requests
+    units: Requests/hour
+
+  req_copy:
+    label: COPY Requests
+    units: Requests/hour

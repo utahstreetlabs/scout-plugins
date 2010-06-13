@@ -47,10 +47,12 @@ class NumFiles < Scout::Plugin
     date_to = (date_val + (60*60*24)).strftime('%Y-%m-%d') 
     
     # download the data from AWS
-    csv_report = `#{option(:script_path)} --username "#{option(:username)}" --password "#{option(:password)}" --service "AmazonS3" #{date_from} #{date_to}`
+    csv_report = `#{option(:script_path)} --period hours --username "#{option(:username)}" --password "#{option(:password)}" --service "AmazonS3" #{date_from} #{date_to}`
     if $?.exitstatus != 0
+      # re-run and capture stderr this time
+      output = `#{option(:script_path)} --period hours --username "#{option(:username)}" --password "#{option(:password)}" --service "AmazonS3" #{date_from} #{date_to} 2>&1`
       return errors << {:subject => "Unable to retrieve report data from Amazon.",
-                        :body => "Exit code: #{$?.exitstatus}"}
+                        :body => "Exit code: #{$?.exitstatus}\n#{output}"}
     end
     # comment out the above, and uncomment below to do some local testing...
     #csv_report = File.new('/path/to/test_data.csv', 'rb').read

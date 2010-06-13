@@ -9,46 +9,46 @@ metadata:
     precision: 0
 
   data_aws:
-    label: AWS-internal data
+    label: Data: internal total
     units: GB/hr
     precision: 2
   
   data_out:
-    label: External data out
+    label: Data: external out
     units: GB/hr
     precision: 2
 
   data_in:
-    label: External data in
+    label: Data: external in
     units: GB/hr
     precision: 2
     
   req_list:
-    label: List Requests
+    label: Requests: List
     units: req/hr
     precision: 0
 
   req_get:
-    label: GET Requests
+    label: Requests: GET
     units: req/hr
     precision: 0
 
   req_head:
-    label: HEAD Requests
+    label: Requests: HEAD
     units: req/hr
     precision: 0
 
   req_put:
-    label: PUT Requests
+    label: Requests: PUT
     units: req/hr
     precision: 0
 
   req_delete:
-    label: DELETE Requests
+    label: Requests: DELETE
     units: req/hr
     precision: 0
 
   req_copy:
-    label: COPY Requests
+    label: Requests: COPY
     units: req/hr
     precision: 0

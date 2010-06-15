@@ -41,7 +41,7 @@ class RailsRequestsTest < Test::Unit::TestCase
     assert_equal 20, res[:reports].first[:slow_requests_percentage]
     assert_equal 1, res[:alerts].size
     assert_equal "Maximum Time(1 sec) exceeded on 2 requests", res[:alerts].first[:subject]
-    assert_equal "http://hotspotr.com/wifi/map/660-vancouver-canada\nCompleted in 2100ms (View: 100, DB: 2000) | 200 OK \n\nhttp://hotspotr.com/wifi\nCompleted in 1001ms (View: 24, DB: 900) | 200 OK \n\n",
+    assert_equal "http://hotspotr.com/wifi\nCompleted in 1.001s (View: 0.024s, DB: 0.9s) | Status: 200\n\nhttp://hotspotr.com/wifi/map/660-vancouver-canada\nCompleted in 2.1s (View: 0.1s, DB: 2.0s) | Status: 200\n\n",
                   res[:alerts].first[:body]
   end
 
@@ -59,7 +59,8 @@ class RailsRequestsTest < Test::Unit::TestCase
     assert_equal 10, res[:reports].first[:slow_requests_percentage]
     assert_equal 1, res[:alerts].size
     assert_equal "Maximum Time(2 sec) exceeded on 1 request",res[:alerts].first[:subject]
-    assert_equal "/home\nCompleted 200 OK in 2100ms (Views: 1900ms | ActiveRecord: 100ms)\n\n\n", res[:alerts].first[:body]
+    # don't have view / db breakdown yet for Rails 3
+    assert_equal "/home\nCompleted in 2.1s (View: s, DB: s) | Status: 200\n\n", res[:alerts].first[:body]
   end
 
   def test_ignored_slow_request_rails_3

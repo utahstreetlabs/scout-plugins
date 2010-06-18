@@ -59,6 +59,9 @@ class RailsRequests < Scout::Plugin
     # the updated file position will be saved for the next run.
     last_file_position = nil
     
+    # for dev debugging
+    skipped_requests_count = 0
+    
     # needed to ensure that the analyzer doesn't run if the log file isn't found.
     @file_found        = true
     File.open(@log_path, 'rb') do |f| 
@@ -67,13 +70,10 @@ class RailsRequests < Scout::Plugin
       # use the log parser to build requests from the lines.
       @log_parser.parse_io(f) do |request|
         # store the last file position and timestamp of the last request processed.
-        last_file_position = f.pos
         last_request_time = request[:timestamp]
-
         # don't process requests if they are before the last request processed.
-        if request[:timestamp] < @previous_last_request_time_as_timestamp
-          puts "request before last request time"
-          puts "timestamp: #{request[:timestamp]} / previous: #{@previous_last_request_time_as_timestamp}"
+        if request[:timestamp] <= @previous_last_request_time_as_timestamp
+          skipped_requests_count += 1
         else
           completed_line = request.has_line_type?(:completed)
           next if completed_line.nil? # request could be a failure. if so, no metrics to parse.
@@ -83,8 +83,6 @@ class RailsRequests < Scout::Plugin
       end # parse_io
     
     end # File.open
-    
-    remember(:previous_position,last_file_position)
     
     generate_slow_request_alerts
     
@@ -154,14 +152,23 @@ class RailsRequests < Scout::Plugin
     @total_db_time      = 0.0
   end
   
-  # seeks to the previous file pointer position in the log file. if no previous position exists, 
-  # sets the file pointer to the end of the file - MAX_READ_SIZE
+  # seeks to the previous file pointer position in the log file. saves the new previous position for the 
+  # next run.
+  # - if no previous position exists, sets the file pointer to the end of the file - MAX_READ_SIZE
+  # - for logrotate, if the previous position is greater than the current one, sets the position to 0
+  #   to start with the fresh file.
   def init_file_pointer
     @previous_position  = memory(:previous_position)
-    unless @previous_position 
-      @previous_position = `wc -c #{@log_path}`.split(' ')[0].to_i - File::MAX_READ_SIZE
+    current_position    = `wc -c #{@log_path}`.split(' ')[0].to_i
+    remember(:previous_position,current_position)
+    if @previous_position and current_position < @previous_position
+      # log file rotated - set position to zero
+      @previous_position = 0
+    elsif @previous_position.nil?
+      # first run
+      @previous_position = current_position - File::MAX_READ_SIZE
       @previous_position < 0 ? @previous_position = 0 : nil
-    end
+    end    
   end
   
   # sets @previous_last_request_time, @previous_last_request_time_as_timestamp
@@ -526,13 +533,13 @@ class File
         
     # Record where we are.
     @current_pos ||= pos
-    
+        
     # Last Position in the file
     @last_pos ||= nil
     if @last_pos.nil? 
       seek(0, IO::SEEK_END)
       @last_pos = pos
-      seek(0,0)
+      seek(@current_pos,IO::SEEK_SET) # back to the original position
     end
     
     # 

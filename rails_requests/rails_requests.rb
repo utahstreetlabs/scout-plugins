@@ -15,6 +15,10 @@ class RailsRequests < Scout::Plugin
     name: Max Request Length (sec)
     notes: If any request length is larger than this amount, an alert is generated (see Advanced for more options)
     default: 3
+  max_memory_diff:
+    name: Max Memory Difference (MB)
+    notes: If any request results in a change in memory larger than this amount, an alert is generated
+    default: 75
   rla_run_time:
     name: Request Log Analyzer Run Time (HH:MM)
     notes: It's best to schedule these summaries about fifteen minutes before any logrotate cron job you have set would kick in. The time should be in the server timezone.
@@ -45,6 +49,7 @@ class RailsRequests < Scout::Plugin
     end
     
     @max_length = option(:max_request_length).to_f
+    @max_memory_diff = option(:max_memory_diff) ? option(:max_memory_diff).to_f : nil
     
     init_ignored_actions # sets @ignored_actions@
     init_parser # sets @file_format    
@@ -85,6 +90,7 @@ class RailsRequests < Scout::Plugin
     end # File.open
     
     generate_slow_request_alerts
+    generate_memory_leak_alerts
     
     remember(:last_request_time, Time.parse(last_request_time.to_s) || Time.now)
 
@@ -120,9 +126,23 @@ class RailsRequests < Scout::Plugin
   
   # Set the RLA rails format to +@file_format+ and inits the log parser (@log_parser). If none provided, defaults to railsoink (which is v2).
   def init_parser
+    set_file_format_class
+    # will use minimal line collection for incremental parsing. using more line collections increases
+    # parsing time. 
+    if @file_format_class == RequestLogAnalyzer::FileFormat::RailsOink
+      @file_format = @file_format_class.create(@file_format_class.const_get('LINE_COLLECTIONS')[:minimal]<< :memory_usage)  
+    else # Rails3 doesn't have option of minimal processing
+      @file_format = @file_format_class.create
+    end
+    @log_parser  = RequestLogAnalyzer::Source::LogParser.new(@file_format, :parse_strategy => 'cautious')
+  end
+  
+  # Need the class for incremental parsing and the daily report. 
+  # Incremental uses a minimal parsing strategy for performance - the daily report does not.
+  def set_file_format_class
     rails_version = option(:rails_version)
     rails_version = rails_version.to_s[0..0].to_i
-    file_format = case rails_version
+    @file_format_class = case rails_version
               when 2
                 RequestLogAnalyzer::FileFormat::RailsOink
               when 3
@@ -131,25 +151,19 @@ class RailsRequests < Scout::Plugin
               else
                 RequestLogAnalyzer::FileFormat::RailsOink
               end
-    # will use minimal line collection for incremental parsing. using more line collections increases
-    # parsing time. 
-    if file_format == RequestLogAnalyzer::FileFormat::RailsOink
-      @file_format = file_format.create(file_format.const_get('LINE_COLLECTIONS')[:minimal]<< :memory_usage)  
-    else # Rails3 doesn't have option of minimal processing
-      @file_format = file_format.create
-    end
-    @log_parser  = RequestLogAnalyzer::Source::LogParser.new(@file_format, :parse_strategy => 'cautious')
   end
   
   # Inits data the plugin tracks, ie slow request count, slow requests, etc
   def init_tracking
-    @slow_request_count = 0
-    @request_count      = 0
-    @last_completed     = nil
-    @slow_requests      = ''
-    @total_request_time = 0.0
-    @total_view_time    = 0.0
-    @total_db_time      = 0.0
+    @slow_request_count     = 0
+    @request_count          = 0
+    @last_completed         = nil
+    @slow_requests          = ''
+    @leaking_requests_count = 0
+    @leaking_requests       = ''
+    @total_request_time     = 0.0
+    @total_view_time        = 0.0
+    @total_db_time          = 0.0
   end
   
   # seeks to the previous file pointer position in the log file. saves the new previous position for the 
@@ -230,21 +244,32 @@ class RailsRequests < Scout::Plugin
   
   def parse_request(request)
     @request_count += 1  
+    url= request[:url] || request[:path]
+    
+    parse_timing(request,url)
+    parse_memory(request,url)
+  end
+  
+  def parse_timing(request,url)
     @total_request_time     += request[:duration]
     @total_view_time        += (request[:view] || 0.0)
     @total_db_time          += (request[:db] || 0.0) 
     if @max_length > 0 and request[:duration] > @max_length
       # url is in :completed in rails2; path is in :started in rails3
-      url= request[:url] || request[:path]
       # only test for ignored_actions if we actually have an ignored_actions regex
       if @ignored_actions.nil? || (@ignored_actions.is_a?(Regexp) && !@ignored_actions.match(url))
         @slow_request_count += 1                
-        # slow_requests      += "#{url}\n#{last_completed_line.split('[').first}\n\n"
-        # sample with hodel3000 - https://www.ibridgenetwork.org/profile/beth-drees\nJun 13 12:01:01
-        # TODO - Add time of request, durations?
         @slow_requests += "#{url}\nCompleted in #{request[:duration]}s (View: #{request[:view]}s, DB: #{request[:db]}s) | Status: #{request[:status]}\n\n"
       end
     end
+  end
+  
+  def parse_memory(request,url)
+    # memory_diff is in bytes ... max_memory_diff in MB
+    if @max_memory_diff and diff=request[:memory_diff] and diff > @max_memory_diff*1024*1024
+      @leaking_requests_count +=1
+      @leaking_requests += "#{url}\nMemory Increase: #{diff / 1024 / 1024} MB | Completed in #{request[:duration]}s (View: #{request[:view]}s, DB: #{request[:db]}s) | Status: #{request[:status]}\n\n"
+    end 
   end
   
   def generate_slow_request_alerts
@@ -252,6 +277,14 @@ class RailsRequests < Scout::Plugin
     if (count = @slow_request_count) > 0
       alert( "Maximum Time(#{option(:max_request_length)} sec) exceeded on #{count} request#{'s' if count != 1}",
              @slow_requests )
+    end
+  end
+  
+  def generate_memory_leak_alerts
+    # Create a single alert that holds all of the requests that exceeded the +max_memory_diff+.
+    if (count = @leaking_requests_count) > 0
+      alert( "Maximum Memory Increase(#{@max_memory_diff} MB) exceeded on #{count} request#{'s' if count != 1}",
+             @leaking_requests )
     end
   end
 
@@ -324,7 +357,7 @@ class RailsRequests < Scout::Plugin
     summary  = StringIO.new
     output   = EmbeddedHTML.new(summary)
     options  = {:source_files => log_file, :output => output}
-    source   = RequestLogAnalyzer::Source::LogParser.new(@format, options)
+    source   = RequestLogAnalyzer::Source::LogParser.new(@file_format_class, options)
     control  = RequestLogAnalyzer::Controller.new(source, options)
     control.add_filter(:timespan, :after  => last_summary)
     control.add_filter(:timespan, :before => stop_time)
@@ -345,7 +378,7 @@ class RailsRequests < Scout::Plugin
       :after        => last_summary, 
       :before       => stop_time,
       :source_files => log_file,
-      :format       => @format
+      :format       => @file_format_class
     ).run!
     summary.string.strip
   end
@@ -385,6 +418,14 @@ class RailsRequests < Scout::Plugin
       @io << str
     end
     alias_method :<<, :print
+    
+    def colorize(text, *style)
+      if style.include?(:bold)
+        tag(:strong, text)
+      else
+        text
+      end
+    end
   
     def puts(str = "")
       @io << "#{str}<br/>\n"

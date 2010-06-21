@@ -27,7 +27,6 @@ class RailsRequestsTest < Test::Unit::TestCase
     assert_equal "2.29", res[:reports].first[:average_request_length]
     assert_equal "0.07", res[:reports].first[:average_db_time]
     assert_equal "2.19", res[:reports].first[:average_view_time]
-    p res[:summaries].inspect
     assert_equal 1, res[:summaries].size
   end
   

@@ -130,7 +130,7 @@ class RailsRequests < Scout::Plugin
     # will use minimal line collection for incremental parsing. using more line collections increases
     # parsing time. 
     if @file_format_class == RequestLogAnalyzer::FileFormat::RailsOink
-      @file_format = @file_format_class.create(@file_format_class.const_get('LINE_COLLECTIONS')[:minimal]<< :memory_usage)  
+      @file_format = @file_format_class.create('minimal')  
     else # Rails3 doesn't have option of minimal processing
       @file_format = @file_format_class.create
     end
@@ -661,6 +661,9 @@ class RequestLogAnalyzer::FileFormat::RailsOink < RequestLogAnalyzer::FileFormat
    :regexp   => /\[(\d+)\]: Memory usage: (\d+) /,
    :captures => [{ :name => :pid, :type => :integer },{ :name => :memory, :type => :traffic }])
   
+  LINE_COLLECTIONS.each { |k,v| LINE_COLLECTIONS[k] << :memory_usage }
+  
+  
   report(:append) do |analyze|
       analyze.traffic :memory_diff, :category => REQUEST_CATEGORIZER, :title => "Largest Memory Increases", :line_type => :memory_usage
   end
@@ -686,17 +689,12 @@ class RequestLogAnalyzer::FileFormat::RailsOink < RequestLogAnalyzer::FileFormat
         pid,memory_reading = mem_line.values_at(:pid,:memory)
         file_format.pids[pid] ||= { :last_memory_reading => -1, :current_memory_reading => -1 }
         file_format.pids[pid][:current_memory_reading] = memory_reading
-      
         # calcuate the change in memory
         unless file_format.pids[pid][:current_memory_reading] == -1 || file_format.pids[pid][:last_memory_reading] == -1
           # logged as kB, need to convert to bytes for the :traffic Tracker
           memory_diff = (file_format.pids[pid][:current_memory_reading] - file_format.pids[pid][:last_memory_reading])*1024
           if memory_diff > 0
             self.attributes[:memory_diff] = memory_diff
-            # debugging
-            # puts has_line_type?(:completed).inspect
-            # puts "[#{pid}] #{self.attributes[:memory_diff]/1024} last: #{file_format.pids[pid][:last_memory_reading]} current: #{file_format.pids[pid][:current_memory_reading]}"
-            # puts '---------------------------'
           end # if memory_diff > 0
         end # unless
         

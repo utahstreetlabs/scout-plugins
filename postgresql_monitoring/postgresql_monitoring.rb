@@ -15,6 +15,10 @@ class PostgresqlMonitoring< Scout::Plugin
               a slash it is used as the directory for the Unix-domain socket. An empty
               string uses the default Unix-domain socket.
       default: localhost
+    dbname:
+      name: Database
+      notes: The database name to monitor
+      default: postgres
     port:
       name: PostgreSQL port
       notes: Specify the port to connect to PostgreSQL with
@@ -28,7 +32,7 @@ class PostgresqlMonitoring< Scout::Plugin
     report = {}
     
     begin
-      pgconn = PGconn.new(:host=>option(:host), :user=>option(:user), :password=>option(:password), :port=>option(:port).to_i, :dbname=>'postgres')
+      pgconn = PGconn.new(:host=>option(:host), :user=>option(:user), :password=>option(:password), :port=>option(:port).to_i, :dbname=>option(:dbname))
     rescue PGError => e
       return errors << {:subject => "Unable to connect to PostgreSQL.",
                         :body => "Scout was unable to connect to the PostgreSQL server: #{e.backtrace}"}
@@ -66,8 +70,8 @@ class PostgresqlMonitoring< Scout::Plugin
       end
     end
     
-    if report['blks_hit'] and report['blks_read'] and report['blks_hit']>0.0 and report['blks_read']>0.0
-      report['blks_cache_pc'] = (report['blks_hit'] / (report['blks_hit']+report['blks_read']).to_f * 100).to_i
+    if report['blks_hit'] and report['blks_read']
+      report['blks_cache_pc'] = (report['blks_hit'].to_f / (report['blks_hit'].to_f+report['blks_read'].to_f) * 100).to_i
     else
       report['blks_cache_pc'] = nil
     end

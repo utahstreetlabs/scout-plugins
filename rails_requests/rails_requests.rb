@@ -17,7 +17,7 @@ class RailsRequests < Scout::Plugin
     default: 3
   max_memory_diff:
     name: Max Memory Difference (MB)
-    notes: If any request results in a change in memory larger than this amount, an alert is generated
+    notes: If any request results in a change in memory larger than this amount, an alert is generated. The Oink plugin must be installed in your Rails application.
     default: 75
   rla_run_time:
     name: Request Log Analyzer Run Time (HH:MM)

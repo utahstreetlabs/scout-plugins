@@ -268,7 +268,7 @@ class RailsRequests < Scout::Plugin
     # memory_diff is in bytes ... max_memory_diff in MB
     if @max_memory_diff and diff=request[:memory_diff] and diff > @max_memory_diff*1024*1024
       @leaking_requests_count +=1
-      @leaking_requests += "#{url}\nMemory Increase: #{diff / 1024 / 1024} MB | Completed in #{request[:duration]}s (View: #{request[:view]}s, DB: #{request[:db]}s) | Status: #{request[:status]}\n\n"
+      @leaking_requests += "#{url}\nMemory Increase: #{diff / 1024 / 1024} MB | Status: #{request[:status]}\n\n"
     end 
   end
   

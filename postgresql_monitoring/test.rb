@@ -43,7 +43,8 @@ class PostgresqlMonitoringTest < Test::Unit::TestCase
     
       assert res[:errors].empty?
       assert res[:alerts].empty?
-        
+      
+      # ensure data is stored from counter  
       FIXTURES[:rows_initial].each do |k,v|
         assert_equal v.to_i, res[:memory]["_counter_#{k}"][:value], "Memory for #{k} incorrect"
       end
@@ -51,6 +52,10 @@ class PostgresqlMonitoringTest < Test::Unit::TestCase
       FIXTURES[:cache_initial].reject { |k,v| PostgresqlMonitoring::NON_COUNTER_ENTRIES.include?(k) }.each do |k,v|
         assert_equal v.to_i, res[:memory]["_counter_#{k}"][:value], "Memory for #{k} incorrect"
       end 
+      
+      # verify cache hit rate
+      reports = res[:reports]
+      assert_equal (70/80.to_f*100).to_i, reports.first['blks_cache_pc']
       
       first_run_memory = res[:memory]
             

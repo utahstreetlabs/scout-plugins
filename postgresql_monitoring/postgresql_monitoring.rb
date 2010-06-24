@@ -69,9 +69,9 @@ class PostgresqlMonitoring< Scout::Plugin
         counter(name, val.to_i, :per => :second)
       end
     end
-    
-    if report['blks_hit'] and report['blks_read']
-      report['blks_cache_pc'] = (report['blks_hit'].to_f / (report['blks_hit'].to_f+report['blks_read'].to_f) * 100).to_i
+
+    if row['blks_hit'] and row['blks_read']
+      report['blks_cache_pc'] = (row['blks_hit'].to_f / (row['blks_hit'].to_f+row['blks_read'].to_f) * 100).to_i
     else
       report['blks_cache_pc'] = nil
     end

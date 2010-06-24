@@ -37,7 +37,6 @@ class PostgresqlMonitoring< Scout::Plugin
       return errors << {:subject => "Unable to connect to PostgreSQL.",
                         :body => "Scout was unable to connect to the PostgreSQL server: #{e.backtrace}"}
     end
-    
     result = pgconn.exec('SELECT sum(idx_tup_fetch) AS "rows_select_idx", 
                                  sum(seq_tup_read) AS "rows_select_scan", 
                                  sum(n_tup_ins) AS "rows_insert", 
@@ -46,6 +45,7 @@ class PostgresqlMonitoring< Scout::Plugin
                                  (sum(idx_tup_fetch) + sum(seq_tup_read) + sum(n_tup_ins) + sum(n_tup_upd) + sum(n_tup_del)) AS "rows_total"
                           FROM pg_stat_all_tables;')
     row = result[0]
+
     row.each do |name, val|
       if NON_COUNTER_ENTRIES.include?(name)
         report[name] = val.to_i

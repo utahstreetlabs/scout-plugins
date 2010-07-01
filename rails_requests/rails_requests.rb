@@ -129,7 +129,7 @@ class RailsRequests < Scout::Plugin
     set_file_format_class
     # will use minimal line collection for incremental parsing. using more line collections increases
     # parsing time. 
-    if @file_format_class == RequestLogAnalyzer::FileFormat::Oink
+    if @file_format_class == RequestLogAnalyzer::FileFormat::Rails or @file_format_class.superclass == RequestLogAnalyzer::FileFormat::Rails
       @file_format = @file_format_class.create('minimal')  
     else # Rails3 doesn't have option of minimal processing
       @file_format = @file_format_class.create
@@ -151,6 +151,8 @@ class RailsRequests < Scout::Plugin
               else
                 RequestLogAnalyzer::FileFormat::Oink
               end
+  rescue LoadError # Oink format not available on RLA < 1.8
+    @file_format_class = RequestLogAnalyzer::FileFormat::Rails
   end
   
   # Inits data the plugin tracks, ie slow request count, slow requests, etc

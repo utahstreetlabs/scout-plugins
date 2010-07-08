@@ -41,7 +41,7 @@ class CpuUsage < Scout::Plugin
         cpu_stats.procs_running, _ = *procs_running[1..-1].collect { |c| c.to_i }
       end
 
-      if procs_blocked = data.detect { |line| line[0] == 'procs_running' }
+      if procs_blocked = data.detect { |line| line[0] == 'procs_blocked' }
         cpu_stats.procs_blocked, _ = *procs_blocked[1..-1].collect { |c| c.to_i }
       end
 
@@ -88,9 +88,7 @@ class CpuUsage < Scout::Plugin
       if self.time && other.time
         diff_in_seconds = self.time.to_f - other.time.to_f
 
-        if self.interrupts && other.interrupts
-          results[:interrupts] = (self.interrupts.to_f - other.interrupts.to_f) / diff_in_seconds
-        end
+        results[:interrupts] = (self.interrupts.to_f - other.interrupts.to_f) / diff_in_seconds
       end
 
       results

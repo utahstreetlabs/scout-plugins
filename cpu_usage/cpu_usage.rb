@@ -49,18 +49,18 @@ class CpuUsage < Scout::Plugin
     end
 
     def self.from_hash(h)
-      CpuStats.new.tap do |cpu_stats|
-        hash = {}
-        h.each { |k,v| hash[k.to_sym] = v }
+      cpu_stats= CpuStats.new
+      hash = {}
+      h.each { |k,v| hash[k.to_sym] = v }
 
-        if time = hash.delete(:time)
-          cpu_stats.time = Time.parse(time) rescue time
-        end
-
-        hash.each do |k, v|
-          cpu_stats.send("#{k}=", v) if cpu_stats.respond_to?("#{k}=")
-        end
+      if time = hash.delete(:time)
+        cpu_stats.time = Time.parse(time) rescue time
       end
+
+      hash.each do |k, v|
+        cpu_stats.send("#{k}=", v) if cpu_stats.respond_to?("#{k}=")
+      end
+      cpu_stats
     end
 
     def initialize

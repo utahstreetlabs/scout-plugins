@@ -1,5 +1,0 @@
-options:
-  applescript_executable:
-    name: AppleScript Executable
-    notes: Specify the full path to the AppleScript Executable.
-    default: osascript

@@ -1,9 +1,0 @@
-options:
-  directory:
-    name: Directory
-    notes: The directory to monitor
-    default: "/"
-  max_size:
-    name: Max Size in KB
-    notes: If the directory size is larger than this amount, an alert is generated
-    default: 512

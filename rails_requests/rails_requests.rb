@@ -260,8 +260,13 @@ class RailsRequests < Scout::Plugin
       # url is in :completed in rails2; path is in :started in rails3
       # only test for ignored_actions if we actually have an ignored_actions regex
       if @ignored_actions.nil? || (@ignored_actions.is_a?(Regexp) && !@ignored_actions.match(url))
-        @slow_request_count += 1                
-        @slow_requests += "#{url}\nCompleted in #{request[:duration]}s (View: #{request[:view]}s, DB: #{request[:db]}s) | Status: #{request[:status]}\n\n"
+        @slow_request_count += 1         
+        slow_request_string = "#{url[0..200]}\nCompleted in #{request[:duration]}s"
+        if request[:view] and request[:db]
+          slow_request_string << " (View: #{request[:view]}s, DB: #{request[:db]}s)"
+        end     
+        slow_request_string << " | Status: #{request[:status]}\n\n"
+        @slow_requests += slow_request_string
       end
     end
   end

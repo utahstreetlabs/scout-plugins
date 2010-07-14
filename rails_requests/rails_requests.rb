@@ -1,6 +1,9 @@
 require "time"
 require "stringio"
 
+# IMPORTANT! Requiring Rubygems is NOT a best practice. See http://scoutapp.com/info/creating_a_plugin#libraries
+# This plugin is an exception because we need to modify the Elif library (both here and below) before the plugin's build_report method is run.
+require 'rubygems'
 require 'elif'
 Elif.send(:remove_const, :MAX_READ_SIZE); Elif::MAX_READ_SIZE = 1024*100
 

@@ -35,4 +35,5 @@ class MongoServerStatusPlugin < Scout::Plugin
     report(:mem_virtual  => stats['mem']['virtual'])   if stats['mem'] && stats['mem']['virtual']
     report(:mem_mapped   => stats['mem']['mapped'])    if stats['mem'] && stats['mem']['mapped']
   end
+  
 end

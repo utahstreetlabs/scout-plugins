@@ -59,18 +59,34 @@ class MongoOverview < Scout::Plugin
                     {:btree_hits => stats['indexCounters']['btree']['hits']},
                     :btree_miss_ratio)
     counter(:btree_resets, stats['indexCounters']['btree']['resets'], :per => :second)
-    # might just be best to report the ratio and store the prev values in memory. does
-    # global_lock_total_time have any meaning? wouldn't it just increase?
-    count_and_ratio({:global_lock_lock_time => stats['globalLock']['lockTime']},
-                    {:global_lock_total_time => stats['globalLock']['totalTime']},
-                    :global_lock_ratio)
+    lock_time = stats['globalLock']['lockTime']
+    lock_total = stats['globalLock']['totalTime']
+    if mem_lock_time = memory(:global_lock_lock_time) and mem_lock_total = memory(:global_lock_total_time)
+      report(:global_lock_ratio => (lock_time-mem_lock_time).to_f/(lock_total-mem_lock_total).to_f)
+    end
+    remember(:global_lock_lock_time,lock_time)
+    remember(:global_lock_total_time,lock_total)
+
     counter(:background_flushes_total, stats['backgroundFlushing']['flushes'], :per => :second)
-    counter(:background_flushes_total_ms, stats['backgroundFlushing']['total_ms'], :per => :second)
-    counter(:background_flushes_average_ms, stats['backgroundFlushing']['average_ms'], :per => :second)
-    report(:mem_bits     => stats['mem']['bits'])      if stats['mem'] && stats['mem']['bits']
-    report(:mem_resident => stats['mem']['resident'])  if stats['mem'] && stats['mem']['resident']
-    report(:mem_virtual  => stats['mem']['virtual'])   if stats['mem'] && stats['mem']['virtual']
-    report(:mem_mapped   => stats['mem']['mapped'])    if stats['mem'] && stats['mem']['mapped']
+    # TODO - Add back ... total ms /sec doesn't make sense. instead, remember total ms and report 
+    # average as (total ms now - total ms prev) / (total now - total prev)
+    # counter(:background_flushes_total_ms, stats['backgroundFlushing']['total_ms'], :per => :second)
+    # counter(:background_flushes_average_ms, stats['backgroundFlushing']['average_ms'], :per => :second)
+    
+    # Need to stay at 19 or less metrics. The 20th will be slow query rate. Choosing not to report memory
+    # data for now.
+    # report(:mem_bits     => stats['mem']['bits'])      if stats['mem'] && stats['mem']['bits']
+    # report(:mem_resident => stats['mem']['resident'])  if stats['mem'] && stats['mem']['resident']
+    # report(:mem_virtual  => stats['mem']['virtual'])   if stats['mem'] && stats['mem']['virtual']
+    # report(:mem_mapped   => stats['mem']['mapped'])    if stats['mem'] && stats['mem']['mapped']
+    
+    # ops
+    counter(:op_inserts, stats['opcounters']['insert'], :per => :second)
+    counter(:op_queries, stats['opcounters']['query'], :per => :second)
+    counter(:op_updates, stats['opcounters']['update'], :per => :second)
+    counter(:op_deletes, stats['opcounters']['delete'], :per => :second)
+    counter(:op_get_mores, stats['opcounters']['getmore'], :per => :second)
+    counter(:op_commands, stats['opcounters']['command'], :per => :second)
   end
   
   # Handles 3 metrics - a counter for the +divended+ and +divisor+ and a ratio, named +ratio_name+, 

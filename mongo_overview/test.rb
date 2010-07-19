@@ -35,7 +35,7 @@ class MongoOverviewTest < Test::Unit::TestCase
       assert_nil res[:reports].find { |r| r.keys.include?(:btree_miss_ratio)}
       first_run_memory = res[:memory]    
       assert_equal SERVER_STATUS['globalLock']['totalTime'], 
-                   first_run_memory['_counter_global_lock_total_time'][:value]
+                   first_run_memory[:global_lock_total_time]
     
       # 2nd run, 10 minutes later, to test counters. 
       Timecop.travel(time) do 
@@ -43,9 +43,9 @@ class MongoOverviewTest < Test::Unit::TestCase
         plugin=MongoOverview.new(time-60*10,first_run_memory,opts)
         res=plugin.run()
         
-        # check the rate for global_lock_total_time
-        assert_in_delta 3000/(10*60).to_f, 
-                        res[:reports].find { |r| r.keys.include?(:global_lock_total_time)}[:global_lock_total_time], 0.001
+        # check the global_lock_ratio
+        assert_equal 10.0/100.0, 
+                     res[:reports].find { |r| r.keys.include?(:global_lock_ratio)}[:global_lock_ratio]
       
         # check btree hit ratio
         assert_equal 0.1, res[:reports].find { |r| r.keys.include?(:btree_miss_ratio)}[:btree_miss_ratio]
@@ -54,7 +54,7 @@ class MongoOverviewTest < Test::Unit::TestCase
         assert_in_delta 10.0/(10*60), 
                            res[:reports].find { |r| r.keys.include?(:btree_hits)}[:btree_hits], 0.001
         
-        
+        p res[:reports].size
       end # timecop
     end
   
@@ -65,7 +65,7 @@ class MongoOverviewTest < Test::Unit::TestCase
     
   SERVER_STATUS = {"version"=>"1.4.4", "uptime"=>31.0, 
     "localTime"=>Time.parse('Fri Jul 16 23:24:41 UTC 2010'), 
-    "globalLock"=>{"totalTime"=>3000.0, "lockTime"=>392.0, "ratio"=>1.27127657280181e-05}, 
+    "globalLock"=>{"totalTime"=>100.0, "lockTime"=>10.0, "ratio"=>1.27127657280181e-05}, 
     "mem"=>{"bits"=>64, "resident"=>2, "virtual"=>2643, "supported"=>true, "mapped"=>0}, 
     "connections"=>{"current"=>1, "available"=>19999}, "extra_info"=>{"note"=>"fields vary by platform"}, 
     "indexCounters"=>{"btree"=>{"accesses"=>0, "hits"=>0, "misses"=>0, "resets"=>0, "missRatio"=>0.0}}, 
@@ -76,7 +76,7 @@ class MongoOverviewTest < Test::Unit::TestCase
     
   SERVER_STATUS_2ND_RUN = {"version"=>"1.4.4", "uptime"=>31.0, 
   "localTime"=>Time.parse('Fri Jul 16 23:34:41 UTC 2010'), 
-  "globalLock"=>{"totalTime"=>6000.0, "lockTime"=>392.0, "ratio"=>1.27127657280181e-05}, 
+  "globalLock"=>{"totalTime"=>200.0, "lockTime"=>20.0, "ratio"=>1.27127657280181e-05}, 
   "mem"=>{"bits"=>64, "resident"=>2, "virtual"=>2643, "supported"=>true, "mapped"=>0}, 
   "connections"=>{"current"=>1, "available"=>19999}, "extra_info"=>{"note"=>"fields vary by platform"}, 
   "indexCounters"=>{"btree"=>{"accesses"=>0, "hits"=>10, "misses"=>1, "resets"=>0, "missRatio"=>0.0}}, 

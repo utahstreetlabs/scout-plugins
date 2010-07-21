@@ -17,6 +17,7 @@ class RedisMonitor < Scout::Plugin
   password:
     name: Password
     notes: If you're using Redis' password authentication.
+    attributes: password
   lists:
     name: Lists to monitor
     notes: A comma-separated list of list keys to monitor the length of.

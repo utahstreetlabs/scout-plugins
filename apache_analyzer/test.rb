@@ -1,5 +1,6 @@
-require File.dirname(__FILE__)+"/../test_helper"
-require File.dirname(__FILE__)+"/apache_analyzer"
+require File.expand_path('../../test_helper.rb', __FILE__)
+require File.expand_path('../apache_analyzer.rb', __FILE__)
+
 
 class ApacheAnalyzerTest < Test::Unit::TestCase
 

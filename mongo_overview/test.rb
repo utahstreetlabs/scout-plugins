@@ -1,5 +1,6 @@
-require File.dirname(__FILE__)+"/../test_helper"
-require File.dirname(__FILE__)+"/mongo_overview"
+require File.expand_path('../../test_helper.rb', __FILE__)
+require File.expand_path('../mongo_overview.rb', __FILE__)
+
 require 'mongo'
 
 class MongoOverviewTest < Test::Unit::TestCase

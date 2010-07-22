@@ -6,7 +6,18 @@ to monitor a wide variety of system, OS, and application metrics.
 
 Each folder in this repository represents one Scout plugin.
 
+Gem Dependencies 
+----------------
 
+This repo contains a Gemfile to use with bunder to install needed Gems for tests and the plugins themselves. 
+
+If you don't have Bundler:
+
+gem install bundler
+
+Once Bundler is installed:
+
+bundle install
 
 How to Make your own Scout plugin
 ---------------------------------

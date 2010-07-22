@@ -1,5 +1,7 @@
-require File.dirname(__FILE__)+"/../test_helper"
-require File.dirname(__FILE__)+"/overview_with_alerts"
+require File.expand_path('../../test_helper.rb', __FILE__)
+require File.expand_path('../overview_with_alerts.rb', __FILE__)
+
+
 
 class OverviewWithAlertsTest < Test::Unit::TestCase
 

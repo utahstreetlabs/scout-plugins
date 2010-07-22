@@ -95,7 +95,7 @@ class RailsRequests < Scout::Plugin
     generate_slow_request_alerts
     generate_memory_leak_alerts
     
-    remember(:last_request_time, Time.parse(last_request_time.to_s) || Time.now)
+    remember(:last_request_time, last_request_time ? Time.parse(last_request_time.to_s) : Time.now)
 
     report(aggregate)
   rescue Errno::ENOENT => e

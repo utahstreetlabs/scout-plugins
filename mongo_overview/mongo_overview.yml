@@ -14,10 +14,6 @@ metadata:
     units: "%"
     precision: "1"
     label: Global lock ratio
-  op_get_mores: 
-    units: /sec
-    precision: "2"
-    label: Get mores
   btree_hits: 
     units: /sec
     precision: "2"
@@ -30,10 +26,6 @@ metadata:
     units: bytes
     precision: "0"
     label: Index size
-  op_updates: 
-    units: /sec
-    precision: "2"
-    label: Updates
   storage_size: 
     units: bytes
     precision: "0"
@@ -42,19 +34,36 @@ metadata:
     units: /sec
     precision: "2"
     label: Btree accesses
-  op_inserts: 
-    units: /sec
-    precision: "2"
-    label: Inserts
-  op_queries: 
-    units: /sec
-    precision: "2"
-    label: Queries
   objects: 
     units: ""
     precision: "0"
     label: Objects
+  op_updates: 
+    units: /sec
+    precision: "2"
+    label: Op Updates
+  op_inserts: 
+    units: /sec
+    precision: "2"
+    label: Op Inserts
+  op_queries: 
+    units: /sec
+    precision: "2"
+    label: Op Queries
   op_deletes: 
     units: /sec
     precision: "2"
-    label: Deletes
+    label: Op Deletes
+  op_get_mores: 
+    units: /sec
+    precision: "2"
+    label: Op Get mores
+    
+triggers:    
+  - type: trend
+    data_series_name: op_queries
+    min_value: 50.0
+    direction: UP                            
+    percentage_change: 100
+    duration: 180                           
+    window_reference: LAST_WEEK

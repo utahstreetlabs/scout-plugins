@@ -3,10 +3,6 @@ metadata:
     units: "%"
     precision: "1"
     label: Btree miss ratio
-  data_size: 
-    units: bytes
-    precision: "0"
-    label: Data size
   indexes: 
     precision: "0"
     label: Indexes
@@ -25,11 +21,15 @@ metadata:
   index_size: 
     units: bytes
     precision: "0"
-    label: Index size
+    label: Size of Index
   storage_size: 
     units: bytes
     precision: "0"
-    label: Storage size
+    label: Size of Storage
+  data_size: 
+    units: bytes
+    precision: "0"
+    label: Size of Data
   btree_accesses: 
     units: /sec
     precision: "2"

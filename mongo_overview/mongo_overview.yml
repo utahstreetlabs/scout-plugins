@@ -26,10 +26,6 @@ metadata:
     units: /sec
     precision: "2"
     label: Btree misses
-  btree_resets: 
-    units: /sec
-    precision: "2"
-    label: Btree resets
   index_size: 
     units: bytes
     precision: "0"
@@ -42,10 +38,6 @@ metadata:
     units: bytes
     precision: "0"
     label: Storage size
-  background_flushes_total: 
-    units: /sec
-    precision: "2"
-    label: Background flushes
   btree_accesses: 
     units: /sec
     precision: "2"
@@ -62,10 +54,6 @@ metadata:
     units: ""
     precision: "0"
     label: Objects
-  op_commands: 
-    units: /sec
-    precision: "2"
-    label: Commands
   op_deletes: 
     units: /sec
     precision: "2"

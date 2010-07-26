@@ -60,9 +60,9 @@ class MongoOverviewTest < Test::Unit::TestCase
           # check btree hit ratio
           assert_equal 10.0, res[:reports].find { |r| r.keys.include?(:btree_miss_ratio)}[:btree_miss_ratio]
         
-          # check rate for btree hits
+          # check rate for btree_accesses
           assert_in_delta 10.0/(10*60), 
-                             res[:reports].find { |r| r.keys.include?(:btree_hits)}[:btree_hits], 0.001        
+                             res[:reports].find { |r| r.keys.include?(:btree_accesses)}[:btree_accesses], 0.001        
         end # timecop
       end
     end # testing each option set
@@ -97,8 +97,8 @@ class MongoOverviewTest < Test::Unit::TestCase
         # check btree hit ratio
         assert_nil res[:reports].find { |r| r.keys.include?(:btree_miss_ratio)}
         
-        # check rate for btree hits
-        assert_in_delta 0, res[:reports].find { |r| r.keys.include?(:btree_hits)}[:btree_hits], 0.001
+        # check rate for btree_accesses
+        assert_in_delta 0, res[:reports].find { |r| r.keys.include?(:btree_accesses)}[:btree_accesses], 0.001
       end # timecop
     end
   end
@@ -122,7 +122,7 @@ class MongoOverviewTest < Test::Unit::TestCase
   "globalLock"=>{"totalTime"=>200.0, "lockTime"=>20.0, "ratio"=>1.27127657280181e-05}, 
   "mem"=>{"bits"=>64, "resident"=>2, "virtual"=>2643, "supported"=>true, "mapped"=>0}, 
   "connections"=>{"current"=>1, "available"=>19999}, "extra_info"=>{"note"=>"fields vary by platform"}, 
-  "indexCounters"=>{"btree"=>{"accesses"=>0, "hits"=>10, "misses"=>1, "resets"=>0, "missRatio"=>0.0}}, 
+  "indexCounters"=>{"btree"=>{"accesses"=>10, "hits"=>10, "misses"=>1, "resets"=>0, "missRatio"=>0.0}}, 
   "backgroundFlushing"=>{"flushes"=>0, "total_ms"=>0, "average_ms"=>0.0, "last_ms"=>0, 
   "last_finished"=>Time.parse('Thu Jan 01 00:00:00 UTC 1970')}, 
   "opcounters"=>{"insert"=>0, "query"=>1, "update"=>0, "delete"=>0, "getmore"=>0, "command"=>2}, 

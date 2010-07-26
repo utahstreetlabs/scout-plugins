@@ -96,11 +96,17 @@ class MongoOverview < Scout::Plugin
   def get_server_status
     stats = @db.command('serverStatus' => 1)
     counter(:btree_accesses, stats['indexCounters']['btree']['accesses'], :per => :second)
-    count_and_ratio({:btree_misses => stats['indexCounters']['btree']['misses']},
-                    {:btree_hits => stats['indexCounters']['btree']['hits']},
-                    :btree_miss_ratio)
-    counter(:btree_resets, stats['indexCounters']['btree']['resets'], :per => :second)
-    lock_time = stats['globalLock']['lockTime']
+    
+    misses = stats['indexCounters']['btree']['misses']
+    hits   = stats['indexCounters']['btree']['hits']
+    if mem_misses = memory(:btree_misses) and mem_hits = memory(:btree_hits)
+      ratio = (misses-mem_misses).to_f/(hits-mem_hits).to_f
+      report(:btree_miss_ratio => ratio*100) unless ratio.nan?
+    end
+    remember(:btree_misses,misses)
+    remember(:btree_hits,hits)
+    
+    lock_time  = stats['globalLock']['lockTime']
     lock_total = stats['globalLock']['totalTime']
     if mem_lock_time = memory(:global_lock_lock_time) and mem_lock_total = memory(:global_lock_total_time)
       ratio = (lock_time-mem_lock_time).to_f/(lock_total-mem_lock_total).to_f
@@ -108,19 +114,6 @@ class MongoOverview < Scout::Plugin
     end
     remember(:global_lock_lock_time,lock_time)
     remember(:global_lock_total_time,lock_total)
-
-    counter(:background_flushes_total, stats['backgroundFlushing']['flushes'], :per => :second)
-    # TODO - Add back ... total ms /sec doesn't make sense. instead, remember total ms and report 
-    # average as (total ms now - total ms prev) / (total now - total prev)
-    # counter(:background_flushes_total_ms, stats['backgroundFlushing']['total_ms'], :per => :second)
-    # counter(:background_flushes_average_ms, stats['backgroundFlushing']['average_ms'], :per => :second)
-    
-    # Need to stay at 19 or less metrics. The 20th will be slow query rate. Choosing not to report memory
-    # data for now.
-    # report(:mem_bits     => stats['mem']['bits'])      if stats['mem'] && stats['mem']['bits']
-    # report(:mem_resident => stats['mem']['resident'])  if stats['mem'] && stats['mem']['resident']
-    # report(:mem_virtual  => stats['mem']['virtual'])   if stats['mem'] && stats['mem']['virtual']
-    # report(:mem_mapped   => stats['mem']['mapped'])    if stats['mem'] && stats['mem']['mapped']
     
     # ops
     counter(:op_inserts, stats['opcounters']['insert'], :per => :second)
@@ -128,7 +121,6 @@ class MongoOverview < Scout::Plugin
     counter(:op_updates, stats['opcounters']['update'], :per => :second)
     counter(:op_deletes, stats['opcounters']['delete'], :per => :second)
     counter(:op_get_mores, stats['opcounters']['getmore'], :per => :second)
-    counter(:op_commands, stats['opcounters']['command'], :per => :second)
   end
   
   # Handles 3 metrics - a counter for the +divended+ and +divisor+ and a ratio, named +ratio_name+, 

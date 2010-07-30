@@ -1,0 +1,28 @@
+metadata:
+  select:
+    label: Select Queries
+    units: /sec
+  delete:
+    label: Delete Queries
+    units: /sec
+  update:
+    label: Update Queries
+    units: /sec
+  insert:
+    label: Insert Queries
+    units: /sec
+  replace:
+    label: Replace Queries
+    units: /sec
+  total:
+    label: Total Queries
+    units: /sec
+
+triggers:
+  - type: trend
+    data_series_name: total
+    min_value: 50.0
+    direction: UP
+    percentage_change: 100
+    duration: 180
+    window_reference: LAST_WEEK

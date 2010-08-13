@@ -29,6 +29,14 @@ class MysqlTuner < Scout::Plugin
     notes: number of days between summary reports by MySQLTuner. Leave blank to disable summaries.
     default: 7
     attributes: advanced
+  forcemem:
+    name: --forcemem for Tuner
+    notes: Memory size in MB. Typically only required if you are connecting to a REMOTE MySQL Server
+    attributes: advanced
+  forceswap:
+    name: --forceswap for Tuner
+    notes: Swap size in MB. Typically only required if you are connecting to a REMOTE MySQL Server
+    attributes: advanced
   EOS
 
   needs "mysql"
@@ -41,6 +49,8 @@ class MysqlTuner < Scout::Plugin
     port     = get_option(:port)
     socket   = get_option(:socket)
     days     = get_option(:tuner_days)
+    forcemem = get_option(:forcemem)
+    forceswap = get_option(:forceswap)
 
     mysql = Mysql.connect(host, user, password, nil, (port.nil? ? nil : port.to_i), socket)
     result = mysql.query('SHOW /*!50002 GLOBAL */ STATUS')
@@ -91,6 +101,8 @@ class MysqlTuner < Scout::Plugin
         tuner_opts.push("--host='#{host}'") if host && host != 'localhost'
         tuner_opts.push("--port='#{port}'") if port
         tuner_opts.push("--socket='#{socket}'") if socket
+        tuner_opts.push("--forcemem='#{forcemem}'") if forcemem
+        tuner_opts.push("--forceswap='#{forceswap}'") if forceswap
 
         analysis = open("| perl -- - --nocolor #{tuner_opts.join(' ')} 2>&1", "r+") do |perl|
            perl.puts(TUNER_CODE)

@@ -384,8 +384,10 @@ sub mysql_setup {
 		$doremote = 1;
 	}
 	# Did we already get a username and password passed on the command line?
-	if ($opt{user} ne 0 and $opt{pass} ne 0) {
-		$mysqllogin = "-u $opt{user} -p'$opt{pass}'".$remotestring;
+  if ($opt{user} ne 0 ) {
+    my $mysqlpassstring = ($opt{pass} ne 0)? "-p'$opt{pass}'" : "";
+    $mysqllogin = "-u $opt{user} $mysqlpassstring".$remotestring;
+
 		my $loginstatus = `mysqladmin ping $mysqllogin 2>&1`;
 		if ($loginstatus =~ /mysqld is alive/) {
 			goodprint "Logged in using credentials passed on the command line\\n";

@@ -89,7 +89,7 @@ class MysqlTuner < Scout::Plugin
         tuner_opts = ["--user=#{user}"]
         tuner_opts.push("--pass='#{password}'") if password
         tuner_opts.push("--host='#{host}'") if host && host != 'localhost'
-        tuner_opts.push("--port='#{socket}'") if port
+        tuner_opts.push("--port='#{port}'") if port
         tuner_opts.push("--socket='#{socket}'") if socket
 
         analysis = open("| perl -- - --nocolor #{tuner_opts.join(' ')} 2>&1", "r+") do |perl|

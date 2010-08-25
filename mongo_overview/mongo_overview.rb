@@ -66,9 +66,9 @@ class MongoOverview < Scout::Plugin
     end
 
     begin
-      connection = Mongo::Connection.new(@host,@port)
+      connection = Mongo::Connection.new(@host,@port,:slave_ok=>true)
     rescue Mongo::ConnectionFailure
-      return error("Unable to connect to the MongoDB Daemon.","Please ensure it is running on #{@host}:#{@port}")
+      return error("Unable to connect to the MongoDB Daemon.","Please ensure it is running on #{@host}:#{@port}\n\nException Message: #{$!.message}")
     end
     
     # Try to connect to the database

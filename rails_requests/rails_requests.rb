@@ -36,8 +36,7 @@ class RailsRequests < Scout::Plugin
     attributes: advanced
   EOS
 
-  #needs "request_log_analyzer"
-  require "/Users/itsderek23/Projects/request-log-analyzer/lib/request_log_analyzer.rb"
+  needs "request_log_analyzer"
   
   def build_report
     patch_elif

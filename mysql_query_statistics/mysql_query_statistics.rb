@@ -31,11 +31,11 @@ class MysqlQueryStatistics < Scout::Plugin
     attributes: advanced
   forcemem:
     name: --forcemem for Tuner
-    notes: Memory size in MB. Typically only required if you are connecting to a REMOTE MySQL Server
+    notes: Total Memory Size in MB of the MySQL Server. Typically only required if you are connecting to a REMOTE MySQL Server.
     attributes: advanced
   forceswap:
     name: --forceswap for Tuner
-    notes: Swap size in MB. Typically only required if you are connecting to a REMOTE MySQL Server
+    notes: Total Swap size in MB of the MySQL Server. Typically only required if you are connecting to a REMOTE MySQL Server
     attributes: advanced
   EOS
 
@@ -49,8 +49,8 @@ class MysqlQueryStatistics < Scout::Plugin
     port     = get_option(:port)
     socket   = get_option(:socket)
     days     = get_option(:tuner_days)
-    forcemem = get_option(:forcemem)
-    forceswap = get_option(:forceswap)
+    forcemem  = (get_option(:forcemem) ? get_option(:forcemem).to_i : nil)
+    forceswap = (get_option(:forceswap) ? get_option(:forceswap).to_i : nil)
 
     mysql = Mysql.connect(host, user, password, nil, (port.nil? ? nil : port.to_i), socket)
     result = mysql.query('SHOW /*!50002 GLOBAL */ STATUS')

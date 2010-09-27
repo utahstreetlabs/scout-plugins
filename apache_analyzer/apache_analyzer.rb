@@ -152,18 +152,10 @@ class ApacheAnalyzer < Scout::Plugin
           if option(:log_test)
             p result[:path]
           end
-          return true
-        else
-          # matched ignored path
-          return true
         end # checking if the request is past the last request time
-        
-      else # no timestamp...continue
-        return true
       end # timestamp check
-    else # don't match a line definition
-      return true
     end # if matches
+    return true
   end # def parse_line
 
   def silence

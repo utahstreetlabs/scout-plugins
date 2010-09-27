@@ -33,6 +33,13 @@ class ApacheAnalyzer < Scout::Plugin
     log_path                   = option(:log)
     format                     = scan_format
     
+    unless log_path and not log_path.empty?
+      return error("A path to the Apache log file wasn't provided.","Please provide the full path to the Apache log file to analyze (ie - /etc/httpd/logs/access.log)")
+    end
+    unless File.exist?(log_path)
+      return error("Unable to find the Apache log file", "Could not find an Apache log file at: #{option(:log)}. Please ensure the path is correct.")
+    end
+    
     @ignored_paths=nil
     if option(:ignored_paths)
       begin
@@ -154,6 +161,8 @@ class ApacheAnalyzer < Scout::Plugin
       else # no timestamp...continue
         return true
       end # timestamp check
+    else # don't match a line definition
+      return true
     end # if matches
   end # def parse_line
 

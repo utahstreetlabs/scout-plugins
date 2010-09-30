@@ -74,6 +74,7 @@ class MysqlQueryStatistics < Scout::Plugin
     total = 0
     mysql_status.each do |k,v|
       if ENTRIES.include?(k)
+        total += v
         counter(k[/_(.*)$/, 1], v, :per => :second)
       end
     end

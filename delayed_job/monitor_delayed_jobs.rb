@@ -20,9 +20,9 @@ class MonitorDelayedJobs < Scout::Plugin
   require 'rubygems' 
   require 'active_record'
   class DelayedJob < ActiveRecord::Base; end
-  
+  DelayedJob.default_timezone = :utc
+
   def build_report
-    
     app_path = option(:path_to_app)
     
     # Ensure path to db config provided

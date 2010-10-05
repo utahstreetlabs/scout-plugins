@@ -154,6 +154,8 @@ class ApacheAnalyzer < Scout::Plugin
           end
         end # checking if the request is past the last request time
       end # timestamp check
+    else
+      return nil
     end # if matches
     return true
   end # def parse_line

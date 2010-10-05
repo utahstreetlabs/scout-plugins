@@ -25,13 +25,15 @@ class ApacheAnalyzerTest < Test::Unit::TestCase
     end
   end
   
+  # Should not continue scanning if a line does not match the specified format. This is 
+  # to prevent potential long runs of the plugin if the specified format is wrong.
   def test_run_with_unrecognized_line
     log = File.dirname(__FILE__)+"/unrecognized_line.log"
     time = Time.parse(@last_request_time) 
     Timecop.travel(time) do 
       plugin=ApacheAnalyzer.new(nil,{},{:log => log, :format => @duration_format})
       res = plugin.run()
-      assert_equal 3, res[:reports].first[:lines_scanned]
+      assert_equal 2, res[:reports].first[:lines_scanned]
       assert_equal 0.06.to_s, res[:reports].first[:average_request_length]
       # note - this is stored in the timezone of this server
       assert_equal Time.parse("Sun Apr 11 17:22:04 -0700 2010"), res[:memory][:last_request_time]

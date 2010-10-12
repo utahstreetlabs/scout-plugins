@@ -34,7 +34,7 @@ class TestNetworkConnections < Test::Unit::TestCase
     # Stub the plugin instance where necessary and run
     # @plugin=PluginName.new(last_run, memory, options)
     #                        date      hash    hash
-    @plugin=NetworkConnections.new(nil,{},@options.merge(:port=>'all'))
+    @plugin=NetworkConnections.new(nil,{},@options.merge(:port=>''))
     @plugin.stubs(:shell).with("netstat -n").returns(FIXTURES[:netstat]).once
     res= @plugin.run()
 

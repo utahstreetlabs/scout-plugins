@@ -1,13 +1,13 @@
 metadata:
   tcp:
-    delimiter: ,
+    delimiter: ","
     precision: 0
   udp:
-    delimiter: ,
+    delimiter: ","
     precision: 0
   unix:
-    delimiter: ,
+    delimiter: ","
     precision: 0
   total:
-    delimiter: ,
+    delimiter: ","
     precision: 0

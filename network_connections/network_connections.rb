@@ -3,14 +3,14 @@ class NetworkConnections < Scout::Plugin
   OPTIONS=<<-EOS
     port:
       label: Ports
-      notes: comma-delimited list of ports to monitor. Or leave blank for a summary info only across all ports.
+      notes: comma-delimited list of ports to monitor. Or specify all for summary info across all ports.
       default: "80,443,25"
   EOS
 
   def build_report
     report_hash={}
     port_hash = {}
-    if option(:port).strip != ""
+    if option(:port).strip != "all"
       option(:port).split(/[, ]+/).each { |port| port_hash[port.to_i] = 0 }
     end
 

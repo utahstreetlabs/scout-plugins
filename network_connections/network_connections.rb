@@ -23,8 +23,9 @@ class NetworkConnections < Scout::Plugin
     lines.each { |line|
       line = line.squeeze(" ").split(" ")
       next unless line[0] =~ /tcp|udp|unix/
-      connections_hash[:total] += 1 
-      connections_hash[line[0].to_sym] += 1
+      connections_hash[:total] += 1
+      protocol = line[0].sub(/\d+/,'').to_sym
+      connections_hash[protocol] += 1 if connections_hash[protocol]
 
       local_address = line[3].sub("::ffff:","") # indicates ip6 - remove so regex works
       port = local_address.split(":")[1].to_i

@@ -12,9 +12,11 @@ metadata:
     units: bytes/min
     precision: 1
   css_filter_parse_failures:
+    label: CSS filter Parse Failures
     units: /min
     precision: 1
   css_elements:
+    label: CSS Elements
     units: /min
     precision: 1
   image_inline:

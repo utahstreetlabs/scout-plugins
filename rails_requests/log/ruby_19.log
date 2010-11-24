@@ -1,0 +1,72 @@
+Started GET "/" for 199.15.234.9 at 2010-10-26 02:27:15 +0000
+ Processing by HomeController#index as */*
+Redirected to http://www.bigauthor.com/users/sign_in
+Completed 302 Found in 93ms
+
+
+Started GET "/users/sign_in" for 199.15.234.9 at 2010-10-26 02:27:15 +0000
+ Processing by Devise::SessionsController#new as */*
+Rendered devise/menu/_registration_items.html.haml (0.3ms)
+Rendered devise/menu/_login_items.html.haml (0.3ms)
+Rendered devise/sessions/new.html.haml within layouts/application (73.8ms)
+Completed 200 OK in 81ms (Views: 79.4ms)
+
+
+Started GET "/" for 211.154.136.149 at 2010-10-26 03:41:44 +0000
+ Processing by HomeController#index as */*
+Redirected to http://www.google.com.hk/users/sign_in
+Completed 302 Found in 48ms
+
+
+Started GET "/" for 74.125.75.19 at 2010-10-26 04:00:01 +0000
+ Processing by HomeController#index as HTML
+Redirected to http://bigauthor.com/users/sign_in
+Completed 302 Found in 2ms
+
+
+Started GET "/users/sign_in" for 74.125.75.19 at 2010-10-26 04:00:01 +0000
+ Processing by Devise::SessionsController#new as HTML
+Rendered devise/menu/_registration_items.html.haml (0.3ms)
+Rendered devise/menu/_login_items.html.haml (0.3ms)
+Rendered devise/sessions/new.html.haml within layouts/application (35.1ms)
+Completed 200 OK in 53ms (Views: 51.9ms)
+
+
+Started GET "/users/password/new" for 67.195.113.225 at 2010-10-26 04:03:50 +0000
+ Processing by Devise::PasswordsController#new as HTML
+Rendered devise/shared/_links.haml (3.1ms)
+Rendered devise/menu/_registration_items.html.haml (0.3ms)
+Rendered devise/menu/_login_items.html.haml (0.3ms)
+Rendered devise/passwords/new.html.haml within layouts/application (33.1ms)
+Completed 200 OK in 291ms (Views: 282.2ms)
+
+
+Started GET "/" for 72.48.75.136 at 2010-10-26 04:06:31 +0000
+ Processing by HomeController#index as HTML
+Redirected to http://www.bigauthor.com/users/sign_in
+Completed 302 Found in 3ms
+
+
+Started GET "/users/sign_in" for 72.48.75.136 at 2010-10-26 04:06:33 +0000
+ Processing by Devise::SessionsController#new as HTML
+Rendered devise/menu/_registration_items.html.haml (1.3ms)
+Rendered devise/menu/_login_items.html.haml (1.1ms)
+Rendered devise/sessions/new.html.haml within layouts/application (57.1ms)
+Completed 200 OK in 79ms (Views: 77.5ms)
+
+
+Started POST "/users/sign_in" for 72.48.75.136 at 2010-10-26 04:06:37 +0000
+ Processing by Devise::SessionsController#create as HTML
+ Parameters: {"utf8"=>"✓", "authenticity_token"=>"zQf819UsEkD4BkHLvRwJoF79U2u/Z6arRSXSe9U+4Fc=", "user"=>{"email"=>"madraziel@gmail.com", "password"=>"[FILTERED]", "remember_me"=>"0"}, "commit"=>"Log in"}
+Redirected to http://www.bigauthor.com/
+Completed 302 Found in 433ms
+
+
+Started GET "/" for 72.48.75.136 at 2010-10-26 04:06:38 +0000
+ Processing by HomeController#index as HTML
+Rendered home/_featured_project.html.haml (3.8ms)
+Rendered home/_other_projects.html.haml (2.1ms)
+Rendered devise/menu/_registration_items.html.haml (0.1ms)
+Rendered devise/menu/_login_items.html.haml (0.2ms)
+Rendered home/index.html.haml within layouts/application (15.2ms)
+Completed 200 OK in 52ms (Views: 20.3ms)

@@ -1,0 +1,44 @@
+metadata:
+  css_file_count_reduction:
+    label: CSS File Count Reduction
+    units: /min
+    precision: 1
+  css_filter_files_minified:
+    label: CSS Filter Files minified
+    units: /min
+    precision: 1
+  css_filter_minified_bytes_saved:
+    label: CSS Filter Minified bytes saved
+    units: bytes/min
+    precision: 1
+  css_filter_parse_failures:
+    units: /min
+    precision: 1
+  css_elements:
+    units: /min
+    precision: 1
+  image_inline:
+    units: /min
+    precision: 1
+  image_rewrite_saved_bytes:
+    units: bytes/min
+    precision: 1
+  image_rewrites:
+    units: /min
+    precision: 1
+  javascript_blocks_minified:
+    units: /min
+    precision: 1
+  javascript_bytes_saved:
+    units: bytes/min
+    precision: 1
+  javascript_minification_failures:
+    units: /min
+    precision: 1
+  javascript_total_blocks:
+    units: /min
+    precision: 1
+  page_load_count:
+    label: Page Loads
+    units: /min
+    precision: 1  

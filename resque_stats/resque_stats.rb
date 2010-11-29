@@ -24,7 +24,8 @@ class ResqueStats < Scout::Plugin
       :pending => info[:pending],
       :total_failed  => info[:failed],
       :queues  => info[:queues],
-      :workers => info[:workers]
+      :workers => info[:workers],
+      :backtraces => Resque.redis.llen('failed')
     )
     counter(:processed, info[:processed], :per => :second)
     counter(:failed, info[:failed], :per => :second)

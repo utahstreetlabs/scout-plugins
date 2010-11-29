@@ -17,7 +17,7 @@ class ResqueStats < Scout::Plugin
 
   def build_report
     Resque.redis = option(:redis)
-    Resque.redis.namespace = option(:namespace)
+    Resque.redis.namespace = option(:namespace) unless option(:namespace).nil?
     info = Resque.info
     report(
       :working => info[:working],

@@ -28,9 +28,6 @@ class ResqueStats < Scout::Plugin
     )
     counter(:processed, info[:processed], :per => :second)
     counter(:failed, info[:failed], :per => :second)
-    Resque.queues.each do |queue|
-      report("#{queue}" => Resque.size(queue))
-    end
   end
 
 end

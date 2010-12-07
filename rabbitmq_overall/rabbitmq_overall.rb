@@ -54,9 +54,9 @@ class RabbitmqOverall < Scout::Plugin
   end
 
   def `(command)
-    result = super(command)
+    result = super(%{#{command} 2>&1})
     if ($? != 0)
-      raise "<#{command}> exited with a non-zero value: #{$?}"
+      raise "#{command} exited with a non-zero value: #{$?} `#{result}'"
     end
     result
   end

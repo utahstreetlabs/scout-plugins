@@ -50,7 +50,7 @@ class RabbitmqOverall < Scout::Plugin
   end
 
   def vhosts
-    @vhosts ||= `#{rabbitmqctl} -q list_vhosts`.to_a
+    @vhosts ||= `#{rabbitmqctl} -q list_vhosts`.to_a.map {|vhost| vhost.chomp }
   end
 
   def `(command)

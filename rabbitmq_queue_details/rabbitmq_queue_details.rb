@@ -37,6 +37,14 @@ class RabbitmqOverall < Scout::Plugin
     report(extract_stats(queue_stats_line))
   end
 
+  def `(command)
+    result = super(%{#{command} 2>&1})
+    if ($? != 0)
+      raise "#{command} exited with a non-zero value: #{$?} `#{result}'"
+    end
+    result
+  end
+
   private
     def get_queue_stats_line(rabbitmqctl_script, queue_name, vhost)
       cmd = vhost.nil? ? "#{rabbitmqctl_script} -q list_queues " : "#{rabbitmqctl_script} -q list_queues -p '#{vhost}' "

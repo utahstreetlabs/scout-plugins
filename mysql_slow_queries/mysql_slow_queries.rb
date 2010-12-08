@@ -41,8 +41,8 @@ class ScoutMysqlSlow < Scout::Plugin
         query_time = $1.to_f
         all_queries << {:query_time => query_time, :sql => sql.reverse}
         sql = []
-      elsif line =~ /^\# Time: (.*)$/
-        t = Time.parse($1) {|y| y < 100 ? y + 2000 : y}
+      elsif line =~ /^\# Time: \d+ (.*)$/
+        t = Time.parse($1.split(' ')[0]) {|y| y < 100 ? y + 2000 : y}
         
         t2 = last_run
         if t < t2

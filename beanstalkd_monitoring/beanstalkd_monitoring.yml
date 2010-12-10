@@ -2,7 +2,7 @@ metadata:
   buried:
     precision: 0
   per_second:
-    units: /sec
+    units: "/sec"
     label: Completion Rate
   ready:
     precision: 0

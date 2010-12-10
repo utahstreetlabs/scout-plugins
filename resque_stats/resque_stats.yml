@@ -29,6 +29,12 @@ metadata:
     delimiter: ","
     precision: "0"
     label: Total failed
+  backtraces:
+    units: failed jobs
+    larger_is_better: "0"
+    delimiter: ","
+    precision: "0"
+    label: Backtraces
   working:
     units: ""
     larger_is_better: "1"

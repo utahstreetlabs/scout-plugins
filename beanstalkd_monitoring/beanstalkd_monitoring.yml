@@ -3,7 +3,7 @@ metadata:
     precision: 0
   per_second:
     units: /sec
-    label: Jobs Ready Rate
+    label: Completion Rate
   ready:
     precision: 0
   reserved:

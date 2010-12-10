@@ -50,13 +50,13 @@ class RabbitmqOverall < Scout::Plugin
   end
 
   def vhosts
-    @vhosts ||= `#{rabbitmqctl} -q list_vhosts`.to_a
+    @vhosts ||= `#{rabbitmqctl} -q list_vhosts`.to_a.map {|vhost| vhost.chomp }
   end
 
   def `(command)
-    result = super(command)
+    result = super(%{#{command} 2>&1})
     if ($? != 0)
-      raise "<#{command}> exited with a non-zero value: #{$?}"
+      raise "#{command} exited with a non-zero value: #{$?} `#{result}'"
     end
     result
   end

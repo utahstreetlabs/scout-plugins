@@ -1,0 +1,12 @@
+metadata:
+  buried:
+    precision: 0
+  per_second:
+    units: /sec
+    label: Jobs Ready Rate
+  ready:
+    precision: 0
+  reserved:
+    precision: 0
+  workers:
+    precision: 0

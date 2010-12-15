@@ -5,24 +5,32 @@ class PassengerMemoryStatsTest < Test::Unit::TestCase
   def test_nginx_only
     stub_command_with FIXTURES[:nginx_only]
     assert_equal([{
-      "nginx_private_total"     => "26.0 MB",
-      "nginx_processes"         => "5",
-      "nginx_vmsize_total"      => "271.6 MB",
-      "passenger_private_total" => "2251.4 MB",
-      "passenger_processes"     => "16",
-      "passenger_vmsize_total"  => "4377.8 MB",
+      "nginx_private_largest"     => "9.2 MB",
+      "nginx_private_total"       => "26.0 MB",
+      "nginx_processes"           => "5",
+      "nginx_vmsize_largest"      => "58.3 MB",
+      "nginx_vmsize_total"        => "271.6 MB",
+      "passenger_private_largest" => "176.0 MB",
+      "passenger_private_total"   => "2251.4 MB",
+      "passenger_processes"       => "16",
+      "passenger_vmsize_largest"  => "313.9 MB",
+      "passenger_vmsize_total"    => "4377.8 MB",
     }], PassengerMemoryStats.new(nil, {}, {}).run[:reports])
   end
 
   def test_apache_only
     stub_command_with FIXTURES[:apache_only]
     assert_equal([{
-      "apache_private_total"    => "7.6 MB",
-      "apache_processes"        => "4",
-      "apache_vmsize_total"     => "1083.3 MB",
-      "passenger_private_total" => "214.8 MB",
-      "passenger_processes"     => "6",
-      "passenger_vmsize_total"  => "636.3 MB",
+      "apache_private_largest"    => "3.3 MB",
+      "apache_private_total"      => "7.6 MB",
+      "apache_processes"          => "4",
+      "apache_vmsize_largest"     => "411.8 MB",
+      "apache_vmsize_total"       => "1083.3 MB",
+      "passenger_private_largest" => "54.1 MB",
+      "passenger_private_total"   => "214.8 MB",
+      "passenger_processes"       => "6",
+      "passenger_vmsize_largest"  => "129.8 MB",
+      "passenger_vmsize_total"    => "636.3 MB",
     }], PassengerMemoryStats.new(nil, {}, {}).run[:reports])
   end
 

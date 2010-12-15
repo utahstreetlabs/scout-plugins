@@ -52,13 +52,15 @@ class PassengerMemoryStats < Scout::Plugin
         headers.map! { |h| h.strip.downcase }
       elsif table and headers and line =~ /^\d/
         fields = Hash[*headers.zip(line.strip.unpack(field_format)).flatten]
-        stats["#{table}_vmsize_total"] += as_mb(fields["vmsize"])
+        stats["#{table}_vmsize_largest"] = [as_mb(fields["vmsize"]), stats["#{table}_vmsize_largest"]].max
+        stats["#{table}_private_largest"] = [as_mb(fields["private"]), stats["#{table}_private_largest"]].max
+        stats["#{table}_vmsize_total"]  += as_mb(fields["vmsize"])
         stats["#{table}_private_total"] += as_mb(fields["private"])
       end
     end
 
     stats.each_key do |field|
-      if field =~ /(?:vmsize|private)_total\z/
+      if field =~ /(?:vmsize|private)_(total|largest)\z/
         stats[field] = "#{stats[field]} MB"
       end
     end

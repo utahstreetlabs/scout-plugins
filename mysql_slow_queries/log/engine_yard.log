@@ -1,0 +1,4 @@
+# Time: 101201 12:00:00 # User@Host: deploy[deploy] @ ip-10-190-250-150.ec2.internal [10.190.250.150]
+# Thread_id: 31219  Schema: website_production
+# Query_time: 3.091703  Lock_time: 0.000041  Rows_sent: 150  Rows_examined: 250
+SELECT * FROM `notifications` WHERE ((flag ='WARN' or flag ='ALERT')) AND (notifications.date >= '2010-12-01' and notifications.date <= '2011-03-31')  ORDER BY flag

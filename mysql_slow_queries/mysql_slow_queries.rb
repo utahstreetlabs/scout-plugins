@@ -20,8 +20,19 @@ class ScoutMysqlSlow < Scout::Plugin
   # In order to limit the alert body size, only the first +MAX_QUERIES+ are listed in the alert body. 
   MAX_QUERIES = 10
   
+  OPTIONS=<<-EOS
+  mysql_slow_log:
+    default: /var/log/mysql/mysql-slow.log
+    name: Full path to the MySQL slow queries log file
+  minimum_query_time:
+    default: 0
+    name: "Minimum Query Time (sec)"
+    attributes: advanced
+    notes: If the log file contains queries that are less than the specified time in seconds the queries will be ignored.
+  EOS
+  
   def build_report
-    log_file_path = option("mysql_slow_log").to_s.strip
+    log_file_path = option(:mysql_slow_log).to_s.strip
     if log_file_path.empty?
       return error( "A path to the MySQL Slow Query log file wasn't provided.",
                     "The full path to the slow queries log must be provided. Learn more about enabling the slow queries log here: http://dev.mysql.com/doc/refman/5.1/en/slow-query-log.html" )
@@ -68,7 +79,7 @@ class ScoutMysqlSlow < Scout::Plugin
     end
     remember(:last_run,Time.now)
   rescue Errno::ENOENT => error
-      error("Unable to find the MySQL slow queries log file", "Could not find a MySQL slow queries log file at: #{option(:mysql_slow_log)}. Please ensure the path is correct.")    
+    error("Unable to find the MySQL slow queries log file", "Could not find a MySQL slow queries log file at: #{option(:mysql_slow_log)}. Please ensure the path is correct.")    
   end
   
   def build_alert(slow_queries,log_file_path)

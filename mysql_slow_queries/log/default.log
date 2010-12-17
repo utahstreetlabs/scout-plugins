@@ -1,0 +1,4 @@
+# Time: 101201 12:00:00
+# User@Host: root[root] @ localhost []
+# Query_time: 21  Lock_time: 0  Rows_sent: 18  Rows_examined: 8157
+SELECT SQL_NO_CACHE IF('2008-04-18 19:03:00' <= reports.time AND reports.time < '2008-04-20 10:21:00', 0, IF('2008-04-20 10:21:00' <= reports.time AND reports.time < '2008-04-22 01:39:00', 1, IF('2008-04-22 01:39:00' <= repo

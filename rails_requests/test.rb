@@ -25,9 +25,9 @@ class RailsRequestsTest < Test::Unit::TestCase
     plugin=RailsRequests.new(nil,{:last_request_time=>Time.parse("2010-06-18 11:27:15")},@options.merge(:log => @rails2_oink_log,:max_request_length => 30))
     res=plugin.run
     assert_equal 0.0, res[:reports].first[:slow_requests_percentage]
-    assert_equal "1.51", res[:reports].first[:average_request_length]
-    assert_equal "0.09", res[:reports].first[:average_db_time]
-    assert_equal "1.40", res[:reports].first[:average_view_time]
+    assert_equal "2.15", res[:reports].first[:average_request_length]
+    assert_equal "0.14", res[:reports].first[:average_db_time]
+    assert_equal "2.00", res[:reports].first[:average_view_time]
     assert_equal 1, res[:summaries].size
   end
   

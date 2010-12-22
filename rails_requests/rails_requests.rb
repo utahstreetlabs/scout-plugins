@@ -83,7 +83,7 @@ class RailsRequests < Scout::Plugin
         if request[:timestamp] <= @previous_last_request_time_as_timestamp
           skipped_requests_count += 1
         else
-          @request_count += 1 
+          @total_request_count += 1 
           completed_line = request.has_line_type?(:completed)
           next if completed_line.nil? # request could be a failure. if so, no metrics to parse.
           parse_request(request)
@@ -162,6 +162,7 @@ class RailsRequests < Scout::Plugin
   # Inits data the plugin tracks, ie slow request count, slow requests, etc
   def init_tracking
     @slow_request_count     = 0
+    @total_request_count    = 0 # includes requests that don't have duration info
     @request_count          = 0
     @last_completed         = nil
     @slow_requests          = ''
@@ -210,7 +211,7 @@ class RailsRequests < Scout::Plugin
     if @request_count > 0
      interval = set_interval
      # determine the rate of requests and slow requests in requests/min
-     report_data[:request_rate]           = average(@request_count,interval)
+     report_data[:request_rate]           = average(@total_request_count,interval)
      report_data[:slow_request_rate]      = average(@slow_request_count,interval)
 
      # determine the average times for the whole request, db, and view
@@ -248,6 +249,7 @@ class RailsRequests < Scout::Plugin
   end
   
   def parse_request(request) 
+    @request_count += 1
     url= request[:url] || request[:path]
     
     parse_timing(request,url)

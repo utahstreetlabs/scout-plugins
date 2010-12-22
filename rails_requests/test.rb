@@ -16,8 +16,8 @@ class RailsRequestsTest < Test::Unit::TestCase
     res=plugin.run
     assert_equal 0.0, res[:reports].first[:slow_requests_percentage]
     assert_equal "0.36", res[:reports].first[:average_request_length]
-    assert_equal "0.04", res[:reports].first[:average_db_time]
-    assert_equal "0.30", res[:reports].first[:average_view_time]
+    assert_equal "0.30", res[:reports].first[:average_db_time]
+    assert_equal "0.04", res[:reports].first[:average_view_time]
     assert_equal 1, res[:summaries].size
   end
   
@@ -26,8 +26,8 @@ class RailsRequestsTest < Test::Unit::TestCase
     res=plugin.run
     assert_equal 0.0, res[:reports].first[:slow_requests_percentage]
     assert_equal "2.15", res[:reports].first[:average_request_length]
-    assert_equal "0.14", res[:reports].first[:average_db_time]
-    assert_equal "2.00", res[:reports].first[:average_view_time]
+    assert_equal "2.00", res[:reports].first[:average_db_time]
+    assert_equal "0.14", res[:reports].first[:average_view_time]
     assert_equal 1, res[:summaries].size
   end
   
@@ -77,8 +77,8 @@ class RailsRequestsTest < Test::Unit::TestCase
     plugin=RailsRequests.new(nil,{:last_request_time=>Time.parse("2010-04-26 00:00:00")},@options.merge(:log => @rails3_log, :rails_version => '3'))
     res=plugin.run
     assert_equal "0.39", res[:reports].first[:average_request_length]
-    assert_equal "0.35", res[:reports].first[:average_db_time]   # NOTE: the Rails3 Parser doesn't extract these values 4/30/2010
-    assert_equal "0.02", res[:reports].first[:average_view_time] # NOTE: the Rails3 Parser doesn't extract these values 4/30/2010
+    assert_equal "0.02", res[:reports].first[:average_db_time]   # NOTE: the Rails3 Parser doesn't extract these values 4/30/2010
+    assert_equal "0.35", res[:reports].first[:average_view_time] # NOTE: the Rails3 Parser doesn't extract these values 4/30/2010
   end
 
   def test_run_with_slow_request_rails_3

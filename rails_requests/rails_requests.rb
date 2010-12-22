@@ -216,8 +216,8 @@ class RailsRequests < Scout::Plugin
 
      # determine the average times for the whole request, db, and view
      report_data[:average_request_length] = average(@total_request_time,@request_count)
-     report_data[:average_db_time]        = average(@total_view_time,@request_count)
-     report_data[:average_view_time]      = average(@total_db_time,@request_count)
+     report_data[:average_db_time]        = average(@total_db_time,@request_count)
+     report_data[:average_view_time]      = average(@total_view_time,@request_count)
 
      report_data[:slow_requests_percentage] = (@request_count == 0) ? 0 : (@slow_request_count.to_f / @request_count.to_f) * 100.0
     end

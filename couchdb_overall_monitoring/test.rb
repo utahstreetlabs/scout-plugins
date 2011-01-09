@@ -18,6 +18,16 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
     assert_equal res[:memory]["_counter_database_writes"][:value], 1000    
   end
   
+  def test_no_httpd_group
+    uri="http://127.0.0.1:5984/_stats"
+    FakeWeb.register_uri(:get, uri, :body => FIXTURES[:no_httpd_group])
+    @plugin=CouchDBOverallMonitoring.new(nil,{},{:couchdb_host=>'http://127.0.0.1',:couchdb_port=>'5984'})
+    res = @plugin.run()
+    assert res[:errors].empty?
+    assert_equal res[:memory]["_counter_database_reads"][:value], 100
+    assert_equal res[:memory]["_counter_database_writes"][:value], 1000
+  end
+  
   def test_normal_run
     time = Time.now
     Timecop.travel(time-60*10) do
@@ -29,16 +39,18 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
       Timecop.travel(time) do
         @plugin=CouchDBOverallMonitoring.new(nil,first_run_memory,{:couchdb_host=>'http://127.0.0.1',:couchdb_port=>'5984'})
         res = @plugin.run()
-        reports = res[:reports]     
-        assert_in_delta 10/(10*60).to_f, reports.first['database_reads'], 0.001
-        assert_in_delta 1000/(10*60).to_f, reports[1]['database_writes'], 0.001
+        reports = res[:reports]   
+        assert_in_delta 10/(10*60).to_f, reports.find { |r| r.keys.include?('database_reads') }.values.first, 0.001
+        assert_in_delta 1000/(10*60).to_f, reports.find { |r| r.keys.include?('database_writes') }.values.first, 0.001
+        assert_in_delta 2/(10*60).to_f, reports.find { |r| r.keys.include?('httpd_success') }.values.first, 0.001
+        assert_in_delta 1/(10*60).to_f, reports.find { |r| r.keys.include?('httpd_error') }.values.first, 0.001
       end
     end # Timecop.travel
   end
   
   def test_not_found
     CouchDBOverallMonitoring::METRICS.each do |metric|
-      uri="http://127.0.0.1:5984/_stats/couchdb/#{metric}"
+      uri="http://127.0.0.1:5984/_stats"
       FakeWeb.register_uri(:get, uri, :status => ["404", "Not Found"])
     end
     
@@ -54,22 +66,12 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
   end
   
   def test_no_host
-    CouchDBOverallMonitoring::METRICS.each do |metric|
-      uri="http://127.0.0.1:5984/_stats/couchdb/#{metric}"
-      FakeWeb.register_uri(:get, uri, :body => FIXTURES[(metric+'_initial').to_sym])
-    end
-    
     @plugin=CouchDBOverallMonitoring.new(nil,{},{:couchdb_host=>nil,:couchdb_port=>'5984'})
     res = @plugin.run()
     assert res[:errors].any?
   end
   
   def test_no_port
-    CouchDBOverallMonitoring::METRICS.each do |metric|
-      uri="http://127.0.0.1:5984/_stats/couchdb/#{metric}"
-      FakeWeb.register_uri(:get, uri, :body => FIXTURES[(metric+'_initial').to_sym])
-    end
-    
     @plugin=CouchDBOverallMonitoring.new(nil,{},{:couchdb_host=>'http://127.0.0.1',:couchdb_port=>nil})
     res = @plugin.run()
     assert res[:errors].any?
@@ -80,23 +82,13 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
   ###############
   
   def setup_urls
-    CouchDBOverallMonitoring::METRICS.each do |metric|
-      uri="http://127.0.0.1:5984/_stats/couchdb/#{metric}"
+      uri="http://127.0.0.1:5984/_stats"
       FakeWeb.register_uri(:get, uri, 
         [
-         {:body => FIXTURES[(metric+'_initial').to_sym]},
-         {:body => FIXTURES[(metric+'_second_run').to_sym]}
+         {:body => FIXTURES[:initial]},
+         {:body => FIXTURES[:second_run]}
         ]
       )
-    end
-    CouchDBOverallMonitoring::HTTP_REQUEST_METHODS.each do |method|
-      uri="http://127.0.0.1:5984/_stats/httpd_request_methods/#{method}"
-      FakeWeb.register_uri(:get, uri, :body => FIXTURES["httpd_methods_#{method.downcase}".to_sym])
-    end    
-    CouchDBOverallMonitoring::HTTP_STATS.each do |metric|
-      uri="http://127.0.0.1:5984/_stats/httpd_request_methods/#{metric}"
-      FakeWeb.register_uri(:get, uri, :body => FIXTURES["httpd_stats_#{metric}".to_sym])
-    end
   end
   
   
@@ -105,7 +97,7 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
   ################
   
   FIXTURES=YAML.load(<<-EOS)
-    :database_reads_initial: |
+    :initial: |
       {
         "couchdb":{
           "database_reads":{
@@ -116,12 +108,7 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
             "max":870,
             "stddev":96.394365139495,
             "description":"number of times a document was read from a database"
-          }
-        }
-      }
-    :database_writes_initial: |
-      {
-        "couchdb":{
+          },
           "database_writes":{
             "current":1000,
             "count":88024,
@@ -131,9 +118,87 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
             "stddev":96.394365139495,
             "description":""
           }
+        },
+        "httpd_request_methods": {
+          "GET": {
+            "current": 2,
+            "max": 1,
+            "mean": 0.00096946194861852,
+            "description": "number of HTTP GET requests",
+            "stddev": 0.0311210875797858,
+            "min": 0,
+            "count": 2063
+          },
+          "POST": {
+            "current": 2,
+            "max": 1,
+            "mean": 0.00096946194861852,
+            "description": "",
+            "stddev": 0.0311210875797858,
+            "min": 0,
+            "count": 2063
+          },
+          "PUT": {
+            "current": 2,
+            "max": 1,
+            "mean": 0.00096946194861852,
+            "description": "",
+            "stddev": 0.0311210875797858,
+            "min": 0,
+            "count": 2063
+          },
+          "DELETE": {
+            "current": 2,
+            "max": 1,
+            "mean": 0.00096946194861852,
+            "description": "",
+            "stddev": 0.0311210875797858,
+            "min": 0,
+            "count": 2063
+          }
+        },
+        "httpd": {
+          "requests": {
+            "current": 2,
+            "max": 1,
+            "mean": 0.00096946194861852,
+            "description": "number of HTTP requests",
+            "stddev": 0.0311210875797858,
+            "min": 0,
+            "count": 2063
+          },
+          "view_reads": {
+            "current": 2,
+            "max": 1,
+            "mean": 0.00096946194861852,
+            "description": "",
+            "stddev": 0.0311210875797858,
+            "min": 0,
+            "count": 2063
+          }
+        },
+        "httpd_status_codes": {
+            "200": {
+              "current": 2,
+              "max": 1,
+              "mean": 0.00096946194861852,
+              "description": "number of HTTP 200 OK responses",
+              "stddev": 0.0311210875797858,
+              "min": 0,
+              "count": 2063
+            },
+            "400": {
+              "current": 0,
+              "max": 1,
+              "mean": 0.00096946194861852,
+              "description": "",
+              "stddev": 0.0311210875797858,
+              "min": 0,
+              "count": 2063
+            }
         }
       }
-    :database_reads_second_run: |
+    :second_run: |
       {
         "couchdb":{
           "database_reads":{
@@ -144,12 +209,7 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
             "max":870,
             "stddev":96.394365139495,
             "description":"number of times a document was read from a database"
-          }
-        }
-      }
-    :database_writes_second_run: |
-      {
-        "couchdb":{
+          },
           "database_writes":{
             "current":2000,
             "count":88024,
@@ -159,10 +219,7 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
             "stddev":96.394365139495,
             "description":""
           }
-        }
-      }
-    :httpd_methods_get: |   
-      {
+        },
         "httpd_request_methods": {
           "GET": {
             "current": 2,
@@ -172,53 +229,35 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
             "stddev": 0.0311210875797858,
             "min": 0,
             "count": 2063
-          }
-        }
-      }
-    :httpd_methods_post: |   
-      {
-        "httpd_request_methods": {
+          },
           "POST": {
             "current": 2,
             "max": 1,
             "mean": 0.00096946194861852,
-            "description": "number of HTTP GET requests",
+            "description": "",
             "stddev": 0.0311210875797858,
             "min": 0,
             "count": 2063
-          }
-        }
-      }
-    :httpd_methods_put: |   
-      {
-        "httpd_request_methods": {
+          },
           "PUT": {
             "current": 2,
             "max": 1,
             "mean": 0.00096946194861852,
-            "description": "number of HTTP GET requests",
+            "description": "",
             "stddev": 0.0311210875797858,
             "min": 0,
             "count": 2063
-          }
-        }
-      }
-    :httpd_methods_delete: |   
-      {
-        "httpd_request_methods": {
+          },
           "DELETE": {
             "current": 2,
             "max": 1,
             "mean": 0.00096946194861852,
-            "description": "number of HTTP GET requests",
+            "description": "",
             "stddev": 0.0311210875797858,
             "min": 0,
             "count": 2063
           }
-        }
-      }
-    :httpd_stats_requests: |
-      {
+        },
         "httpd": {
           "requests": {
             "current": 2,
@@ -228,12 +267,7 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
             "stddev": 0.0311210875797858,
             "min": 0,
             "count": 2063
-          }
-        }
-      }
-    :httpd_stats_view_reads: |
-      {
-        "httpd": {
+          },
           "view_reads": {
             "current": 2,
             "max": 1,
@@ -243,7 +277,108 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
             "min": 0,
             "count": 2063
           }
+        },
+        "httpd_status_codes": {
+            "200": {
+              "current": 4,
+              "max": 1,
+              "mean": 0.00096946194861852,
+              "description": "number of HTTP 200 OK responses",
+              "stddev": 0.0311210875797858,
+              "min": 0,
+              "count": 2063
+            },
+            "400": {
+              "current": 1,
+              "max": 1,
+              "mean": 0.00096946194861852,
+              "description": "",
+              "stddev": 0.0311210875797858,
+              "min": 0,
+              "count": 2063
+            }
         }
-      }  
+      }
+    :no_httpd_group: |
+      {
+        "couchdb":{
+          "database_reads":{
+            "current":100,
+            "count":88024,
+            "mean":46.73568572207625,
+            "min":0,
+            "max":870,
+            "stddev":96.394365139495,
+            "description":"number of times a document was read from a database"
+          },
+          "database_writes":{
+            "current":1000,
+            "count":88024,
+            "mean":46.73568572207625,
+            "min":0,
+            "max":870,
+            "stddev":96.394365139495,
+            "description":""
+          }
+        },
+        "httpd_request_methods": {
+          "GET": {
+            "current": 2,
+            "max": 1,
+            "mean": 0.00096946194861852,
+            "description": "number of HTTP GET requests",
+            "stddev": 0.0311210875797858,
+            "min": 0,
+            "count": 2063
+          },
+          "POST": {
+            "current": 2,
+            "max": 1,
+            "mean": 0.00096946194861852,
+            "description": "",
+            "stddev": 0.0311210875797858,
+            "min": 0,
+            "count": 2063
+          },
+          "PUT": {
+            "current": 2,
+            "max": 1,
+            "mean": 0.00096946194861852,
+            "description": "",
+            "stddev": 0.0311210875797858,
+            "min": 0,
+            "count": 2063
+          },
+          "DELETE": {
+            "current": 2,
+            "max": 1,
+            "mean": 0.00096946194861852,
+            "description": "",
+            "stddev": 0.0311210875797858,
+            "min": 0,
+            "count": 2063
+          }
+        },
+        "httpd_status_codes": {
+            "200": {
+              "current": 2,
+              "max": 1,
+              "mean": 0.00096946194861852,
+              "description": "number of HTTP 200 OK responses",
+              "stddev": 0.0311210875797858,
+              "min": 0,
+              "count": 2063
+            },
+            "400": {
+              "current": 0,
+              "max": 1,
+              "mean": 0.00096946194861852,
+              "description": "",
+              "stddev": 0.0311210875797858,
+              "min": 0,
+              "count": 2063
+            }
+        }
+      }
   EOS
 end

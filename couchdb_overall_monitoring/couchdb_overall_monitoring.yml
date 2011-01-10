@@ -24,14 +24,18 @@ metadata:
     units: /sec
     precision: 1
   GET:
+    label: HTTP GET
     units: /sec
     precision: 1
   POST:
+    label: HTTP POST
     units: /sec
     precision: 1
   PUT:
+    label: HTTP PUT
     units: /sec
     precision: 1
   DELETE:
+    label: HTTP DELETE
     units: /sec
     precision: 1

@@ -1,0 +1,17 @@
+metadata:
+  doc_count:
+    label: Documents
+    precision: "0"
+  doc_del_count:
+    label: Deleted documents
+    precision: "0"
+  disk_size:
+    label: Database size
+    units: MB
+  purge_seq:
+    label: Purge operations
+    precision: "0"
+  update_seq:
+    label: Updates
+    precision: 1
+    units: /sec

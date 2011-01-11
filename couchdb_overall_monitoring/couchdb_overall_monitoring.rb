@@ -1,4 +1,4 @@
-# Created by John Wood of Interactive Mediums
+# Created by John Wood of Signal
 class CouchDBOverallMonitoring< Scout::Plugin
   OPTIONS = <<-EOS
       couchdb_port:

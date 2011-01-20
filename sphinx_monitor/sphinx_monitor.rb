@@ -129,9 +129,17 @@ class SphinxMonitor < Scout::Plugin
     else
       return nil
     end
-    time_spent = line.match(/\]\s([\d\.]+).*?\[/).captures.first
-    results_returned = line.match(/\s(\d+)\s\(/).captures.first
-    QueryData.new(Time.parse(time), time_spent.to_f, results_returned.to_i)
+    time_spent = line.match(/\]\s([\d\.]+).*?\[/)
+    results_returned = line.match(/\s(\d+)\s\(/)
+
+    if time_spent && results_returned
+      time_spent = time_spent.captures.first
+      results_returned = results_returned.captures.first
+      return QueryData.new(Time.parse(time), time_spent.to_f, results_returned.to_i)
+    else
+      return nil
+    end
+
   end
 
   def parse_log_line(line)

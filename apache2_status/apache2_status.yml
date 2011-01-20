@@ -1,9 +1,0 @@
-options:
-  sample_size:
-    name: Apache Request Samples
-    notes: Since Requests come in unevenly, how many samples should we average
-    default: 5
-  sample_sleep:
-    name: Apache Request Sample Pause
-    notes: Time Between Samples (in seconds)
-    default: 0.2

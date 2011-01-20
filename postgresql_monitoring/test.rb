@@ -107,10 +107,6 @@ class PostgresqlMonitoringTest < Test::Unit::TestCase
     
   end
   
-  def test_second_run
-    
-  end
-  
   FIXTURES=YAML.load(<<-EOS)
     :rows_initial:
       "rows_total":

@@ -83,6 +83,7 @@ class RailsRequests < Scout::Plugin
         if request[:timestamp] <= @previous_last_request_time_as_timestamp
           skipped_requests_count += 1
         else
+          @total_request_count += 1 
           completed_line = request.has_line_type?(:completed)
           next if completed_line.nil? # request could be a failure. if so, no metrics to parse.
           parse_request(request)
@@ -137,7 +138,7 @@ class RailsRequests < Scout::Plugin
     else # Rails3 doesn't have option of minimal processing
       @file_format = @file_format_class.create
     end
-    @log_parser  = RequestLogAnalyzer::Source::LogParser.new(@file_format, :parse_strategy => 'cautious')
+    @log_parser  = RequestLogAnalyzer::Source::LogParser.new(@file_format)
   end
   
   # Need the class for incremental parsing and the daily report. 
@@ -161,6 +162,7 @@ class RailsRequests < Scout::Plugin
   # Inits data the plugin tracks, ie slow request count, slow requests, etc
   def init_tracking
     @slow_request_count     = 0
+    @total_request_count    = 0 # includes requests that don't have duration info
     @request_count          = 0
     @last_completed         = nil
     @slow_requests          = ''
@@ -208,15 +210,14 @@ class RailsRequests < Scout::Plugin
     # Calculate the average request time and request rate if there are any requests
     if @request_count > 0
      interval = set_interval
-     
      # determine the rate of requests and slow requests in requests/min
-     report_data[:request_rate]           = average(@request_count,interval)
+     report_data[:request_rate]           = average(@total_request_count,interval)
      report_data[:slow_request_rate]      = average(@slow_request_count,interval)
 
      # determine the average times for the whole request, db, and view
      report_data[:average_request_length] = average(@total_request_time,@request_count)
-     report_data[:average_db_time]        = average(@total_view_time,@request_count)
-     report_data[:average_view_time]      = average(@total_db_time,@request_count)
+     report_data[:average_db_time]        = average(@total_db_time,@request_count)
+     report_data[:average_view_time]      = average(@total_view_time,@request_count)
 
      report_data[:slow_requests_percentage] = (@request_count == 0) ? 0 : (@slow_request_count.to_f / @request_count.to_f) * 100.0
     end
@@ -247,8 +248,8 @@ class RailsRequests < Scout::Plugin
     @previous_last_request_time_as_timestamp = @previous_last_request_time.strftime('%Y%m%d%H%M%S').to_i
   end
   
-  def parse_request(request)
-    @request_count += 1  
+  def parse_request(request) 
+    @request_count += 1
     url= request[:url] || request[:path]
     
     parse_timing(request,url)

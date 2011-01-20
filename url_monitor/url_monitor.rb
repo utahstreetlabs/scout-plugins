@@ -39,13 +39,20 @@ class UrlMonitor < Scout::Plugin
     
     if is_up != memory(:was_up)
       if is_up == 0
-        alert("The URL [#{url}] is not responding", unindent(<<-EOF))
-            URL: #{url}
-
-            Code: #{response.code}
-            Status: #{response.class.to_s[/^Net::HTTP(.*)$/, 1]}
-            Message: #{response.message}
-          EOF
+        # if an exception is raised checking the URL the response is a String.
+        if !response.is_a?(String)
+          alert("The URL [#{url}] is not responding", unindent(<<-EOF))
+              URL: #{url}
+              Code: #{response.code}
+              Status: #{response.class.to_s[/^Net::HTTP(.*)$/, 1]}
+              Message: #{response.message}
+            EOF
+        else
+          alert("The URL [#{url}] is not responding", unindent(<<-EOF))
+              URL: #{url}
+              Message: #{response}
+            EOF
+        end
         remember(:down_at => Time.now)
       else
         if memory(:was_up) && memory(:down_at)

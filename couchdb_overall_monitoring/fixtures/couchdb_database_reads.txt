@@ -1,0 +1,13 @@
+{
+  "couchdb":{
+    "database_reads":{
+      "current":4113862,
+      "count":88024,
+      "mean":46.73568572207625,
+      "min":0,
+      "max":870,
+      "stddev":96.394365139495,
+      "description":"number of times a document was read from a database"
+    }
+  }
+}

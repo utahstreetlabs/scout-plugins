@@ -8,6 +8,10 @@ class MysqlReplicationMonitor < Scout::Plugin
     name: Host
     notes: The slave host to monitor
     default: 127.0.0.1
+  port:
+    name: Port
+    notes: The port number on the slave host
+    default: 3306
   username:
     name: Username
     notes: The MySQL username to use
@@ -39,7 +43,7 @@ class MysqlReplicationMonitor < Scout::Plugin
         raise MissingLibrary
       end
     end
-    self.connection=Mysql.new(option(:host),option(:username),option(:password))
+    self.connection=Mysql.new(option(:host),option(:username),option(:password),nil,option(:port))
   end
 
   def build_report

@@ -8,7 +8,7 @@ class Iostat < Scout::Plugin
 
   def build_report
     # determine the device, either from the passed option or by parsing `mount`
-    device = option('device') || `mount`.split("\n").grep(/ \/ /)[0].split[0]
+    device = option('device') || default_device
     stats = iostat(device)
     error("Device not found: #{device} -- check your plugin settings.",
           "FYI, mount returns:\n#{`mount`}") and return if !stats
@@ -38,13 +38,21 @@ class Iostat < Scout::Plugin
   
   private
   COLUMNS = %w(major minor name rio rmerge rsect ruse wio wmerge wsect wuse running use aveq)
+  
+  # Returns the device mounted at "/"
+  def default_device
+    @default_device = true
+    `mount`.split("\n").grep(/ \/ /)[0].split[0]
+  end
 
   def iostat(dev)
+    # if a LVM is used, `mount` output doesn't map to `/diskstats`. In this case, use dm-0 as the default device.
+    lvm = nil
     IO.readlines('/proc/diskstats').each do |line|
       entry = Hash[*COLUMNS.zip(line.strip.split(/\s+/).collect { |v| Integer(v) rescue v }).flatten]
       return entry if dev.include?(entry['name'])
+      lvm = entry if (@default_device and 'dm-0'.include?(entry['name']))
     end
-
-    nil
+    return lvm
   end
 end

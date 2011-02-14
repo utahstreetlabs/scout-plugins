@@ -90,13 +90,13 @@ class UrlMonitor < Scout::Plugin
         http.use_ssl = true
         http.verify_mode=OpenSSL::SSL::VERIFY_NONE
       end
-      http.start(){|http|
-            http.open_timeout = TIMEOUT_LENGTH
+      http.start(){|h|
+            h.open_timeout = TIMEOUT_LENGTH
             req = Net::HTTP::Get.new((uri.path != '' ? uri.path : '/' ) + (uri.query ? ('?' + uri.query) : ''))
             if uri.user && uri.password
               req.basic_auth uri.user, uri.password
             end
-            response = http.request(req)
+            response = h.request(req)
       }
     rescue Exception => e
       # forgot the trailing slash...add and retry

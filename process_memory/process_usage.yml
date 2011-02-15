@@ -1,8 +1,7 @@
 options:
   command_name:
     name: Command Name
-    notes: The name of the command to pull statistics for.
-    default: mongrel_rails
+    notes: The name of the process you want to monitor.
   ps_command:
     name: The Process Status (ps) Command
     notes: The command with options. The default works on most systems.

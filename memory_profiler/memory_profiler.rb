@@ -1,5 +1,15 @@
 class MemoryProfiler < Scout::Plugin
   def build_report
+    
+    if solaris?
+      solaris_memory
+    else
+      linux_memory
+    end
+    
+  end
+  
+  def linux_memory
     mem_info = {}
     `cat /proc/meminfo`.each_line do |line|
       _, key, value = *line.match(/^(\w+):\s+(\d+)\s/)
@@ -45,5 +55,36 @@ class MemoryProfiler < Scout::Plugin
     else
       raise
     end
+  end
+  
+  def solaris_memory
+    report_data = Hash.new
+    
+    prstat = `prstat -c -Z 1 1`
+    prstat =~ /(ZONEID[^\n]*)\n(.*)/
+    values = $2.split(' ')
+
+    report_data['Memory Used'] = values[3].to_i
+    report_data['Swap Used']   = values[2].to_i
+    
+    prtconf = `prtconf | grep Memory`
+    prtconf =~ /\d+/
+    report_data['Memory Total'] = $&.to_i
+    
+    report_data['% Memory Used'] = (report_data['Memory Used'] / report_data['Memory Total'].to_f * 100).to_i
+    
+    report(report_data)
+  end
+  
+  # True if on solaris. Only calcuated on the first run (assumes OS does not change).
+  def solaris?
+    return memory(:solaris) if !memory(:solaris).nil?
+    solaris = false
+    begin
+      solaris = true if `uname` =~ /sun/i
+    rescue
+    end
+    remember(:solaris, solaris)
+    return solaris
   end
 end

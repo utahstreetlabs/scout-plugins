@@ -1,0 +1,19 @@
+PID USERNAME  SIZE   RSS STATE  PRI NICE      TIME  CPU PROCESS/NLWP       
+ 18385 staging   137M  128M sleep    1    0   0:00:45 0.8% ruby18/1
+ 18391 staging   119M  109M sleep   54    0   0:00:22 0.7% ruby18/1
+ 21699 staging   141M  131M sleep    1    0   0:00:41 0.6% ruby18/1
+ 21695 staging   123M  114M sleep   42    0   0:00:15 0.2% ruby18/1
+ 21697 staging   123M  114M sleep   39    0   0:00:14 0.1% ruby18/1
+ 15955 mysql     424M   65M sleep   59    0   2:33:12 0.1% mysqld/25
+ 23480 staging  4260K 2680K cpu2    59    0   0:00:00 0.0% prstat/1
+ 18395 www        27M 4620K sleep   59    0   0:00:00 0.0% httpd/1
+ 23270 www        27M 4548K sleep   59    0   0:00:00 0.0% httpd/1
+ 23273 staging  7744K 2160K sleep   59    0   0:00:00 0.0% sshd/1
+ 23281 www        27M 4404K sleep   59    0   0:00:00 0.0% httpd/1
+ 15961 root     2264K 1244K sleep   59    0   0:00:03 0.0% sac/1
+ 16008 root     4188K 1016K sleep   59    0   0:00:01 0.0% authdaemond/1
+ 15973 root     4356K 1188K sleep   29    0   0:00:00 0.0% inetd/3
+  3738 root     4824K 3184K sleep   59    0   0:00:36 0.0% ApplicationPool/11
+ZONEID    NPROC  SWAP   RSS MEMORY      TIME  CPU ZONE                        
+   150       47 1388M  872M   2.7%   3:23:51 2.4% fggrwxab                    
+Total: 47 processes, 145 lwps, load averages: 1.53, 1.28, 1.07

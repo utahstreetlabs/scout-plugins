@@ -9,6 +9,8 @@ Elif.send(:remove_const, :MAX_READ_SIZE); Elif::MAX_READ_SIZE = 1024*100
 
 class RailsRequests < Scout::Plugin
   ONE_DAY    = 60 * 60 * 24
+  # prior versions of request log analyzer have a different API. 
+  OLDER_RLA_VERSION = Gem::Version.new("1.3.7")
 
   OPTIONS=<<-EOS
   log:
@@ -357,7 +359,7 @@ class RailsRequests < Scout::Plugin
   
   def analyze(last_summary, stop_time, log_path)
     log_file = read_backwards_to_timestamp(log_path, last_summary)
-    if RequestLogAnalyzer::VERSION <= "1.3.7"
+    if Gem::Version.new(RequestLogAnalyzer::VERSION) <= OLDER_RLA_VERSION
       analyzer_with_older_rla(last_summary, stop_time, log_file)
     else
       analyzer_with_newer_rla(last_summary, stop_time, log_file)

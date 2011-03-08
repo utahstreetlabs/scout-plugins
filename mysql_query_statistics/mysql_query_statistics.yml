@@ -22,11 +22,11 @@ metadata:
     units: conns
     precision: 0
   max_connections:
-    label: Max Connections
+    label: "Connections (Max)"
     units: conns
     precision: 0
   max_used_connections:
-    label: Max Used Connections
+    label: "Connections (Max Used)"
     units: conns
     precision: 0
 

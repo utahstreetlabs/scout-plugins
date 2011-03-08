@@ -67,7 +67,6 @@ class MysqlQueryStatistics < Scout::Plugin
     end
     result.free
 
-    report(:max_connections => mysql_variables['max_connections'])
     report(:max_used_connections => mysql_status['Max_used_connections'])
     report(:connections => mysql_status['Threads_connected'])
 

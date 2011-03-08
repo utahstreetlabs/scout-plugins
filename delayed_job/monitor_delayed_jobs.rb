@@ -12,7 +12,6 @@ class MonitorDelayedJobs < Scout::Plugin
     default: production
   EOS
   
-  
   needs 'active_record', 'yaml', 'erb'
 
   # IMPORTANT! Requiring Rubygems is NOT a best practice. See http://scoutapp.com/info/creating_a_plugin#libraries

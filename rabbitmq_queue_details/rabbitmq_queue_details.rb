@@ -15,7 +15,7 @@ class RabbitmqOverall < Scout::Plugin
     default: /
   EOS
 
-  QUEUE_INFO_ITEMS = %w(name messages_ready messages_unacknowledged messages_uncommitted messages acks_uncommitted consumers transactions memory)
+  QUEUE_INFO_ITEMS = %w(name messages_ready messages_unacknowledged messages consumers memory)
 
   def build_report
     rabbitmqctl_script = option('rabbitmqctl')
@@ -35,6 +35,14 @@ class RabbitmqOverall < Scout::Plugin
     end
 
     report(extract_stats(queue_stats_line))
+  end
+
+  def `(command)
+    result = super(%{#{command} 2>&1})
+    if ($? != 0)
+      raise "#{command} exited with a non-zero value: #{$?} `#{result}'"
+    end
+    result
   end
 
   private

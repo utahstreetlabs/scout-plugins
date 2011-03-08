@@ -7,6 +7,7 @@ class Iostat < Scout::Plugin
   EOS
 
   def build_report
+    @default_device_used = false
     # determine the device, either from the passed option or by parsing `mount`
     device = option('device') || default_device
     stats = iostat(device)
@@ -41,7 +42,7 @@ class Iostat < Scout::Plugin
   
   # Returns the device mounted at "/"
   def default_device
-    @default_device = true
+    @default_device_used = true
     `mount`.split("\n").grep(/ \/ /)[0].split[0]
   end
 
@@ -51,7 +52,7 @@ class Iostat < Scout::Plugin
     IO.readlines('/proc/diskstats').each do |line|
       entry = Hash[*COLUMNS.zip(line.strip.split(/\s+/).collect { |v| Integer(v) rescue v }).flatten]
       return entry if dev.include?(entry['name'])
-      lvm = entry if (@default_device and 'dm-0'.include?(entry['name']))
+      lvm = entry if (@default_device_used and 'dm-0'.include?(entry['name']))
     end
     return lvm
   end

@@ -6,20 +6,22 @@ require 'uri'
 class UrlMonitor < Scout::Plugin
   include Net
   
-  TEST_USAGE = "#{File.basename($0)} url URL last_run LAST_RUN"
   TIMEOUT_LENGTH = 50 # seconds
-
+  
   OPTIONS=<<-EOS
   url:
     name: Url
     notes: The full URL (including http://) of the URL to monitor. You can provide basic authentication options as well (http://user:pass@domain.com)
-    default: "http://www.scoutapp.com/"
+  host_override:
+    name: Host Override
+    notes: "Override what host to connect to. You can use 'localhost' to monitor this host while still providing a real Host: header"
+    attributes: advanced
   EOS
-
+  
   def build_report
     url = option("url").to_s.strip
     if url.empty?
-      return error("A url wasn't provided.")
+      return error("A url wasn't provided.", "Please enter a URL to monitor in the plugin settings.")
     end
     
     unless url =~ %r{\Ahttps?://}
@@ -39,20 +41,13 @@ class UrlMonitor < Scout::Plugin
     
     if is_up != memory(:was_up)
       if is_up == 0
-        # if an exception is raised checking the URL the response is a String.
-        if !response.is_a?(String)
-          alert("The URL [#{url}] is not responding", unindent(<<-EOF))
-              URL: #{url}
-              Code: #{response.code}
-              Status: #{response.class.to_s[/^Net::HTTP(.*)$/, 1]}
-              Message: #{response.message}
-            EOF
-        else
-          alert("The URL [#{url}] is not responding", unindent(<<-EOF))
-              URL: #{url}
-              Message: #{response}
-            EOF
-        end
+        alert("The URL [#{url}] is not responding", unindent(<<-EOF))
+            URL: #{url}
+
+            Code: #{response.code}
+            Status: #{response.class.to_s[/^Net::HTTP(.*)$/, 1]}
+            Message: #{response.message}
+          EOF
         remember(:down_at => Time.now)
       else
         if memory(:was_up) && memory(:down_at)
@@ -85,18 +80,19 @@ class UrlMonitor < Scout::Plugin
     retry_url_trailing_slash = true
     retry_url_execution_expired = true
     begin
-      http = Net::HTTP.new(uri.host,uri.port)
-      if url =~ %r{\Ahttps://}
-        http.use_ssl = true
-        http.verify_mode=OpenSSL::SSL::VERIFY_NONE
-      end
-      http.start(){|h|
-            h.open_timeout = TIMEOUT_LENGTH
+      connect_host = option('host_override').to_s.strip
+      connect_host = uri.host if connect_host.empty?
+
+      http = Net::HTTP.new(connect_host,uri.port)
+      http.use_ssl = url =~ %r{\Ahttps://}
+      http.start(){|http|
+            http.open_timeout = TIMEOUT_LENGTH
             req = Net::HTTP::Get.new((uri.path != '' ? uri.path : '/' ) + (uri.query ? ('?' + uri.query) : ''))
+            req['host'] = uri.host
             if uri.user && uri.password
               req.basic_auth uri.user, uri.password
             end
-            response = h.request(req)
+            response = http.request(req)
       }
     rescue Exception => e
       # forgot the trailing slash...add and retry

@@ -1,0 +1,1 @@
+total: 10492k bytes allocated + 7840k reserved = 18332k used, 2156800k available

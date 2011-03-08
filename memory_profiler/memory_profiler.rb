@@ -57,6 +57,9 @@ class MemoryProfiler < Scout::Plugin
     end
   end
   
+  # Memory Used and Swap Used come from the prstat command. 
+  # Memory Total comes from prtconf
+  # Swap Total comes from swap -s
   def solaris_memory
     report_data = Hash.new
     
@@ -67,11 +70,21 @@ class MemoryProfiler < Scout::Plugin
     report_data['Memory Used'] = values[3].to_i
     report_data['Swap Used']   = values[2].to_i
     
-    prtconf = `prtconf | grep Memory`
+    prtconf = `/usr/sbin/prtconf | grep Memory`    
+    
     prtconf =~ /\d+/
     report_data['Memory Total'] = $&.to_i
-    
     report_data['% Memory Used'] = (report_data['Memory Used'] / report_data['Memory Total'].to_f * 100).to_i
+    
+    swap = `swap -s`
+    swap =~ /\d+k\sused/
+    swap_used = $&.to_i
+    swap =~ /\d+k\savailable/
+    swap_available = $&.to_i
+    report_data['Swap Total'] = (swap_used+swap_available)/1024
+    unless report_data['Swap Total'] == 0   
+      report_data['% Swap Used'] = (report_data['Swap Used'] / report_data['Swap Total'].to_f * 100).to_i      
+    end
     
     report(report_data)
   end

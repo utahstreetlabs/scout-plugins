@@ -67,7 +67,7 @@ class ScoutMongoSlow < Scout::Plugin
     
     # info
     selector = { 'millis' => { '$gte' => threshold } }
-    cursor = Mongo::Cursor.new(Mongo::Collection.new(db, Mongo::DB::SYSTEM_PROFILE_COLLECTION), :selector => selector).limit(20).sort([["$natural", "descending"]])
+    cursor = Mongo::Cursor.new(db[Mongo::DB::SYSTEM_PROFILE_COLLECTION], :selector => selector).limit(20).sort([["$natural", "descending"]])
     
     # reads most recent first
     # {"ts"=>Wed Dec 16 02:44:03 UTC 2009, "info"=>"query twitter_follow.system.profile ntoreturn:0 reslen:1236 nscanned:8  \nquery: { query: { millis: { $gte: 5 } }, orderby: { $natural: -1 } }  nreturned:8 bytes:1220", "millis"=>57.0}

@@ -1,3 +1,4 @@
+$VERBOSE=false
 require "time"
 require "digest/md5"
 
@@ -57,7 +58,12 @@ class ScoutMongoSlow < Scout::Plugin
       threshold = threshold_str.to_i
     end
 
-    db = Mongo::ReplSetConnection.new([server,option("port").to_i], :read_secondary => true).db(database)
+    connection = if Gem::Version.new(Mongo::VERSION) < Gem::Version.new('1.1.5')
+                   Mongo::Connection.new(server,option("port").to_i)
+                 else
+                   Mongo::ReplSetConnection.new([server,option("port").to_i], :read_secondary => true)
+                 end
+    db = connection.db(database)
     db.authenticate(option(:username), option(:password)) if !option(:username).to_s.empty?
     enable_profiling(db)
 

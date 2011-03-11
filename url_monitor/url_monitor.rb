@@ -44,9 +44,9 @@ class UrlMonitor < Scout::Plugin
         alert("The URL [#{url}] is not responding", unindent(<<-EOF))
             URL: #{url}
 
-            Code: #{response.code}
-            Status: #{response.class.to_s[/^Net::HTTP(.*)$/, 1]}
-            Message: #{response.message}
+            Code: #{response.is_a?(String) ? 'N/A' : response.code}
+            Status: #{response.is_a?(String) ? 'N/A' : response.class.to_s[/^Net::HTTP(.*)$/, 1]}
+            Message: #{response.is_a?(String) ? response : response.message}
           EOF
         remember(:down_at => Time.now)
       else
@@ -72,7 +72,8 @@ class UrlMonitor < Scout::Plugin
     [HTTPOK,HTTPFound].include?(result.class) 
   end
   
-  # returns the http response (string) from a url
+  # returns the http response from a url
+  # CONFUSING: note that the response is a String when an error occurs.
   def http_response(url)
     uri = URI.parse(url)
 

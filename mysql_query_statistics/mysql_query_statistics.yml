@@ -17,6 +17,15 @@ metadata:
   total:
     label: Total Queries
     units: /sec
+  connections:
+    label: Connections
+    units: conns
+    precision: 0
+  max_used_connections:
+    label: "Connections (Max Used)"
+    units: conns
+    precision: 0
+
 
 triggers:
   - type: trend

@@ -53,22 +53,31 @@ class MysqlQueryStatistics < Scout::Plugin
     forceswap = (get_option(:forceswap) ? get_option(:forceswap).to_i : nil)
 
     mysql = Mysql.connect(host, user, password, nil, (port.nil? ? nil : port.to_i), socket)
+    mysql_status = {}
     result = mysql.query('SHOW /*!50002 GLOBAL */ STATUS')
-    rows = []
-    total = 0
-    # process each row. Sum the values for 'total''
     result.each do |row|
-      rows << row if ENTRIES.include?(row.first)
-      total += row.last.to_i if row.first[0..3] == 'Com_'
+      mysql_status[row.first] = row.last.to_i
     end
     result.free
 
-    # report each one, then the total (all via counter)
-    rows.each do |row|
-      name = row.first[/_(.*)$/, 1]
-      counter(name, row.last.to_i, :per=>:second)
+    mysql_variables = {}
+    result = mysql.query('SHOW /*!50000 GLOBAL */ VARIABLES')
+    result.each do |row|
+      mysql_variables[row.first] = row.last.to_i
     end
-    counter(:total, total, :per=>:second)
+    result.free
+
+    report(:max_used_connections => mysql_status['Max_used_connections'])
+    report(:connections => mysql_status['Threads_connected'])
+
+    total = 0
+    mysql_status.each do |k,v|
+      if ENTRIES.include?(k)
+        total += v
+        counter(k[/_(.*)$/, 1], v, :per => :second)
+      end
+    end
+    counter(:total, total, :per => :second)
 
     return if days == nil # blank (or nil) means don't run tuner
     days=days.to_i

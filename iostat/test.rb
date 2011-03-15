@@ -25,6 +25,17 @@ class IostatTest < Test::Unit::TestCase
     end
   end
   
+  def test_success_with_provided_device
+    @plugin=Iostat.new(nil,{},{:device => 'xvda1'})
+    IO.expects(:readlines).with('/proc/diskstats').returns(FIXTURES[:diskstats_1].split(/\n/)).once
+
+    res = @plugin.run()
+    assert res[:memory].is_a?(Hash), "Plugin memory should be a hash"
+    assert_equal 7, res[:memory].keys.size, "Plugin memory has the wrong number of keys"
+    assert_equal 0, res[:reports].size, "Plugin shouldn't return any results first run"
+    assert_equal 52087575, res[:memory]['_counter_rkbps'][:value]
+  end
+  
   def test_error_on_bad_device_name
     @plugin=Iostat.new(nil,{},{:device => 'bad'})
     IO.expects(:readlines).with('/proc/diskstats').returns(FIXTURES[:diskstats_1].split(/\n/)).once

@@ -35,15 +35,7 @@ class PassengerMemoryStats < Scout::Plugin
     table        = nil
     headers      = nil
     field_format = nil
-    stats        = { "apache_processes"        => 0,
-                     "apache_vmsize_total"     => 0.0,
-                     "apache_private_total"    => 0.0,
-                     "nginx_processes"         => 0,
-                     "nginx_vmsize_total"      => 0.0,
-                     "nginx_private_total"     => 0.0,
-                     "passenger_processes"     => 0,
-                     "passenger_vmsize_total"  => 0.0,
-                     "passenger_private_total" => 0.0 }
+    stats        = Hash.new(0.0)
 
     data.each_line do |line|
       line = line.gsub(/\e\[\d+m/,'')
@@ -52,7 +44,7 @@ class PassengerMemoryStats < Scout::Plugin
         headers      = nil
         field_format = nil
       elsif table and line =~ /^\s*###\s+Processes:\s*(\d+)/
-        stats["#{table}_processes"] = $1
+        stats["#{table}_processes"] = $1 unless $1 == "0"
       elsif table and line =~ /^[A-Za-z]/
         headers      = line.scan(/\S+\s*/)
         field_format = headers.map { |h| "A#{h.size - 1}" }.join("x").
@@ -60,13 +52,15 @@ class PassengerMemoryStats < Scout::Plugin
         headers.map! { |h| h.strip.downcase }
       elsif table and headers and line =~ /^\d/
         fields = Hash[*headers.zip(line.strip.unpack(field_format)).flatten]
-        stats["#{table}_vmsize_total"] += as_mb(fields["vmsize"])
+        stats["#{table}_vmsize_largest"] = [as_mb(fields["vmsize"]), stats["#{table}_vmsize_largest"]].max
+        stats["#{table}_private_largest"] = [as_mb(fields["private"]), stats["#{table}_private_largest"]].max
+        stats["#{table}_vmsize_total"]  += as_mb(fields["vmsize"])
         stats["#{table}_private_total"] += as_mb(fields["private"])
       end
     end
 
     stats.each_key do |field|
-      if field =~ /(?:vmsize|private)_total\z/
+      if field =~ /(?:vmsize|private)_(total|largest)\z/
         stats[field] = "#{stats[field]} MB"
       end
     end

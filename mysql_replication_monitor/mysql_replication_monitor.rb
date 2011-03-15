@@ -43,7 +43,7 @@ class MysqlReplicationMonitor < Scout::Plugin
         raise MissingLibrary
       end
     end
-    self.connection=Mysql.new(option(:host),option(:username),option(:password),nil,option(:port))
+    self.connection=Mysql.new(option(:host),option(:username),option(:password),nil,option(:port).to_i)
   end
 
   def build_report
@@ -67,7 +67,7 @@ class MysqlReplicationMonitor < Scout::Plugin
     rescue Mysql::Error=>e
       error("Unable to connect to mysql: #{e}")
     rescue Exception=>e
-      error("Got unexpected error: #{e} #{e.class}")
+      error("Got unexpected error: #{e} #{e.class}", e.backtrace.join('\n'))
     end
   end
 

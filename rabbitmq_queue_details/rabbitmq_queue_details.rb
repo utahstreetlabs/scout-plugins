@@ -48,7 +48,7 @@ class RabbitmqOverall < Scout::Plugin
   private
     def get_queue_stats_line(rabbitmqctl_script, queue_name, vhost)
       cmd = vhost.nil? ? "#{rabbitmqctl_script} -q list_queues " : "#{rabbitmqctl_script} -q list_queues -p '#{vhost}' "
-      all_queue_stats = `#{cmd} #{QUEUE_INFO_ITEMS.join(' ')}`.to_a
+      all_queue_stats = `#{cmd} #{QUEUE_INFO_ITEMS.join(' ')}`.lines.to_a
       all_queue_stats.detect do |line|
         line.split[0] == queue_name
       end

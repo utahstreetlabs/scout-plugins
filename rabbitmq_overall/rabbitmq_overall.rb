@@ -1,4 +1,4 @@
-# Created by Doug Barth. 
+# Created by Doug Barth.
 # http://github.com/dougbarth/
 class RabbitmqOverall < Scout::Plugin
   OPTIONS = <<-EOS
@@ -12,14 +12,14 @@ class RabbitmqOverall < Scout::Plugin
     begin
       report_data = {}
 
-      connection_stats = `#{rabbitmqctl} -q list_connections`.to_a
+      connection_stats = `#{rabbitmqctl} -q list_connections`.lines.to_a
       report_data['connections'] = connection_stats.size
 
       report_data['queues'] = report_data['messages'] = report_data['queue_mem'] = 0
       report_data['exchanges'] = 0
       report_data['bindings'] = 0
       vhosts.each do |vhost|
-        queue_stats = `#{rabbitmqctl} -q list_queues -p '#{vhost}' messages memory`.to_a
+        queue_stats = `#{rabbitmqctl} -q list_queues -p '#{vhost}' messages memory`.lines.to_a
         report_data['queues'] += queue_stats.size
         report_data['messages'] += queue_stats.inject(0) do |sum, line|
           sum += line.split[0].to_i
@@ -29,10 +29,10 @@ class RabbitmqOverall < Scout::Plugin
           sum += line.split[1].to_i
         end
 
-        exchange_stats = `#{rabbitmqctl} -q list_exchanges -p #{vhost}`.to_a
+        exchange_stats = `#{rabbitmqctl} -q list_exchanges -p #{vhost}`.lines.to_a
         report_data['exchanges'] += exchange_stats.size
 
-        binding_stats = `#{rabbitmqctl} -q list_bindings -p #{vhost}`.to_a
+        binding_stats = `#{rabbitmqctl} -q list_bindings -p #{vhost}`.lines.to_a
         report_data['bindings'] += binding_stats.size
       end
 
@@ -50,7 +50,7 @@ class RabbitmqOverall < Scout::Plugin
   end
 
   def vhosts
-    @vhosts ||= `#{rabbitmqctl} -q list_vhosts`.to_a.map {|vhost| vhost.chomp }
+    @vhosts ||= `#{rabbitmqctl} -q list_vhosts`.lines.to_a.map {|vhost| vhost.chomp }
   end
 
   def `(command)

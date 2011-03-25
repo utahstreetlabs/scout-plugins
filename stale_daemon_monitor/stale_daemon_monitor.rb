@@ -1,6 +1,16 @@
+# Created by Benjamin Stein, Mobile Commons
+#
+# We have a number of daemons that bounce on deploy, including resque
+# workers and custom scripts. Sometimes we've seen processes fail to
+# restart (maybe the process was busy and didn't trap the SIGHUP?). The
+# result is stale processes whose code is out of sync with the database.
+# 
+# So this is a script that will check the timestamp of our current Rails
+# deploy and alert us if the start time of any daemons are older than
+# that.
+
 $VERBOSE=false
 require 'time'
-# Created by Benjamin Stein, Mobile Commons
 class StaleDaemonMonitor < Scout::Plugin  
 
   START_TIME_HEADER = 'started'

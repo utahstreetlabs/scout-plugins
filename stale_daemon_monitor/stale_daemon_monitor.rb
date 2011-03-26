@@ -27,7 +27,7 @@ class StaleDaemonMonitor < Scout::Plugin
     attributes: advanced
   ps_regex:
     name: "PS Regular Expression"
-    default "(?i:\\bCOMMAND\\b)"
+    default: "(?i:\\bCOMMAND\\b)"
     attributes: advanced
   EOS
 

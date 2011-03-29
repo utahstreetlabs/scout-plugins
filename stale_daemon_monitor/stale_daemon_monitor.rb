@@ -13,7 +13,7 @@ $VERBOSE=false
 require 'time'
 class StaleDaemonMonitor < Scout::Plugin  
 
-  START_TIME_HEADER = 'started'
+  START_TIME_HEADER = 'start'
   
   OPTIONS=<<-EOS
   command_name:

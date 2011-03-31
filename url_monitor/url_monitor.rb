@@ -6,8 +6,6 @@ require 'uri'
 class UrlMonitor < Scout::Plugin
   include Net
   
-  TIMEOUT_LENGTH = 50 # seconds
-  
   OPTIONS=<<-EOS
   url:
     name: Url
@@ -16,6 +14,11 @@ class UrlMonitor < Scout::Plugin
     name: Host Override
     notes: "Override what host to connect to. You can use 'localhost' to monitor this host while still providing a real Host: header"
     attributes: advanced
+  timeout_length:
+    default: '50'
+    name: Timeout Length
+    notes: "Seconds to wait until connection is opened."
+    attributes: advanced 
   EOS
   
   def build_report
@@ -86,9 +89,9 @@ class UrlMonitor < Scout::Plugin
 
       http = Net::HTTP.new(connect_host,uri.port)
       http.use_ssl = url =~ %r{\Ahttps://}
-      http.open_timeout = TIMEOUT_LENGTH
+      http.open_timeout = option('timeout_length').to_i
       http.start(){|h|
-            req = Net::HTTP::Get.new((uri.path != '' ? uri.path : '/' ) + (uri.query ? ('?' + uri.query) : ''))
+            req = Net::HTTP::Head.new((uri.path != '' ? uri.path : '/' ) + (uri.query ? ('?' + uri.query) : ''))
             req['host'] = uri.host
             if uri.user && uri.password
               req.basic_auth uri.user, uri.password

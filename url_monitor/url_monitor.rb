@@ -72,7 +72,7 @@ class UrlMonitor < Scout::Plugin
   end
   
   def valid_http_response?(result)
-    [HTTPOK,HTTPFound].include?(result.class) 
+    [HTTPOK,HTTPFound,HTTPServiceUnavailable].include?(result.class) 
   end
   
   # returns the http response from a url

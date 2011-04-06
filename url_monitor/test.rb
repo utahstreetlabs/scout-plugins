@@ -12,7 +12,7 @@ class UrlMonitorTest < Test::Unit::TestCase
   
   def test_initial_run
     uri="http://scoutapp.com"
-    FakeWeb.register_uri(:get, uri, :body => "the page")
+    FakeWeb.register_uri(:head, uri, :body => "the page")
     @plugin=UrlMonitor.new(nil,{},{:url=>uri})
     res = @plugin.run()
     assert res[:reports].any?
@@ -22,7 +22,7 @@ class UrlMonitorTest < Test::Unit::TestCase
   
   def test_404
     uri="http://scoutapp.com"
-    FakeWeb.register_uri(:get, uri, :body => "the page", :status => ["404", "Not Found"])
+    FakeWeb.register_uri(:head, uri, :body => "the page", :status => ["404", "Not Found"])
     @plugin=UrlMonitor.new(nil,{},{:url=>uri})
     res = @plugin.run()
     assert res[:reports].any?

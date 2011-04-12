@@ -93,7 +93,7 @@ class JmxAgent < Scout::Plugin
       mbean_server_location = jvm_pid
     end
     
-    error("No MBean server location configured: no PID file nor server URL") if mbean_server_location.empty?
+    error("No MBean server location configured: no PID file nor server URL") if mbean_server_location.nil? or mbean_server_location.empty?
     
     mbeans_attributes = option(:mbeans_attributes)
     error("No MBeans and Attributes Names defined") if mbeans_attributes.empty?

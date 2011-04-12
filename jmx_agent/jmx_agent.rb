@@ -93,16 +93,19 @@ class JmxAgent < Scout::Plugin
       mbean_server_location = jvm_pid
     end
     
-    error("No MBean server location configured: no PID file nor server URL") if mbean_server_location.nil? or mbean_server_location.empty?
+    if mbean_server_location.nil? or mbean_server_location.empty?
+      return error("A a JMX PID or an MBean Server Url is required",
+           "No MBean server location configured: no PID file nor server URL") 
+    end
     
     mbeans_attributes = option(:mbeans_attributes)
-    error("No MBeans and Attributes Names defined") if mbeans_attributes.empty?
+    return error("No MBeans and Attributes Names defined") if mbeans_attributes.empty?
     
     jmx_cmd = "java -jar #{option(:jmxterm_uberjar)} -l #{mbean_server_location} -n -v silent"
     
     # validate JVM connectivity
     jvm_name = read_mbean(jmx_cmd, 'java.lang:type=Runtime', 'Name')['Name']
-    error("JVM not found for PID #{jvm_pid}") unless jvm_name.start_with?(jvm_pid)
+    return error("JVM not found for PID #{jvm_pid}") unless jvm_name and jvm_name.start_with?(jvm_pid)
     
     report_content = {}
     

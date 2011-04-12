@@ -88,7 +88,7 @@ class JmxAgent < Scout::Plugin
     jvm_pid_file = option(:jvm_pid_file)
     mbean_server_location = option(:mbean_server_url)
 
-    if !jvm_pid_file.empty? then
+    if jvm_pid_file and !jvm_pid_file.empty? then
       jvm_pid = File.open(jvm_pid_file).readline.strip
       mbean_server_location = jvm_pid
     end

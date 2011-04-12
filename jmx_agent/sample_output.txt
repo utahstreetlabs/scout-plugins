@@ -1,0 +1,16 @@
+echo get -b java.lang:type=Memory HeapMemoryUsage NonHeapMemoryUsage |
+java -jar /opt/jmxterm/jmxterm-1.0-alpha-4-uber.jar -l PID -n -v
+silent
+
+HeapMemoryUsage = { 
+  committed = 115671040;
+  init = 49355584;
+  max = 702808064;
+  used = 41684368;
+ };
+NonHeapMemoryUsage = { 
+  committed = 34865152;
+  init = 19136512;
+  max = 117440512;
+  used = 34453072;
+ };

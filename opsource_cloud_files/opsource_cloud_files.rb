@@ -21,7 +21,7 @@ class OpSourceCloudFiles < Scout::Plugin
   end
   
   private
-
+  
   def report_from_info(info)
     report = {}       
       

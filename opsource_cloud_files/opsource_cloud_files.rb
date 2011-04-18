@@ -24,7 +24,7 @@ class OpSourceCloudFiles < Scout::Plugin
 
   def account_info(opts)
     uri = URI.parse(CLOUD_FILES_URI)
-    body = http(uri).request(request(uri, opts)).body
+    body = http(uri).request(request(uri.path, opts)).body
     report_from_info(Crack::XML.parse(body))
   end                                    
 
@@ -53,8 +53,8 @@ class OpSourceCloudFiles < Scout::Plugin
     http
   end                        
 
-  def request(uri, opts = {})
-    req = Net::HTTP::Get.new(uri.path)
+  def request(path, opts = {})
+    req = Net::HTTP::Get.new(path)
     req.basic_auth opts[:user], opts[:password]
     req
   end

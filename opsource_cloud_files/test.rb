@@ -29,8 +29,8 @@ class OpSourceCloudFilesTest < Test::Unit::TestCase
     report = result[:reports].first
     assert_equal 4, report[:bandwidth_allocated]
     assert_equal 2, report[:bandwidth_total]      
-    assert_equal 9.765625e-07, report[:bandwidth_private]
-    assert_equal 9.765625e-07, report[:bandwidth_public]
+    assert_equal 9.5367431640625e-07, report[:bandwidth_private]
+    assert_equal 9.5367431640625e-07, report[:bandwidth_public]
     assert_equal 50, report[:bandwidth_percent_used]
   end
     
@@ -46,7 +46,7 @@ class OpSourceCloudFilesTest < Test::Unit::TestCase
   
   private 
   def stub_response(used_ratio = 0.5)
-    allocated = 4096000
+    allocated = 1024**2 * 4
     used = used_ratio * allocated
     <<-EOR
     <account-info xmlns:xlink="http://www.w3.org/1999/xlink">

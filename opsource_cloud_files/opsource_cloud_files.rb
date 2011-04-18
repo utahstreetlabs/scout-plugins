@@ -54,6 +54,6 @@ class OpSourceCloudFiles < Scout::Plugin
   end
   
   def mb(amount)
-    amount.to_f / 1024000
+    amount.to_f / 1024**2
   end
 end

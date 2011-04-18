@@ -3,30 +3,24 @@ class OpSourceCloudFiles < Scout::Plugin
   needs 'crack'   
                 
   OPTIONS=<<-EOS
-  username:
-    notes: User name to use for OpSource Cloud Files account.    
+  username:                           
+    name: Account Username
     default:
-  password:
-    notes: Password to use for OpSource Cloud Files account.
+  password:               
+    name: Account Password
     default:
   EOS
   
   CLOUD_FILES_URI="https://cf-na-east-01.opsourcecloud.net/v2/account"
   
   def build_report                                           
-    report(account_info(
-      :user => option('username'), 
-      :password => option('password')
-    ))
+    uri = URI.parse(CLOUD_FILES_URI)
+    response = http(uri).request(request(uri.path))
+    report = report_from_info(Crack::XML.parse(response.body))
+    report(report)
   end
   
   private
-
-  def account_info(opts)
-    uri = URI.parse(CLOUD_FILES_URI)
-    body = http(uri).request(request(uri.path, opts)).body
-    report_from_info(Crack::XML.parse(body))
-  end                                    
 
   def report_from_info(info)
     report = {}       
@@ -53,9 +47,9 @@ class OpSourceCloudFiles < Scout::Plugin
     http
   end                        
 
-  def request(path, opts = {})
+  def request(path)
     req = Net::HTTP::Get.new(path)
-    req.basic_auth opts[:user], opts[:password]
+    req.basic_auth(option('username'), option('password'))
     req
   end
   

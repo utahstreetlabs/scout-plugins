@@ -1,27 +1,33 @@
-require 'rubygems'
-require 'right_aws'
+# Returns Amazon SQS Queue Sizes
+# Created by Ankur Bulsara of Scopely
+class AwsSqsStatus < Scout::Plugin
+  needs 'right_aws'
 
-class AmazonSQSStats < Scout::Plugin
+  OPTIONS=<<-EOS
+    queues:
+      name: Queue Names
+      notes: Comma separated list of SQS queues to query
+    awskey:
+      name: AWS Access Key
+      notes: Your Amazon Web Services Access key. 20-char alphanumeric, looks like 022QF06E7MXBSH9DHM02
+    awssecret:
+      name: AWS Secret
+      notes: Your Amazon Web Services Secret key. 40-char alphanumeric, looks like kWcrlUX5JEDGMLtmEENIaVmYvHNif5zBd9ct81S
+  EOS
+
 
   def build_report
+    aws_key = option(:awskey)
+    aws_secret = option(:awssecret)
+    sqs = RightAws::SqsGen2.new(aws_key, aws_secret)
 
-    if option('sqs_protocol_version').to_i == 1
-      sqs = RightAws::Sqs.new(option('access_key'), option('secret_access_key'))
-    else
-      sqs = RightAws::SqsGen2.new(option('access_key'), option('secret_access_key')) 
-    end
-    
-    queue = sqs.queue(option('queue_name'))
-    size = queue.size
+    results = {}
 
-    if option('max_size') && size > option('max_size').to_i
-      alert( :subject => "Maximum size of #{option('queue_name')} queue exceeded.")
+    queues = (option(:queues) || "").split(',')
+    queues.each do |queue_name|
+      results[queue_name] = sqs.queue(queue_name).size.to_i
     end
 
-    report( :queue_size => size )
-
-  rescue
-    error( :subject => "Error talking to Amazon SQS", :body => $!.message)
+    report(results)
   end
-  
 end

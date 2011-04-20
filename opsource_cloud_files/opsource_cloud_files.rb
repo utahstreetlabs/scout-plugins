@@ -1,6 +1,6 @@
 class OpSourceCloudFiles < Scout::Plugin
   needs 'net/http'                          
-  needs 'crack'   
+  needs 'rexml/document'
                 
   OPTIONS=<<-EOS
   username:                           
@@ -14,7 +14,7 @@ class OpSourceCloudFiles < Scout::Plugin
   def build_report                                           
     uri = URI.parse(CLOUD_FILES_URI)
     response = http(uri).request(request(uri.path))
-    report = report_from_info(Crack::XML.parse(response.body))
+    report = report_from_info(REXML::Document.new(response.body))
     report(report)
   end
   
@@ -24,9 +24,8 @@ class OpSourceCloudFiles < Scout::Plugin
     report = {}       
       
     ['bandwidth', 'storage'].each do |c|
-      n = info['account_info'][c]
-      n.each_pair do |k,v|
-        report["#{c}_#{k}".to_sym] = mb(n[k])
+      info.root.each_element("/account-info/#{c}/*") do |e| 
+        report["#{c}_#{e.name}".to_sym] = mb(e.text)
       end
     end
     

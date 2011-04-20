@@ -14,7 +14,7 @@ class OpSourceCloudFilesTest < Test::Unit::TestCase
     FakeWeb.register_uri(:get, @uri, :body => stub_response)           
 
     result = @plugin.run                                           
-    
+
     report = result[:reports].first
     assert_equal 4, report[:storage_allocated]
     assert_equal 2, report[:storage_used]      
@@ -49,6 +49,7 @@ class OpSourceCloudFilesTest < Test::Unit::TestCase
     allocated = 1024**2 * 4
     used = used_ratio * allocated
     <<-EOR
+    <?xml version="1.0"?>
     <account-info xmlns:xlink="http://www.w3.org/1999/xlink">
       <username>my_user</username>
       <storage>

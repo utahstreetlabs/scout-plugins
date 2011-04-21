@@ -7,6 +7,7 @@ class OpSourceCloudFiles < Scout::Plugin
     name: Account Username
   password:               
     name: Account Password
+    attributes: password
   EOS
   
   CLOUD_FILES_URI="https://cf-na-east-01.opsourcecloud.net/v2/account"

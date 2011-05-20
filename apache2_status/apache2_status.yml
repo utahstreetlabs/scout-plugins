@@ -1,0 +1,23 @@
+metadata:
+  apache_reserved_memory_size:
+    label: Reserved Memory Size
+    units: MB
+    precision: 2
+  requests_being_processed:
+    label: Requests Being Processed
+    precision: 0
+  idle_workers:
+    label: Idle Workers
+    precision: 0
+    larger_is_better: true
+  requests_sec:
+    label: Requests/second
+    precision: 2
+  kb_second:
+    label: Kilobytes/second
+    units: Kilobytes
+    precision: 2
+  b_request:
+    label: Bytes/request
+    units: Bytes
+    precision: 2

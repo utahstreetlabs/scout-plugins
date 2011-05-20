@@ -2,26 +2,26 @@ Apache Status Plugin
 ======================
 
 Created by Hampton Catlin
-Modifications and documentation by Josh Nichols
+Modifications and documentation by Josh Nichols and Jesse Newland
 
 Overview
 --------
 
-Reports data back from the [mod_status](http://httpd.apache.org/docs/2.0/mod/mod_status.html) Apache module, including:
+Reports data collected from from apache2ctl:
 
  * Idle workers
  * Requests being handled
  * Apache reserved memory size
+ * Requests/second
+ * Kilobytes/seconds
+ * Bytes/request
 
 Configuration
 -------------
 
-The Apache Server Status page ([sample:](http://www.apache.org/server-status?auto
-)) must be accessible for the plugin to report stats. See [this guide](http://www.debian-administration.org/article/Monitoring_Apache_with_mod_status
-) for instructions on configuring the status page.
+apache2ctl must be installed. You can specify a custom path to apache2ctl if necessary.
 
 Known limitations
 -----------------
 
- * path and name of `apache2ctl` command is not configurable
  * not all values are reported from `apache2ctl status` yet

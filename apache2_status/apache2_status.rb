@@ -6,10 +6,10 @@ class Apache2Status < Scout::Plugin
   needs "net/http", "uri"
 
   OPTIONS=<<-EOS
-  apache_status_path:
-    default: /usr/sbin/apache2ctl
-    name: Full path to the apache2ctl executable
-    notes: In most cases you can leave this blank and use the default.
+  server_url:
+    name: Server Status URL
+    notes: Specify URL of the server-status page to check. Scout requires the machine-readable format of the status page (just add '?auto' to the server-status page URL).
+    default: "http://localhost/server-status?auto"
   ps_command:
     name: The Process Status (ps) Command
     default: "ps aux | grep apache2 | grep -v grep | grep -v ruby | awk '{print $5}'"

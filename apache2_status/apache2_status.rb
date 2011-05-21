@@ -2,10 +2,8 @@
 # Modified by Jesse Newland
 #
 # Free Use Under the MIT License
-#
-# Please note, your server must respond to "apache2ctl status"
-#
 class Apache2Status < Scout::Plugin
+  needs "net/http", "uri"
 
   OPTIONS=<<-EOS
   apache_status_path:
@@ -21,15 +19,15 @@ class Apache2Status < Scout::Plugin
 
 
   def build_report
-    report(:apache_reserved_memory_size => apache_reserved_memory_size)
+    report('apache_reserved_memory_size' => apache_reserved_memory_size)
     apache_status
-    report(
-      :requests_being_processed => requests_being_processed,
-      :idle_workers => idle_workers,
-      :requests_sec => requests_sec,
-      :kb_second => kB_second,
-      :b_request => b_request
-    )
+    apache_status.each do |key, value|
+      begin
+        report(underscore(key).gsub(/ /, '_') => value.to_f)
+      rescue Exception => e
+        error("Error reporting #{key} => #{value}")
+      end
+    end
   end
   
   # Calculate the total reserved memory size from a ps aux with a couple greps
@@ -44,48 +42,52 @@ class Apache2Status < Scout::Plugin
     option(:ps_command) || "ps aux | grep apache2 | grep -v grep | grep -v ruby | awk '{print $5}'"
   end
 
-  def apache_status_path
-    option(:apache_status_path) || "/usr/sbin/apache2ctl"
+  def apache_status_uri
+    @apache_status_uri ||= (option("server_url") || 'http://localhost/server-status?auto')
   end
 
   def apache_status
-    # Must have mod_status installed
-    @apache_status = shell("#{apache_status_path} status")
-    if $?.success?
-      @apache_status
-    else
-      error("Couldn't use `#{apache_status_path}` as expected.", @apache_status)
+    begin
+      url = URI.parse(apache_status_uri)
+      req = Net::HTTP::Get.new(url.path + "?" + url.query.to_s)
+      res = Net::HTTP.start(url.host, url.port) {|http|
+        http.request(req)
+      }
+      apache_status = YAML.load(res.body) rescue {}
+      raise ScriptError, "YAML parsing of #{res.body} failed" unless apache_status['Scoreboard'] && apache_status.delete('Scoreboard')
+      @apache_status = apache_status
+    rescue Exception => e
+      error("Error parsing #{apache_status_uri}", e.message)
     end
   end
 
-  def b_request
-    @apache_status.match(/([0-9]*) B\/request/)[1].to_f
-  end
-
-  def kB_second
-    res=0
-    if match=@apache_status.match(/([0-9]*\.[0-9]*) kB\/second/) # output is sometimes in kB
-      res=match[1].to_f
-    elsif match=@apache_status.match(/(\d+) B\/second/) # output is sometimes in bytes
-      res=match[1].to_f/1024.0
-    end
-    res
-  end
-
-  def requests_sec
-    @apache_status.match(/([0-9]*\.[0-9]*) requests\/sec/)[1].to_f
-  end
-
-  def idle_workers
-    @apache_status.match(/([0-9]*) idle workers/)[1].to_i
-  end
-
-  def requests_being_processed
-    @apache_status.match(/([0-9]*) requests currently being processed/)[1].to_i
+  # From rails:
+  # https://github.com/rails/rails/raw/master/activesupport/lib/active_support/inflector/methods.rb
+  # Makes an underscored, lowercase form from the expression in the string.
+  #
+  # Changes '::' to '/' to convert namespaces to paths.
+  #
+  # Examples:
+  #   "ActiveRecord".underscore         # => "active_record"
+  #   "ActiveRecord::Errors".underscore # => active_record/errors
+  #
+  # As a rule of thumb you can think of +underscore+ as the inverse of +camelize+,
+  # though there are cases where that does not hold:
+  #
+  #   "SSLError".underscore.camelize # => "SslError"
+  def underscore(camel_cased_word)
+    word = camel_cased_word.to_s.dup
+    word.gsub!(/::/, '/')
+    word.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
+    word.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
+    word.tr!("-", "_")
+    word.downcase!
+    word
   end
 
   # Use this instead of backticks. It's made a separate method so it can be stubbed
   def shell(cmd)
     res = `#{cmd}`
   end
+
 end

@@ -20,12 +20,12 @@ metadata:
   total_k_bytes:
     label: Total Kilobytes
     units: Kilobytes
-    precision: 2
+    precision: 0
   bytes_per_sec:
     label: Bytes/second
     units: Bytes
-    precision: 2
-  bytes_per_req:
+    precision: 0
+  bytes_per_req
     label: Bytes/request
     units: Bytes
-    precision: 2
+    precision: 0

@@ -25,7 +25,7 @@ metadata:
     label: Bytes/second
     units: Bytes
     precision: 0
-  bytes_per_req
+  bytes_per_req:
     label: Bytes/request
     units: Bytes
     precision: 0

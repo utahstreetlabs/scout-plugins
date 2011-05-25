@@ -39,9 +39,11 @@ class RailsRequests < Scout::Plugin
   EOS
 
   needs "request_log_analyzer"
-  
   def build_report
     patch_elif
+    # RLA 1.11.0 offers a memory-safe version of gets for Ruby >= 1.9 but not for previous Rubies. 
+    # This is eval'd if < RLA 1.11.0 or Ruby < 1.9.
+    self.class.class_eval(FILE_EXTS) if Gem::Version.new(RequestLogAnalyzer::VERSION) < Gem::Version.new("1.11.0") or RUBY_VERSION.to_f < 1.9
 
     @log_path = option(:log)
     unless @log_path and not @log_path.empty?
@@ -425,6 +427,14 @@ class RailsRequests < Scout::Plugin
     file
   end
   
+  # RLA 1.11.0 offers a memory-safe version of gets for Ruby >= 1.9 but not for previous Rubies. 
+  # This is eval'd if < RLA 1.11.0 or Ruby < 1.9.
+  FILE_EXTS = <<-'END_FILE_EXTS'
+  class ::File
+    alias_method :gets, :gets_memory_safe
+  end
+  END_FILE_EXTS
+  
   RLA_EXTS = <<-'END_RUBY'
   class EmbeddedHTML < RequestLogAnalyzer::Output::Base
     def print(str)
@@ -580,7 +590,7 @@ class File
   # the buffer. This prevents <tt>@line_buffer<tt> from growing signficantly when parsing
   # large lines.
   #
-  def gets(sep_string = $/)
+  def gets_memory_safe(sep_string = $/, max_line_length=8096)
     @read_size ||= MAX_READ_SIZE
     # A buffer to hold lines read, but not yet returned.
     @line_buffer ||= Array.new

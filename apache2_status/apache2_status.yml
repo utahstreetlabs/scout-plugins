@@ -1,0 +1,31 @@
+metadata:
+  apache_reserved_memory_size:
+    label: Reserved Memory Size
+    units: MB
+    precision: 2
+  uptime:
+    precision: 0
+  total_accesses:
+    precision: 0
+  cpu_load:
+    precision: 2
+  busy_workers:
+    precision: 0
+  idle_workers:
+    precision: 0
+    larger_is_better: true
+  req_per_sec:
+    label: Requests/second
+    precision: 2
+  total_k_bytes:
+    label: Total Kilobytes
+    units: Kilobytes
+    precision: 0
+  bytes_per_sec:
+    label: Bytes/second
+    units: Bytes
+    precision: 0
+  bytes_per_req:
+    label: Bytes/request
+    units: Bytes
+    precision: 0

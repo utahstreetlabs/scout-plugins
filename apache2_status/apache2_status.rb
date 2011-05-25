@@ -1,62 +1,93 @@
 # Apache2 Status by Hampton Catlin
+# Modified by Jesse Newland
 #
 # Free Use Under the MIT License
-#
-# Please note, your server must respond to "apache2ctl status"
-#
 class Apache2Status < Scout::Plugin
+  needs "net/http", "uri"
+
+  OPTIONS=<<-EOS
+  server_url:
+    name: Server Status URL
+    notes: Specify URL of the server-status page to check. Scout requires the machine-readable format of the status page (just add '?auto' to the server-status page URL).
+    default: "http://localhost/server-status?auto"
+  ps_command:
+    name: The Process Status (ps) Command
+    default: "ps aux | grep apache2 | grep -v grep | grep -v ruby | awk '{print $5}'"
+    attributes: advanced
+    notes: Expected to return a list of the size of each apache process, separated by newlines. The default works on most systems.
+  EOS
+
 
   def build_report
-    report(:requests_being_processed => requests_being_processed)
-    report(:apache_reserved_memory_size => apache_reserved_memory_size)
+    report('apache_reserved_memory_size' => apache_reserved_memory_size)
+    apache_status
+    apache_status.each do |key, value|
+      begin
+        report(underscore(key).gsub(/ /, '_') => value.to_f)
+      rescue Exception => e
+        error("Error reporting #{key} => #{value}")
+      end
+    end
   end
   
   # Calculate the total reserved memory size from a ps aux with a couple greps
   def apache_reserved_memory_size
-    # Fetch the process list and split it into an array
-    process_list = (`ps aux | grep apache2 | grep -v grep | grep -v ruby`).split("\n")
-    
-    # Aggregate with this variable
-    memory_size = 0
-    
-    # Iterate over the process list and sum up the memory values
-    process_list.each do |line|
-      # Split the data into columns
-      columns = line.split(" ")
-      memory_size += columns[4].to_i
-    end
-    
+    memory_size = shell("#{ps_command}").split("\n").inject(0) { |i,n| i+= n.to_i; i }
+
     # Calculate how many MB that is
-    mb = ((memory_size / 1024.0) / 1024)
-    
-    # Display with MB on the end
-    mb.to_s + " MB"
+    ((memory_size / 1024.0) / 1024).to_f
   end
-  
-  # Run the calcuations for requests being processed by apache2
-  def requests_being_processed
 
-    total_requests_being_processed = 0
+  def ps_command
+    option(:ps_command) || "ps aux | grep apache2 | grep -v grep | grep -v ruby | awk '{print $5}'"
+  end
 
-    # How many samples should we do?
-    sample_size = option('sample_size').to_i
+  def apache_status_uri
+    @apache_status_uri ||= (option("server_url") || 'http://localhost/server-status?auto')
+  end
 
-    sample_size.times do
-      # Sum up the total number of requests by calling the fetch method
-      total_requests_being_processed += fetch_requests_being_processed
-      
-      # Pause for a moment to make sure the sample is good
-      sleep(option('sample_sleep').to_f)
+  def apache_status
+    begin
+      url = URI.parse(apache_status_uri)
+      req = Net::HTTP::Get.new(url.path + "?" + url.query.to_s)
+      res = Net::HTTP.start(url.host, url.port) {|http|
+        http.request(req)
+      }
+      apache_status = YAML.load(res.body) rescue {}
+      raise ScriptError, "YAML parsing of #{res.body} failed" unless apache_status['Scoreboard'] && apache_status.delete('Scoreboard')
+      @apache_status = apache_status
+    rescue Exception => e
+      error("Error parsing #{apache_status_uri}", e.message)
     end
-
-    # Return the average number of requests
-    average_requests_being_processed = (total_requests_being_processed / sample_size)
   end
 
-  # At this particular moment, how many requests are being processed?
-  def fetch_requests_being_processed
-    # Must have mod_status installed
-    results = `apache2ctl status 2>/dev/null`
-    requests_being_processed = results.match(/([0-9]*) requests currently being processed/)[1].to_i
+  # From rails:
+  # https://github.com/rails/rails/raw/master/activesupport/lib/active_support/inflector/methods.rb
+  # Makes an underscored, lowercase form from the expression in the string.
+  #
+  # Changes '::' to '/' to convert namespaces to paths.
+  #
+  # Examples:
+  #   "ActiveRecord".underscore         # => "active_record"
+  #   "ActiveRecord::Errors".underscore # => active_record/errors
+  #
+  # As a rule of thumb you can think of +underscore+ as the inverse of +camelize+,
+  # though there are cases where that does not hold:
+  #
+  #   "SSLError".underscore.camelize # => "SslError"
+  def underscore(camel_cased_word)
+    word = camel_cased_word.to_s.dup
+    word.gsub!(/::/, '/')
+    word.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
+    word.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
+    word.tr!("-", "_")
+    word.downcase!
+    word
   end
+
+  # Use this instead of backticks. It's made a separate method so it can be stubbed
+  def shell(cmd)
+    res = `#{cmd}`
+  end
+
 end

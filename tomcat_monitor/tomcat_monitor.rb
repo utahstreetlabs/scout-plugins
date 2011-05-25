@@ -1,70 +1,98 @@
 class TomcatMonitor < Scout::Plugin
-  
-  #  TODO - optional grep filters
+
   OPTIONS=<<-EOS
-    logdir: 
+    logdir:
       notes: "absolute path to tomcat localhost_access_log.<YYY-MM-DD>.log"
-      default: /opt/jboss/server/default/log
-    exclude_filter: 
+      default: /opt/jboss/server/default/log/
+    exclude_filter:
       notes: "| separated list of grep -v"
       default: "| grep -v HealthCheck | grep -v SessionCheck"
-    target_request: 
-      notes: narrow response time, rpm calculations to a single transaction 
+    type_monitor:
+      notes: grep query to narrow monitor to a transaction.  i.e. "abc.jsp".   by default, stats are overall summary
+    clear_cache:
+      notes:  used for testing. clears last request processed
   EOS
 
-  # TODO - parse grep -v filters, to avoid security issues
-
   def build_report
-    @rpm, @rt,  @req1_rpm, @req1_rt, @req2_rpm, @req2_rt, @req3_rpm, @req3_rt = nil
     @last_line_processed = 0
     @last_date_processed = nil
     @request_comparison = {} # request => {:max => , :count => }
-
     begin
       requests = parse_logs
       parsed_requests = parse_requests(requests)
       process_requests(parsed_requests)
-      report({:rpm => @rpm, :avg_resp_time => @rt, :max_resp_time => @max_rt}) # :comparison => @request_comparison.sort
+      report_data if @request_comparison && @request_comparison.size > 0
     rescue StandardError => trouble
-      error trouble
+      error "#{trouble} #{trouble.backtrace}"
     end
   end
 
+  def report_data
+    rpm = @request_comparison[:all][:rpm]
+    rt =  @request_comparison[:all][:rt]
+    max = @request_comparison[:all][:max]
+    report({:throughput => rpm, :duration => rt, :max_duration => max})    
+  end
+
+  #################
+  # STATS PROCESS
+  #################
+
   def process_requests(requests)
-    @start = @end = nil
-    @count = @total_rt = @max_rt = 0
     requests.each do |r|
       begin
         duration = r[0]
-        request = r[1],
+        request = r[1]
         @last_date_processed = timestamp = r[2]
-        increment_counters(timestamp, duration)
-        increment_request_comparison(request, duration)
+        increment_request_comparison(request, timestamp, duration) #if target_include?(request)
+        increment_request_comparison(:all, timestamp, duration)
       rescue StandardError => b
         # swallow Exception and keep going
         p "skipping line: #{line}: #{bang}"
       end
-      store_last_date_processed(@last_date_processed)
+      store_last_date_processed(@last_date_processed, logfile)
     end
-    @rpm = calc_throughput(@count, @start, @end)
-    @rt = calc_request_time(@total_rt, @count)
+    @request_comparison.each do |r, stats|
+      rpm = calc_throughput(stats[:count], stats[:start], stats[:end])
+      rt = calc_request_time(stats[:total_time], stats[:count])
+      @request_comparison[r][:rpm] = rpm
+      @request_comparison[r][:rt] = rt
+    end
   end
 
-  def increment_counters(timestamp, duration)
-    @start = timestamp unless @start
-    @end = timestamp
-    @count += 1
-    @max_rt = duration if duration > @max_rt
-    @total_rt += duration
-  end
-
-  def increment_request_comparison(request, duration)
-    return @request_comparison[request] = {:max => duration, :count => 1} unless @request_comparison[request]
+  def increment_request_comparison(request, timestamp, duration)
+    return @request_comparison[request] = {:max => duration, :total_time => duration, :count => 1, :start => timestamp, :end => timestamp } unless @request_comparison[request]
     max = @request_comparison[request][:max]
+    rt = @request_comparison[request][:total_time] + duration
     count = @request_comparison[request][:count]
     max = duration if duration > max
+    start = @request_comparison[request][:start]
     count += 1
-    @request_comparison[request] = {:max => max, :count => count}
+    @request_comparison[request] = {:max => max, :total_time => rt, :count => count, :start => start, :end => timestamp}
+  end
+
+  def process_slowest_requests
+    process_sorted_hash top_ten(:rt)
+
+  end
+
+  def process_most_frequent_requests
+    process_sorted_hash top_ten(:count)
+  end
+
+  def process_sorted_hash(sorted_hash)
+    hash = {}
+    sorted_hash.each do |k|
+      hash[k.first+":throughput"] = k.last[:count] if k.first != :all
+      hash[k.first+":duration"] = k.last[:total_time] if k.first != :all
+      hash[k.first+":max_duration"] = k.last[:max] if k.first != :all
+    end
+    hash
+  end
+
+  # returns sorted array [[k, hash of values][k, hash of values]]
+  def top_ten(what)
+    top = @request_comparison.sort {|a,b| b[1][what]<=>a[1][what]}.collect{|k,v| [k,v] }[0,5]
   end
 
   def calc_throughput(count, start, zend)
@@ -91,7 +119,7 @@ class TomcatMonitor < Scout::Plugin
         timestamp = time_from_logs log_timestamp
         parsed << [duration, request, timestamp]
       rescue StandardError => bang
-        raise "error parsing request, skipping line: #{line}: #{bang}"
+        p "error parsing request, skipping line: #{line}: #{bang} #{bang.backtrace}"
       end
     end
     parsed
@@ -106,6 +134,7 @@ class TomcatMonitor < Scout::Plugin
       timestamp = w if pos == 0
       duration = w.to_i if pos == 1
       request = w if pos == 2
+      request = request.gsub('GET','G').gsub('POST','P').gsub('DELETE','D').gsub('UPDATE','U').gsub('client','').gsub('jsp','').gsub('servlet','').gsub('.','').gsub('//','') if request
       pos += 1
     end
     return duration, request, timestamp
@@ -133,14 +162,13 @@ class TomcatMonitor < Scout::Plugin
   end
 
   def include_this_request?(request)
-    target = target_request
-    return true unless target                            # include everything if no target set
-    return true if target && request.include?(target)    # request matches target
-    return false                                         # request doesn't match target
+    return true if type_monitor == '' || type_monitor == 'all'
+    return true if request.include? type_monitor
+    return false
   end
 
-  def target_request
-    option(:target_request) || '' 
+  def type_monitor
+      type = option(:type_monitor) || ''  #slowest | most_frequent
   end
 
   #################
@@ -149,18 +177,23 @@ class TomcatMonitor < Scout::Plugin
 
   # assumes format:  10.162.73.221 - - [23/Apr/2011:00:00:40 +0000] "GET /client/appraisalWorkshopPrintSignReport.jsp HTTP/1.1" 200 80557
   def parse_logs
-
-    logs = `#{print_file_cmd} #{logfile_absolute_path} #{filters} | awk '{print $4 " "  $6 " "$7":"$8}'`
+    pfc = print_file_cmd
+    p pfc
+    logs = `#{pfc} #{logfile} #{filters} | awk '{print $4 " "  $6 " "$7":"$8}'`
     raise "unable to parse log" if logs.size <= 0
     logs
   end
 
+  def logfile
+    @logdir || logfile_absolute_path
+  end
+
   def logfile_absolute_path
-    logdir = option(:logdir) || '/opt/jboss/server/default/log'
-    today = Date.today
-    date_stamp = "#{today.year}-#{"%02d" % today.month}-#{"%02d" % today.day}"
-    logfile = "#{logdir}localhost_access_log.#{date_stamp}.log"
+    logdir = option(:logdir) || '/opt/jboss/server/default/log/'
+    logfile = (logdir + `ls -tr #{logdir} | grep localhost_access_log | tail -1`).chomp
     raise "#{logfile} does not exist" unless File.exist?(logfile)
+    p logfile
+    @logdir = logfile
     logfile
   end
 
@@ -170,23 +203,33 @@ class TomcatMonitor < Scout::Plugin
 
   # use cat to parse entire log file, tail -n to skip lines
   def print_file_cmd
-    last_date_processed = remember_last_date_processed
-    p 'parsing entire logfile' unless last_date_processed && last_date_processed.is_a?(Time)
+    last_date_processed = remember_last_date_processed(logfile)
     return 'cat ' unless last_date_processed && last_date_processed.is_a?(Time)
     search_for = timestamp_from_time last_date_processed
-    line = `grep --line-number #{search_for} #{logfile_absolute_path}`
+    line = `grep --line-number #{search_for} #{logfile}`
+    return 'cat ' unless line && line.size > 0
     line_number = (line.split ':')[0]       # parsing line # from front of log:  36164:10.162.73.221 - - [23/Apr/2011:15:51:46 +0000
-    p "skipping to line #{line_number}"
     "tail -n+#{line_number}"
   end
 
-  def store_last_date_processed(date)
-#    remember :last_date_processed => nil
-    remember :last_date_processed => date
+  def store_last_date_processed(date, logfile)
+    if option(:clear_cache)
+      remember :last_date_processed => nil
+      remember :last_logfile_processed => nil
+    else
+      remember :last_date_processed => date
+      remember :last_logfile_processed => logfile
+    end
   end
 
-  def remember_last_date_processed
-    memory(:last_date_processed)
+  def remember_last_date_processed(logfile)
+    if option(:clear_cache)
+      return nil
+    else
+      last_logfile = memory(:last_logfile_processed)
+      return nil unless last_logfile == logfile
+      return memory(:last_date_processed) 
+    end
   end
 
 end

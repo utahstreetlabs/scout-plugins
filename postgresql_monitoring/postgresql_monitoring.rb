@@ -36,7 +36,7 @@ class PostgresqlMonitoring< Scout::Plugin
       pgconn = PGconn.new(:host=>option(:host), :user=>option(:user), :password=>option(:password), :port=>option(:port).to_i, :dbname=>option(:dbname))
     rescue PGError => e
       return errors << {:subject => "Unable to connect to PostgreSQL.",
-                        :body => "Scout was unable to connect to the PostgreSQL server: #{e.backtrace}"}
+                        :body => "Scout was unable to connect to the PostgreSQL server: \n\n#{e}\n\n#{e.backtrace}"}
     end
     result = pgconn.exec('SELECT sum(idx_tup_fetch) AS "rows_select_idx", 
                                  sum(seq_tup_read) AS "rows_select_scan", 

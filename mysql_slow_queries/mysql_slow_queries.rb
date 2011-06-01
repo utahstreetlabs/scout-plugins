@@ -45,7 +45,10 @@ class ScoutMysqlSlow < Scout::Plugin
     last_run = memory(:last_run) || Time.now
     minimum_query_time = option(:minimum_query_time).to_f
     current_time = Time.now
-    
+    last_run_entry_timestamp = memory(:last_run_entry_timestamp)
+    temp_timestamp=nil
+    latest_entry_timestamp=nil
+
     # starts at the bottom of the log file, moving up
     Elif.foreach(log_file_path) do |line|
       if line =~ /^# Query_time: ([\d\.]+) .+$/
@@ -53,19 +56,22 @@ class ScoutMysqlSlow < Scout::Plugin
         all_queries << {:query_time => query_time, :sql => sql.reverse}
         sql = []
       elsif line =~ /^\# Time: \d+ (.*)$/
-        t = Time.parse($1.split(' ')[0]) {|y| y < 100 ? y + 2000 : y}
-        
-        t2 = last_run
-        if t < t2
+        # We now have a complete entry. capture its timestamp:
+        temp_timestamp = Time.parse($1.split(' ')[0]) {|y| y < 100 ? y + 2000 : y}
+        # if there was a last_run_entry_timestamp, we can quit based on comparing it to the current_entry_timestamp we just parsed.
+        if last_run_entry_timestamp && temp_timestamp <= last_run_entry_timestamp
           break
         elsif all_queries.any?
           sq = all_queries.last
           if sq[:query_time] >= minimum_query_time
             # this query occurred after the last time this plugin ran and should be counted.  
-            slow_queries << sq.merge({:time_of_query => t})
+            slow_queries << sq.merge({:time_of_query => temp_timestamp})
           end
         end
-      elsif line !~ /^\#/ # an SQL query
+        latest_entry_timestamp ||= temp_timestamp # latest_entry_timestamp will be the bottom timestamp in the log. We'll use it as the watermark for next run
+        # if there wasn't a last_entry_timestamp, we should break now that we have one complete log entry
+        break if last_run_entry_timestamp == nil
+      elsif line !~ /^(\#|use |SET timestamp)/ # an SQL query
         sql << line
       end
     end  
@@ -78,6 +84,7 @@ class ScoutMysqlSlow < Scout::Plugin
       alert( build_alert(slow_queries,log_file_path) )
     end
     remember(:last_run,Time.now)
+    remember(:last_run_entry_timestamp, latest_entry_timestamp || last_run_entry_timestamp)
   rescue Errno::ENOENT => error
     error("Unable to find the MySQL slow queries log file", "Could not find a MySQL slow queries log file at: #{option(:mysql_slow_log)}. Please ensure the path is correct.")    
   end

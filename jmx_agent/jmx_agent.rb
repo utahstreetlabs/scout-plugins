@@ -105,7 +105,8 @@ class JmxAgent < Scout::Plugin
     
     # validate JVM connectivity
     jvm_name = read_mbean(jmx_cmd, 'java.lang:type=Runtime', 'Name')['Name']
-    return error("JVM not found for PID #{jvm_pid}") unless jvm_name and jvm_name.start_with?(jvm_pid)
+    # PID is validated for JVM PID file but not for mbean_server_url.
+    return error("JVM not found for PID #{jvm_pid}") unless jvm_name and (jvm_pid_file.nil? or jvm_pid_file.empty? or jvm_name.start_with?(jvm_pid))
     
     report_content = {}
     

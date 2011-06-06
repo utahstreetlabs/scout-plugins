@@ -1,0 +1,11 @@
+metadata:
+  complaints: 
+    precision: 0
+  rejects:
+    precision: 0
+    label: Rejected messages
+  bounces: 
+    precision: 0
+  deliveries: 
+    precision: 0
+    label: Successful delivery attempts

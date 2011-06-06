@@ -27,7 +27,7 @@ class RRDCachedMonitor < Scout::Plugin
     s.close
     
     data = {}
-    output.lines.each do |l|
+    output.each_line do |l|
       metric,value = l.split(':')
       if COUNTERS.include?(metric)
         counter(metric, value.to_i, :per => :minute)

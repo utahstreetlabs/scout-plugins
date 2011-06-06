@@ -1,5 +1,5 @@
 # Amazon Simple Email Service Quota monitor
-# Monitors emails sent today
+# Monitors the maximum number of emails you can send in a 24 hour period and actual sent emails.
 # Created by Valery Vishnyakov
 class AwsSesQuota < Scout::Plugin
   needs 'aws/ses'
@@ -14,25 +14,25 @@ class AwsSesQuota < Scout::Plugin
   EOS
 
   def build_report
-    access_key_id = option('awskey')
-    secret_access_key = option('awssecret')
+      access_key_id = option('awskey')
+      secret_access_key = option('awssecret')
 
-    ses = AWS::SES::Base.new(
-      :access_key_id     => access_key_id,
-      :secret_access_key => secret_access_key
-    )   
-    
-    response = ses.quota
+      ses = AWS::SES::Base.new(
+        :access_key_id     => access_key_id,
+        :secret_access_key => secret_access_key
+      )   
 
-    if (response.sent_last_24_hours >= response.max_24_hour_send) and !(memory(:notified))
-      alert('You have reached the maximum quota per 24 hours')
-      remember(:notified => true)
-    else
-      remember(:notified => false)
-    end
-    
-    report :sent => response.sent_last_24_hours,
-      :max  => response.max_24_hour_send
+      response = ses.quota
+
+      if (response.sent_last_24_hours.to_i >= response.max_24_hour_send.to_i)
+        alert('You have reached the maximum quota per 24 hours') unless memory(:notified)
+        remember(:notified => true)
+      else
+        remember(:notified => false)
+      end
+
+      report :sent => response.sent_last_24_hours,
+        :max  => response.max_24_hour_send
   end
 
 end

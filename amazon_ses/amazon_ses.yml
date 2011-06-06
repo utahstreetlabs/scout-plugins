@@ -1,0 +1,7 @@
+metadata: 
+  sent: 
+    precision: 0
+    label: Sent Emails (w/n 24 hours)
+  max:
+    precision: 0
+    label: Sending quota

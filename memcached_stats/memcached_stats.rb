@@ -17,11 +17,17 @@ class MemcachedStats < Scout::Plugin
 
   def build_report
     connection = MemCache.new "#{option(:host)}:#{option(:port)}"
+    io_retry = true
     begin
       stats = connection.stats["#{option(:host)}:#{option(:port)}"]
     rescue Errno::ECONNREFUSED, MemCache::MemCacheError => e
-      return error( "Could not connect to Memcached.",
+      if io_retry and e.to_s == 'IO timeout'
+        io_retry = false
+        retry
+      else
+        return error( "Could not connect to Memcached.",
                     "Make certain you've specified the correct host and port: \n\n#{e}\n\n#{e.backtrace}" )
+      end
     end
 
     report(:uptime_in_hours   => stats['uptime'].to_f / 60 / 60)

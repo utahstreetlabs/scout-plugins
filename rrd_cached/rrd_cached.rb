@@ -2,21 +2,16 @@
 class RRDCachedMonitor < Scout::Plugin
   
   OPTIONS = <<-EOS
-  host:
-    name: Host
-    notes: The host to monitor
-    default: 127.0.0.1
-  port:
-    name: Port
-    notes: The port rrdcached is running on
-    default: 42217
+  location:
+    name: UNIX Socket Location
+    default: "/tmp/rrdcached.sock"
   EOS
   
   # metrics that should be reported as rates
   COUNTERS = %w(UpdatesWritten UpdatesReceived DataSetsWritten FlushesReceived)
   
   def build_report
-    s=TCPSocket.new(option(:host),option(:port))
+    s=UNIXSocket.new(option(:location))
     s.puts "STATS"
     output = String.new
     

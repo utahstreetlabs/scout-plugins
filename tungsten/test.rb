@@ -1,8 +1,4 @@
-require 'rubygems'
-require 'mocha'
-require 'test/unit'
-require 'scout'
-
+require File.expand_path('../test_helper.rb')
 require File.expand_path('../tungsten.rb', __FILE__)
 
 class TungstenTest < Test::Unit::TestCase

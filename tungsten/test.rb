@@ -105,8 +105,14 @@ EOS
     result = @plugin.run
 
     assert_equal "Replication roles have changed.", result[:alerts].first[:subject]
-    assert_match /db01 is now acting as slave/, result[:alerts].first[:body]
-    assert_match /db02 is now acting as master/, result[:alerts].first[:body]
+    original_roles = result[:alerts].first[:body].split("\n\n\n").first
+    new_roles = result[:alerts].first[:body].split("\n\n\n").last
+    assert_match /^Formerly, roles were:/, original_roles
+    assert_match /db01 acting as master/, original_roles
+    assert_match /db02 acting as slave/, original_roles
+    assert_match /^New roles are:/, new_roles
+    assert_match /db01 acting as slave/, new_roles
+    assert_match /db02 acting as master/, new_roles
     expected_memory = { :replication_roles => { "db02" => "master", "db01" => "slave" } }
     assert_equal expected_memory, result[:memory]
   end

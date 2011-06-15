@@ -66,10 +66,13 @@ class TungstenPlugin < Scout::Plugin
     end
 
     if memory(:replication_roles) and memory(:replication_roles) != replication_roles
-      roles_string = replication_roles.inject("") do |output, datasource|
-        output << "#{datasource.first} is now acting as #{datasource.last}"
+      old_roles_string = memory(:replication_roles).inject("") do |output, datasource|
+        output << "#{datasource.first} acting as #{datasource.last}.\n"
       end
-      alert(:subject => "Replication roles have changed.", :body => "#{roles_string}")
+      new_roles_string = replication_roles.inject("") do |output, datasource|
+        output << "#{datasource.first} acting as #{datasource.last}.\n"
+      end
+      alert(:subject => "Replication roles have changed.", :body => "Formerly, roles were:\n#{old_roles_string}\n\nNew roles are:\n#{new_roles_string}")
     end
     remember(:replication_roles => replication_roles)
 

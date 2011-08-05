@@ -49,10 +49,20 @@ class Iostat < Scout::Plugin
   def iostat(dev)
     # if a LVM is used, `mount` output doesn't map to `/diskstats`. In this case, use dm-0 as the default device.
     lvm = nil
-    IO.readlines('/proc/diskstats').each do |line|
-      entry = Hash[*COLUMNS.zip(line.strip.split(/\s+/).collect { |v| Integer(v) rescue v }).flatten]
-      return entry if dev.include?(entry['name'])
-      lvm = entry if (@default_device_used and 'dm-0'.include?(entry['name']))
+    retried = false
+    begin
+      IO.readlines('/proc/diskstats').each do |line|
+        entry = Hash[*COLUMNS.zip(line.strip.split(/\s+/).collect { |v| Integer(v) rescue v }).flatten]
+        return entry if dev.include?(entry['name'])
+        lvm = entry if (@default_device_used and 'dm-0'.include?(entry['name']))
+      end
+    rescue Errno::EPIPE
+      if retried
+        raise
+      else
+        retried = true
+        retry
+      end
     end
     return lvm
   end

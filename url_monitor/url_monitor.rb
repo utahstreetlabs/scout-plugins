@@ -92,6 +92,7 @@ class UrlMonitor < Scout::Plugin
       http.open_timeout = option('timeout_length').to_i
       http.start(){|h|
             req = Net::HTTP::Head.new((uri.path != '' ? uri.path : '/' ) + (uri.query ? ('?' + uri.query) : ''))
+            req['User-Agent'] = "ScoutURLMonitor/#{Scout::VERSION}"
             req['host'] = uri.host
             if uri.user && uri.password
               req.basic_auth uri.user, uri.password

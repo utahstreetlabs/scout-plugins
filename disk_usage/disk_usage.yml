@@ -21,10 +21,3 @@ triggers:
   - type: peak
     dname: capacity
     max_value: 85
-  # available disk space decreases by 10% compared to last week
-  - type: trend
-    dname: avail
-    direction: DOWN
-    percentage_change: 10
-    duration: 60
-    window_reference: LAST_WEEK

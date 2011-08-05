@@ -24,8 +24,3 @@ metadata:
   aveq:
     label: Average Queue Size
     precision: 1
-
-triggers:
-  - type: peak
-    dname: util
-    max_value: 80%

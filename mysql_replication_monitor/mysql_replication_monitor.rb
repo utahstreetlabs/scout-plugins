@@ -20,6 +20,7 @@ class MysqlReplicationMonitor < Scout::Plugin
     name: Password
     notes: The password for the mysql user
     default:
+    attributes: password
   ignore_window_start:
     name: Ignore Window Start
     notes: Time to start ignoring replication failures. Useful for disabling replication for backups. For Example, 7:00pm

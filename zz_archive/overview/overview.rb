@@ -172,19 +172,22 @@ class Overview < Scout::Plugin
     end
   end
 
-  # Ensures disk space metrics are in GB. Metrics that don't contain 'G,M,or K' are just
+  # Ensures disk space metrics are in GB. Metrics that don't contain 'T,G,M,or K' are just
   # turned into integers.
-  def clean_value(value)
-    if value =~ /G/i
-      value.to_f
-    elsif value =~ /M/i
-      (value.to_f/1024.to_f).round
-    elsif value =~ /K/i
-      (value.to_f/1024.to_f/1024.to_f).round
-    else
-      value.to_f
-    end
-  end
+   def clean_value(value)
+     value = if value =~ /G/i
+       value.to_f
+     elsif value =~ /M/i
+       (value.to_f/1024.to_f)
+     elsif value =~ /K/i
+       (value.to_f/1024.to_f/1024.to_f)
+     elsif value =~ /T/i
+       (value.to_f*1024.to_f)
+     else
+       value.to_f
+     end
+     ("%.1f" % [value]).to_f
+   end
 
 
   #-----------------------------------------------------

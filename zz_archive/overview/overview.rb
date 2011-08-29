@@ -11,7 +11,6 @@
 class Overview < Scout::Plugin
 
   OPTIONS=<<-EOS
-  options:
     disk_command:
       name: df Command
       notes: The command used to display free disk space

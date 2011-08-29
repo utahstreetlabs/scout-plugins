@@ -51,17 +51,29 @@ class MysqlReplicationMonitor < Scout::Plugin
     begin
       setup_mysql
       h=connection.query("show slave status").fetch_hash
+      down_at = memory(:down_at)
       if h.nil?
         error("Replication not configured")
-      elsif h["Seconds_Behind_Master"].nil?
-        alert("Replication not running",
-          "IO Slave: #{h["Slave_IO_Running"]}\nSQL Slave: #{h["Slave_SQL_Running"]}") unless in_ignore_window?
+      elsif h["Seconds_Behind_Master"].nil? and !down_at
+        unless in_ignore_window?
+          alert("Replication not running",
+          "IO Slave: #{h["Slave_IO_Running"]}\nSQL Slave: #{h["Slave_SQL_Running"]}") 
+          down_at = Time.now
+        end
       elsif h["Slave_IO_Running"] == "Yes" and h["Slave_SQL_Running"] == "Yes"
         report("Seconds Behind Master"=>h["Seconds_Behind_Master"])
-      else
-        alert("Replication not running",
-          "IO Slave: #{h["Slave_IO_Running"]}\nSQL Slave: #{h["Slave_SQL_Running"]}") unless in_ignore_window?
+        if down_at
+          alert("Replication running again","Replication was not running for #{(Time.now - down_at).to_i} seconds")
+          down_at = nil
+        end
+      elsif !down_at
+        unless in_ignore_window?
+          alert("Replication not running",
+          "IO Slave: #{h["Slave_IO_Running"]}\nSQL Slave: #{h["Slave_SQL_Running"]}") 
+          down_at = Time.now
+        end
       end
+      remember(:down_at,down_at)
     rescue  MissingLibrary=>e
       error("Could not load all required libraries",
             "I failed to load the mysql library. Please make sure it is installed.")

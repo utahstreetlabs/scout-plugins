@@ -1,4 +1,7 @@
-class ElasticsearchIndexStatusPlugin < Scout::Plugin
+# Reports stats on an elasticsearch index, including index size, number of documents, etc.
+#
+# Created by John Wood of Signal
+class ElasticsearchIndexStatus < Scout::Plugin
 
   OPTIONS = <<-EOS
     elasticsearch_host:

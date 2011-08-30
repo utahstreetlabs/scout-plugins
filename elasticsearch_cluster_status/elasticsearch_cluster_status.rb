@@ -1,4 +1,8 @@
-class ElasticsearchClusterStatusPlugin < Scout::Plugin
+# Reports stats on an elasticsearch cluster, including health (green, yellow, red), 
+# number of nodes, number of shards, etc
+#
+# Created by John Wood of Signal
+class ElasticsearchClusterStatus < Scout::Plugin
 
   OPTIONS = <<-EOS
     elasticsearch_host:

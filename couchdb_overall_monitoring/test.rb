@@ -91,7 +91,6 @@ class CouchDBOverallMonitoringTest < Test::Unit::TestCase
       )
   end
   
-  
   ################
   ### Fixtures ###
   ################

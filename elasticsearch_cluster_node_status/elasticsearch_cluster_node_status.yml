@@ -30,13 +30,13 @@ metadata:
     precision: "0"
   gc_collection_time:
     label: GC - Total
-    precision: "ms"
+    units: ms
     precision: "0"
   gc_parnew_collection_time:
     label: GC - ParNew
-    precision: "ms"
+    units: ms
     precision: "0"
   gc_cms_collection_time:
     label: GC - ConcurrentMarkSweep
-    precision: "ms"
+    units: ms
     precision: "0"

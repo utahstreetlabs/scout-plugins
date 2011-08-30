@@ -1,4 +1,8 @@
-class ElasticsearchClusterNodeStatusPlugin < Scout::Plugin
+# Reports stats on a node in the elasticsearch cluster, including size of indices, 
+# number of docs, memory used, threads used, garbage collection times, etc
+#
+# Created by John Wood of Signal
+class ElasticsearchClusterNodeStatus < Scout::Plugin
 
   OPTIONS = <<-EOS
     elasticsearch_host:
@@ -26,12 +30,11 @@ class ElasticsearchClusterNodeStatusPlugin < Scout::Plugin
     base_url = "#{option(:elasticsearch_host)}:#{option(:elasticsearch_port)}/_cluster/nodes/#{node_name}/stats"
     resp = JSON.parse(Net::HTTP.get(URI.parse(base_url)))
 
-    if resp['nodes'].empty?
+    if resp['nodes'].nil? or resp['nodes'].empty?
       return error("No node found with the specified name", "No node in the cluster could be found with the specified name.\n\nNode Name: #{option(:node_name)}")
     end
 
     response = resp['nodes'].values.first
-
     report(:size_of_indices => b_to_mb(response['indices']['size_in_bytes']) || 0)
     report(:num_docs => response['indices']['docs']['num_docs'] || 0)
     report(:open_file_descriptors => response['process']['open_file_descriptors'] || 0)
@@ -41,9 +44,9 @@ class ElasticsearchClusterNodeStatusPlugin < Scout::Plugin
     report(:non_heap_committed => b_to_mb(response['jvm']['mem']['non_heap_committed_in_bytes'] || 0))
     report(:threads_count => response['jvm']['threads']['count'] || 0)
 
-    report(:gc_collection_time => gc_time(response['jvm']['gc']))
-    report(:gc_parnew_collection_time => gc_time(response['jvm']['gc']['collectors']['ParNew']))
-    report(:gc_cms_collection_time => gc_time(response['jvm']['gc']['collectors']['ConcurrentMarkSweep']))
+    gc_time(:gc_collection_time => response['jvm']['gc'])
+    gc_time(:gc_parnew_collection_time => response['jvm']['gc']['collectors']['ParNew'])
+    gc_time(:gc_cms_collection_time => response['jvm']['gc']['collectors']['ConcurrentMarkSweep'])
 
   rescue OpenURI::HTTPError
     error("Stats URL not found", "Please ensure the base url for elasticsearch cluster node stats is correct. Current URL: \n\n#{base_url}")
@@ -54,11 +57,23 @@ class ElasticsearchClusterNodeStatusPlugin < Scout::Plugin
   def b_to_mb(bytes)
     bytes && bytes.to_f / 1024 / 1024
   end
-
+  
+  # Reports the time spent in collection / # of collections for this reporting period.
   def gc_time(data)
-    collection_time = data['collection_time_in_millis'] || 0
-    gc_operations = data['collection_count'] || 1
-    collection_time / gc_operations
+    key = data.keys.first.to_s
+    collection_time = data.values.first['collection_time_in_millis'] || 0
+    collection_count = data.values.first['collection_count'] || 1
+    
+    previous_collection_time = memory(key)
+    previous_collection_count = memory(key.sub('time','count'))
+    
+    if previous_collection_time and previous_collection_count
+      rate = (collection_time-previous_collection_time).to_f/(collection_count-previous_collection_count)
+      report(data.keys.first => rate) if rate >=0 # assuming that restarting elasticsearch restarts counts, which means the rate could be < 0.
+    end
+    
+    remember(key => collection_time || 0)
+    remember(key.sub('time','count') => collection_count || 1)
   end
 
 end

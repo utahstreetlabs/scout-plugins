@@ -18,6 +18,7 @@ class RailsRequestsTest < Test::Unit::TestCase
       res=plugin.run
       assert_equal 1, res[:alerts].size
       assert_equal 60.0, res[:reports].first[:slow_queries]
+      assert_equal Time.parse("101201 12:00:00"), res[:memory][:last_run_entry_timestamp]
     end
   end
   
@@ -28,6 +29,7 @@ class RailsRequestsTest < Test::Unit::TestCase
       res=plugin.run
       assert_equal 1, res[:alerts].size
       assert_equal 60.0, res[:reports].first[:slow_queries]
+      assert_equal Time.parse("101201 12:00:00"), res[:memory][:last_run_entry_timestamp]
     end
   end
   

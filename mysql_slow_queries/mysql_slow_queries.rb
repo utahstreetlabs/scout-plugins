@@ -57,7 +57,8 @@ class ScoutMysqlSlow < Scout::Plugin
         sql = []
       elsif line =~ /^\# Time: (\d+ .*)$/
         # We now have a complete entry. capture its timestamp:
-        temp_timestamp = Time.parse($1.split(' ')[0]) {|y| y < 100 ? y + 2000 : y}
+        # split w/# is for ey compatibility. 
+        temp_timestamp = Time.parse($1.split('#')[0]) {|y| y < 100 ? y + 2000 : y}
         # if there was a last_run_entry_timestamp, we can quit based on comparing it to the current_entry_timestamp we just parsed.
         if last_run_entry_timestamp && temp_timestamp <= last_run_entry_timestamp
           break

@@ -1,9 +1,3 @@
-options:
-  server_url:
-    name: Server Status URL
-    notes: Specify URL of the server-status page to check. Scout requires the machine-readable format of the status page (just add '?auto' to the server-status page URL).
-    default: "http://localhost/server-status?auto"
-
 metadata:
   current_load:          
     label: Requests Per Second

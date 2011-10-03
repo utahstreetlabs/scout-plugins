@@ -59,7 +59,6 @@ class HaproxyMonitoring < Scout::Plugin
       error('Proxy name required',"The name of the proxy to monitor must be provided in the plugin settings. The possible proxies to monitor:\n<ul>#{possible_proxies.map { |p| "<li>#{p}</li>"}.join('')}</ul>")
     elsif !proxy_found
       error('Proxy not found',"The proxy '#{proxy}' was not found. The possible proxies to monitor:\n<ul>#{possible_proxies.map { |p| "<li>#{p}</li>"}.join('')}</ul>")
-      
     end
   end
   

@@ -10,7 +10,7 @@ metadata:
     label: Errors (Conn)
     units: /min
     precision: 1
-  eresp:
+  errors_resp:
     label: Errors (Resp)
     units: /min
     precision: 1

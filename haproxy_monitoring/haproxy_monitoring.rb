@@ -46,7 +46,7 @@ class HaproxyMonitoring < Scout::Plugin
       end
     rescue OpenURI::HTTPError
       if $!.message == '401 Unauthorized'
-        return error("Authentication Failed", "Unable to access the stats page at #{option(:uri)} with the username '#{option(:user)}' and provided password. Please ensure the username and password are correct.")
+        return error("Authentication Failed", "Unable to access the stats page at #{option(:uri)} with the username '#{option(:user)}' and provided password. Please ensure the username, password, and URI are correct.")
       elsif $!.message != '404 Not Found'
         return error("Unable to find the stats page", "The stats page could not be found at: #{option(:uri)}.")
       else

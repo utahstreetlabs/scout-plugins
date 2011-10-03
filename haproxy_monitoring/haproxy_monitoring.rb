@@ -12,8 +12,7 @@ class HaproxyMonitoring < Scout::Plugin
   OPTIONS=<<-EOS
   uri:
     name: URI
-    notes: URI of the haproxy CSV stats url. See the 'CSV Export' link on your haproxy stats page.
-    default: http://yourdomain.com/;csv
+    notes: "URI of the haproxy CSV stats url. See the 'CSV Export' link on your haproxy stats page (example stats page: http://demo.1wt.eu/)."
   proxy:
     notes: The name of the proxy to monitor. Proxies are typically listed in the haproxy.cfg file.
   user:

@@ -1,0 +1,21 @@
+metadata:
+  requests:
+    units: /min
+    precision: 1
+  errors_req:
+    label: Errors (Req)
+    units: /min
+    precsion: 1
+  errors_conn:
+    label: Errors (Conn)
+    units: /min
+    precsion: 1
+  eresp:
+    label: Errors (Resp)
+    units: /min
+    precsion: 1
+  proxy_up:
+    label: Proxy Reachable
+    precsion: 0
+  
+    

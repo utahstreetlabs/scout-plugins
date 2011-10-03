@@ -15,7 +15,7 @@ metadata:
     units: /min
     precision: 1
   proxy_up:
-    label: Proxy Reachable
+    label: Proxy Up
     precision: 0
   
     

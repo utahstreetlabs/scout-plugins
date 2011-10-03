@@ -66,7 +66,7 @@ class HaProxyTest < Test::Unit::TestCase
     res = @plugin.run()
     assert_equal 0, res[:reports].size
     assert_equal 1, res[:errors].size
-    assert_equal "Error accessing stats page", res[:errors].first[:subject]
+    assert_equal "Unable to access stats page", res[:errors].first[:subject]
   end
   
   def test_blank_uri
@@ -83,9 +83,9 @@ class HaProxyTest < Test::Unit::TestCase
     FakeWeb.register_uri(:get, uri_invalid_auth, :body => "Unauthorized", :status => ["401", "Unauthorized"])
 
     @plugin=HaproxyMonitoring.new(nil,{},{:uri=>uri_invalid_auth, :user => 'user', :password => 'invalid'})
-    assert_raises OpenURI::HTTPError do
-      res = @plugin.run()
-    end
+    res = @plugin.run()
+    assert_equal 1, res[:errors].size
+    assert_equal "Authentication Failed", res[:errors].first[:subject]
   end
   
   def test_valid_basic_auth

@@ -20,6 +20,7 @@ class HaproxyMonitoring < Scout::Plugin
     notes: If protected under basic authentication provide the user name.
   password:
     notes: If protected under basic authentication provide the password.   
+    attributes: password
   EOS
 
   def build_report
@@ -44,10 +45,15 @@ class HaproxyMonitoring < Scout::Plugin
         end
       end
     rescue OpenURI::HTTPError
-      raise if $!.message != '404 Not Found'
-      return error("Unable to find the stats page", "The stats page could not be found at: #{option(:uri)}. If you are providing a user and password please ensure those are correct.")
+      if $!.message == '401 Unauthorized'
+        return error("Authentication Failed", "Unable to access the stats page at #{option(:uri)} with the username '#{option(:user)}' and provided password. Please ensure the username and password are correct.")
+      elsif $!.message != '404 Not Found'
+        return error("Unable to find the stats page", "The stats page could not be found at: #{option(:uri)}.")
+      else
+        raise
+      end
     rescue FasterCSV::MalformedCSVError
-      return error('Error accessing stats page', "The plugin encountered an error attempting to access the stats page (in CSV format) at: #{option(:uri)}. The exception: #{$!.message}\n#{$!.backtrace}")
+      return error('Unable to access stats page', "The plugin encountered an error attempting to access the stats page (in CSV format) at: #{option(:uri)}. The exception: #{$!.message}\n#{$!.backtrace}")
     end
     if proxy.nil?
       error('Proxy name required',"The name of the proxy to monitor must be provided in the plugin settings. The possible proxies to monitor:\n\n#{possible_proxies.map { |p| "* #{p}"}.join('\n')}")

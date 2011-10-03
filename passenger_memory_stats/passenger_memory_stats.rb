@@ -24,7 +24,10 @@ class PassengerMemoryStats < Scout::Plugin
           remember(mem_name => memory(mem_name))
         end
       end
-    else
+    # The following exception will occassially be raised by passenger-memory-stats:
+    # /usr/local/rvm/gems/ruby-1.9.2-p136/gems/passenger-3.0.2/lib/phusion_passenger/admin_tools/memory_stats.rb:247:in `split': invalid byte sequence in US-ASCII (ArgumentError) 
+    # This will ignore that error.
+    elsif data !~ /invalid byte sequence/
       error "Could not get data from command", "Error:  #{data}"
     end
   end

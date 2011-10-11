@@ -1,0 +1,181 @@
+<!-- $Id: header.jsp 1031778 2010-11-05 20:29:20Z ryan $ -->
+<html>
+<head>
+<script>
+var host_name="hostname.example.com"
+</script>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="../solr-admin.css">
+<link rel="icon" href="../favicon.ico" type="image/ico" />
+<link rel="shortcut icon" href="../favicon.ico" type="image/ico" />
+<title>Solr replication admin page</title>
+<script type="text/javascript" src="../jquery-1.4.3.min.js"></script>
+</head>
+<body>
+<a href=".."><img border="0" align="right" height="78" width="142" src="../solr_small.png" alt="Solr"></a>
+<h1>Solr replication (sunspot)
+ Master & Slave
+</h1>
+hostname.examp.e.com<br/>
+cwd=/usr/local/solr  SolrHome=solr/cores/core1/
+<br clear="all" />
+(<a href="http://wiki.apache.org/solr/SolrReplication">What Is This Page?</a>)
+<br clear="all" />
+<table>
+<tr>
+  <td>
+    <strong>Master</strong>
+  </td>
+  <td>
+    http://192.168.100.1:8983/solr/online/replication
+    
+  </td>
+</tr>
+<tr>
+  <td>
+  </td>
+  <td>Latest Index Version:null, Generation: null
+  </td>
+</tr>
+<tr>
+  <td></td>
+  <td>Replicatable Index Version:1305174339477, Generation: 1649043
+  </td>
+</tr>
+<tr>
+  <td>
+    <strong>Poll Interval</strong>
+  </td>
+  <td>
+    00:00:30
+  </td>
+</tr>
+<tr>
+  <td>
+    <strong>Local Index</strong>
+  </td>
+  <td>
+    Index Version: 1305174339477, Generation: 1649043
+  </td>
+</tr>
+<tr>
+  <td>
+  </td>
+  <td>
+    Location: /usr/local/solr/solr/cores/core1/data/index
+  </td>
+</tr>
+<tr>
+  <td></td>
+  <td>Size: 379.28 MB
+  </td>
+</tr>
+<tr>
+  <td></td>
+  <td>
+    Config Files To Replicate: solrconfig.xml,schema.xml,stopwords.txt
+  </td>
+</tr>
+<tr>
+  <td></td>
+  <td>
+    Trigger Replication On: [commit, startup]
+  </td>
+</tr>
+<tr>
+  <td>
+  </td>
+  <td>
+    Times Replicated Since Startup: 131
+  </td>
+</tr>
+<tr>
+  <td>
+  </td>
+  <td>
+    Previous Replication Done At: Tue Oct 11 10:21:00 EST 2011
+  </td>
+</tr>
+<tr>
+  <td>
+  </td>
+  <td>
+    Config Files Replicated At: null
+  </td>
+</tr>
+<tr>
+  <td>
+  </td>
+  <td>
+    Config Files Replicated: null
+  </td>
+</tr>
+<tr>
+  <td>
+  </td>
+  <td>
+    Times Config Files Replicated Since Startup: null
+  </td>
+</tr>
+<tr>
+  <td>
+  </td>
+  <td>
+    Next Replication Cycle At: Tue Oct 11 10:21:30 EST 2011
+  </td>
+</tr>
+<tr>
+  <td><strong>Controls</strong>
+  </td>
+  <td>
+    <form name=polling method="POST" action="./index.jsp" accept-charset="UTF-8">
+      <input name="poll" type="hidden" value="disable">
+      <input class="stdbutton" type="submit" value="Disable Poll">
+    </form>
+    
+  </td>
+</tr>
+<tr>
+  <td></td>
+  <td>
+    <form name=replicate method="POST" action="./index.jsp" accept-charset="UTF-8">
+      <input name="replicate" type="hidden" value="now">
+      <input name="replicateButton" class="stdbutton" type="submit" value="Replicate Now">
+    </form>
+    
+    <script type="text/javascript">
+      document["replicate"].replicateButton.disabled = false;
+      document["replicate"].replicateButton.className = 'stdbutton';
+    </script>
+    
+  </td>
+</tr>
+<tr>
+  <td><strong>Cores:</strong><br></td>
+  <td>[<a href="../../../offline/admin/index.jsp">offline
+  </a>][<a href="../../../online/admin/index.jsp">online
+  </a>]</td>
+</tr>
+</table>
+<P>
+<p>
+<table>
+  <tr>
+    <td>
+    </td>
+    <td>
+      Current Time: Tue Oct 11 10:21:09 EST 2011
+    </td>
+  </tr>
+  <tr>
+    <td>
+    </td>
+    <td>
+      Server Start At: Tue Oct 11 09:26:41 EST 2011
+    </td>
+  </tr>
+</table>
+<br>
+<a href="..">Return to Admin Page</a>
+</body>
+</html>

@@ -1,20 +1,21 @@
 # =================================================================================
-# celery_task_details
+# This monitors detailed stats on specific celery task types (results/states, average runtime, etc)
 #
 # Created by Erik Wickstrom on 2011-10-14.
 # =================================================================================
 
 class CeleryTaskDetails < Scout::Plugin
-  needs 'rubygems'
   needs 'json'
   needs 'net/http'
-  OPTIONS=<<-EOS    celerymon_url:        default: http://localhost:8989
-        notes: The base URL of your Celerymon server.
-    frequency:
-        default: minute
-        notes: The frequency at which sample rates should be calculated (ie "7 failures per minute").  Valid options are minute and second.
-    task_name:
-        notes: The fully qualified name of the task (ie module.tasks.my_task)
+  OPTIONS=<<-EOS    
+  celerymon_url:        
+    default: http://localhost:8989
+    notes: The base URL of your Celerymon server.
+  frequency:
+    default: minute
+    notes: The frequency at which sample rates should be calculated (ie "7 failures per minute").  Valid options are minute and second.
+  task_name:
+    notes: The fully qualified name of the task (ie module.tasks.my_task)
   EOS
 
   def build_report

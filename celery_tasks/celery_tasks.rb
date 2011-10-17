@@ -1,18 +1,20 @@
 # =================================================================================
-# celery_tasks
+# This monitors throughput of your 20 most active celery tasks.
 #
 # Created by Erik Wickstrom on 2011-10-14.
 # =================================================================================
 
 class CeleryTasks < Scout::Plugin
-  needs 'rubygems'
   needs 'json'
   needs 'net/http'
 
   OPTIONS=<<-EOS
-    celerymon_url:
-        default: http://localhost:8989        notes: The base URL of your Celerymon server.    frequency:        default: minute
-        notes: The frequency at which sample rates should be calculated (ie "7 failures per minute").  Valid options are minute and second.
+  celerymon_url:
+    default: http://localhost:8989        
+    notes: The base URL of your Celerymon server.    
+  frequency:        
+    default: minute
+    notes: The frequency at which sample rates should be calculated (ie "7 failures per minute").  Valid options are minute and second.
   EOS
 
   def build_report

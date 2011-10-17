@@ -1,18 +1,21 @@
 # =================================================================================
-# celery
+# This is a "global view" of your Celery system.  
+# It monitors and reports on how many workers you have running, total task results/state, and task results per minute/second.
 #
 # Created by Erik Wickstrom on 2011-10-14.
 # =================================================================================
 
-class Celery < Scout::Plugin
-  needs 'rubygems'
+class CeleryOverall < Scout::Plugin
   needs 'json'
   needs 'net/http'
 
   OPTIONS=<<-EOS
-    celerymon_url:        default: http://localhost:8989        notes: The base URL of your Celerymon server.    frequency:
-        default: minute
-        notes: The frequency at which sample rates should be calculated (ie "7 failures per minute").  Valid options are minute and second.
+  celerymon_url:        
+    default: http://localhost:8989        
+    notes: The base URL of your Celerymon server.    
+  frequency:
+    default: minute
+    notes: The frequency at which sample rates should be calculated (ie "7 failures per minute").  Valid options are minute and second.
   EOS
 
   def build_report

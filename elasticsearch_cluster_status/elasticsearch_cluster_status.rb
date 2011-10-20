@@ -15,7 +15,7 @@ class ElasticsearchClusterStatus < Scout::Plugin
       notes: The port elasticsearch is running on
   EOS
 
-  needs 'net/http', 'json'
+  needs 'net/http', 'json', 'open-uri'
 
   def build_report
     if option(:elasticsearch_host).nil? || option(:elasticsearch_port).nil?
@@ -36,7 +36,7 @@ class ElasticsearchClusterStatus < Scout::Plugin
 
     # Send an alert every time cluster status changes
     if memory(:cluster_status) && memory(:cluster_status) != response['status']
-      alert("elasticsearch cluster health status changed from '#{memory(:cluster_status)}' to '#{response['status']}'")
+      alert("elasticsearch cluster status changed to '#{response['status']}'","elasticsearch cluster health status changed from '#{memory(:cluster_status)}' to '#{response['status']}'")
     end
     remember :cluster_status => response['status']
 
@@ -44,6 +44,8 @@ class ElasticsearchClusterStatus < Scout::Plugin
     error("Stats URL not found", "Please ensure the base url for elasticsearch cluster stats is correct. Current URL: \n\n#{base_url}")
   rescue SocketError
     error("Hostname is invalid", "Please ensure the elasticsearch Host is correct - the host could not be found. Current URL: \n\n#{base_url}")
+  rescue Errno::ECONNREFUSED
+    error("Unable to connect", "Please ensure the host and port are correct. Current URL: \n\n#{base_url}")
   end
 
 end

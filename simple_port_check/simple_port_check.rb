@@ -1,22 +1,18 @@
 require 'socket'
 
-# Provide a host and a comma-delimited list of ports. This plugin will alert you when the status
+# Provide a comma-delimited list of host:ports. This plugin will alert you when the status
 # of one or ports changes (a port that was previously online goes offline, or vice-versa).
 class SimplePortCheck < Scout::Plugin
 
   OPTIONS=<<-EOS
-    host:
-      notes: the host on which to check ports
-      default: localhost
     ports:
-      notes: comma-delimited list of ports to monitor
-      default: "80,25"
+      notes: "comma-delimited list of 'host:ports' to monitor. Example: yahoo.com:80,google.com:443"
+      default: "localhost:80,google.com:443,yahoo.com:80"
   EOS
 
   def build_report
-    host = option(:host)
-    ports = option(:ports).split(/[ ,]+/).map(&:to_i).uniq
-    port_status=ports.map{|port| is_port_open?(host, port)} # true=open, false=closed
+    ports = option(:ports).split(/[ ,]+/).uniq
+    port_status=ports.map{|port| is_port_open?(port)} # true=open, false=closed
 
     num_ports=ports.size
     num_ports_open = port_status.count{|status| status}
@@ -27,9 +23,9 @@ class SimplePortCheck < Scout::Plugin
     # alert if the number of ports monitored or the number of ports open has changed since last time
     if num_ports !=previous_num_ports || num_ports_open != previous_num_ports_open
       subject = "Port check: #{num_ports_open} of #{ports.size} ports open"
-      body="Port status on #{host}:\n"
+      body=""
       ports.each_with_index do |port,index|
-        body<<" #{port}: #{port_status[index] ? 'open' : 'CLOSED'} \n"
+        body<<"#{index+1}) #{port} - #{port_status[index] ? 'open' : 'CLOSED'} \n"
       end
       alert(subject,body)
     end
@@ -42,9 +38,10 @@ class SimplePortCheck < Scout::Plugin
 
   private
 
-  def is_port_open?(host,port)
+  def is_port_open?(host_and_port)
+    host,port=host_and_port.split(":")
     begin
-      s = TCPSocket.open(host, port)
+      s = TCPSocket.open(host, port.to_i)
       s.close
       true
     rescue

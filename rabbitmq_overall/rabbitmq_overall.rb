@@ -1,63 +1,92 @@
-# Created by Doug Barth.
-# http://github.com/dougbarth/
+# =================================================================================
+# rabbitmq_overall
+#
+# Created by Erik Wickstrom on 2011-10-14.
+# =================================================================================
+
 class RabbitmqOverall < Scout::Plugin
-  OPTIONS = <<-EOS
-  rabbitmqctl:
-    name: rabbitmqctl command
-    notes: The command used to run the rabbitctl program, minus arguments
-    default: rabbitmqctl
+  needs 'rubygems'
+  needs 'json'
+  needs 'net/http'
+
+  OPTIONS=<<-EOS
+    management_url:
+        default: http://localhost:55672
+        notes: The base URL of your RabbitMQ Management server.
+    username:
+        default: guest
+    password:
+        default: guest
+    frequency:
+        default: minute
+        notes: The frequency at which sample rates should be calculated (ie "7 failures per minute").  Valid options are minute and second.
   EOS
 
   def build_report
-    begin
-      report_data = {}
-
-      connection_stats = `#{rabbitmqctl} -q list_connections`.lines.to_a
-      report_data['connections'] = connection_stats.size
-
-      report_data['queues'] = report_data['messages'] = report_data['queue_mem'] = 0
-      report_data['exchanges'] = 0
-      report_data['bindings'] = 0
-      vhosts.each do |vhost|
-        queue_stats = `#{rabbitmqctl} -q list_queues -p '#{vhost}' messages memory`.lines.to_a
-        report_data['queues'] += queue_stats.size
-        report_data['messages'] += queue_stats.inject(0) do |sum, line|
-          sum += line.split[0].to_i
-        end
-
-        report_data['queue_mem'] += queue_stats.inject(0) do |sum, line|
-          sum += line.split[1].to_i
-        end
-
-        exchange_stats = `#{rabbitmqctl} -q list_exchanges -p #{vhost}`.lines.to_a
-        report_data['exchanges'] += exchange_stats.size
-
-        binding_stats = `#{rabbitmqctl} -q list_bindings -p #{vhost}`.lines.to_a
-        report_data['bindings'] += binding_stats.size
-      end
-
-      # Convert queue memory from bytes to MB.
-      report_data['queue_mem'] = report_data['queue_mem'].to_f / (1024 * 1024)
-
-      report(report_data)
-    rescue RuntimeError => e
-      add_error(e.message)
+    if option(:frequency) == "second"
+        frequency = :second
+    else
+        frequency = :minute
     end
+
+    overview = get_overview
+    nodes = get_nodes
+
+    report(:bindings => get_bindings.length,
+           :connections => get_connections.length,
+           :queues => get_queues.length,
+           :queue_memory_used => nodes[0]["mem_used"].to_f / (1024 * 1024),
+           :messages => overview["queue_totals"]["messages"],
+           :exchanges => get_exchanges.length)
+    #counter(:failures, results["FAILURE"], :per => frequency)
   end
 
-  def rabbitmqctl
-    option('rabbitmqctl')
+  def get_nodes
+     url = "#{option('management_url').to_s.strip}/api/nodes/"
+     result = query_api(url)
   end
 
-  def vhosts
-    @vhosts ||= `#{rabbitmqctl} -q list_vhosts`.lines.to_a.map {|vhost| vhost.chomp }
+  def get_bindings
+     url = "#{option('management_url').to_s.strip}/api/bindings/"
+     result = query_api(url)
   end
 
-  def `(command)
-    result = super(%{#{command} 2>&1})
-    if ($? != 0)
-      raise "#{command} exited with a non-zero value: #{$?} `#{result}'"
-    end
-    result
+  def get_connections
+     url = "#{option('management_url').to_s.strip}/api/connections/"
+     result = query_api(url)
+  end
+
+  def get_exchanges
+     url = "#{option('management_url').to_s.strip}/api/exchanges/"
+     result = query_api(url)
+  end
+
+  def get_queues
+     url = "#{option('management_url').to_s.strip}/api/queues/"
+     result = query_api(url)
+  end
+
+  def get_overview
+     url = "#{option('management_url').to_s.strip}/api/overview/"
+     result = query_api(url)
+  end
+
+  def query_api(url)
+     parsed = URI.parse(url)
+     http = Net::HTTP.new(parsed.host, parsed.port)
+     req = Net::HTTP::Get.new(parsed.path)
+     req.basic_auth option(:username), option(:password)
+     response = http.request(req)
+     data = response.body
+  
+     # we convert the returned JSON data to native Ruby
+     # data structure - a hash
+     result = JSON.parse(data)
+  
+     # if the hash has 'Error' as a key, we raise an error
+     #if result.has_key? 'Error'
+     #   raise "web service error"
+     #end
+     return result
   end
 end

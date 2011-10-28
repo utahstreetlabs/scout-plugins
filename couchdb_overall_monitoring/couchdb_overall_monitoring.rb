@@ -9,7 +9,7 @@ class CouchDBOverallMonitoring< Scout::Plugin
         default: http://127.0.0.1
     EOS
 
-    needs 'open-uri', 'json', 'facets'
+    needs 'open-uri', 'json'
 
     # Metrics are grouped under the +keys+ below in the +_stats+ output. 
     # http://wiki.apache.org/couchdb/Runtime_Statistics
@@ -45,7 +45,7 @@ class CouchDBOverallMonitoring< Scout::Plugin
       METRICS.each do |group,metrics|
         metrics.each do |metric|
           next if @response[group].nil?
-          count = @response[group][metric].ergo['current'] || 0
+          count = fetch_metric(@response[group][metric])
           counter(metric,count.to_i,:per => :second)
         end
       end
@@ -60,18 +60,23 @@ class CouchDBOverallMonitoring< Scout::Plugin
       
       if !@response[group].nil?     
         HTTP_STATUS_CODES['success'].each do |status_code|
-          count = @response[group][status_code].ergo['current'] || 0
+          count = fetch_metric(@response[group][status_code])
           success_count += count
         end
       
         HTTP_STATUS_CODES['error'].each do |status_code|
-          count = @response[group][status_code].ergo['current'] || 0
+          count = fetch_metric(@response[group][status_code])
           error_count += count
         end  
       end
       
       counter('httpd_success',success_count,:per => :second)
       counter('httpd_error',error_count,:per => :second) 
+    end
+    
+    def fetch_metric(metric)
+      val = metric ? metric['current'] : nil
+      val || 0
     end
     
 end

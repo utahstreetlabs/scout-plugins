@@ -1,7 +1,7 @@
 require 'time'
 require 'date'
-class MissingLibrary < StandardError; end
 class MysqlReplicationMonitor < Scout::Plugin
+  needs 'mysql'
 
   OPTIONS=<<-EOS
   host:
@@ -33,23 +33,9 @@ class MysqlReplicationMonitor < Scout::Plugin
 
   attr_accessor :connection
 
-  def setup_mysql
-    begin
-      require 'mysql'
-    rescue LoadError
-      begin
-        require "rubygems"
-        require 'mysql'
-      rescue LoadError
-        raise MissingLibrary
-      end
-    end
-    self.connection=Mysql.new(option(:host),option(:username),option(:password),nil,option(:port).to_i)
-  end
-
   def build_report
     begin
-      setup_mysql
+      self.connection=Mysql.new(option(:host),option(:username),option(:password),nil,option(:port).to_i)
       h=connection.query("show slave status").fetch_hash
       down_at = memory(:down_at)
       if h.nil?
@@ -74,13 +60,8 @@ class MysqlReplicationMonitor < Scout::Plugin
         end
       end
       remember(:down_at,down_at)
-    rescue  MissingLibrary=>e
-      error("Could not load all required libraries",
-            "I failed to load the mysql library. Please make sure it is installed.")
     rescue Mysql::Error=>e
-      error("Unable to connect to mysql: #{e}")
-    rescue Exception=>e
-      error("Got unexpected error: #{e} #{e.class}", e.backtrace.join('\n'))
+      error("Unable to connect to MySQL",e.to_s)
     end
   end
 

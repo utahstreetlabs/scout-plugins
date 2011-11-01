@@ -51,11 +51,13 @@ class CouchDBOverallMonitoring< Scout::Plugin
         msg = "Please ensure the http basic auth user and password is correct. Current URL: \n\n#{@base_url}\nBasic Auth User: #{option(:couchdb_user)}"
       else
         status = "Stats URL not found"
-        msg = "Please ensure the base url for Couch DB Stats is correct. Current URL: \n\n#{@base_url}"
+        msg = "Please ensure the host and port for CouchDB Stats is correct. Current URL: \n\n#{@base_url}"
       end
       error(status,msg)
+    rescue Errno::ECONNREFUSED
+      error("Unable to connect to CouchDB","Please ensure the host and port for CouchDB Stats is correct:\n\n#{@base_url}")
     rescue SocketError
-      error("Hostname is invalid","Please ensure the Couch DB Host is correct - the host could not be found. Current URL: \n\n#{@base_url}")
+      error("Hostname is invalid","Please ensure the CouchDB Host is correct - the host could not be found. Current URL: \n\n#{@base_url}")
     end
     
     # Parses the _stats output, reporting counters for each of the defined metrics.

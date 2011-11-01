@@ -9,10 +9,11 @@ class CouchDBOverallMonitoring< Scout::Plugin
         default: http://127.0.0.1
       couchdb_user:
         notes: The CouchDB http basic authentication user
-        default: admin
+        attributes: advanced
       couchdb_pwd:
+        name: CouchDB Password
         notes: The CouchDB http basic authentication password
-        default: secret
+        attributes: advanced,password
     EOS
 
     needs 'open-uri', 'json'
@@ -45,7 +46,7 @@ class CouchDBOverallMonitoring< Scout::Plugin
     rescue OpenURI::HTTPError => e
       if e.message.include? "401 Unauthorized"
         status = "Stats URL access denied"
-        msg = "Please ensure the http basic auth user and password is correct. Current URL: \n\n#{@base_url}"
+        msg = "Please ensure the http basic auth user and password is correct. Current URL: \n\n#{@base_url}\nBasic Auth User: #{option(:couchdb_user)}"
       else
         status = "Stats URL not found"
         msg = "Please ensure the base url for Couch DB Stats is correct. Current URL: \n\n#{@base_url}"

@@ -2,9 +2,11 @@
 class CouchDBOverallMonitoring< Scout::Plugin
   OPTIONS = <<-EOS
       couchdb_port:
+        name: CouchDB Port
         notes: The port that CouchDB is running on
         default: 5984
       couchdb_host:
+        name: CouchDB Host
         notes: The host that CouchDB is running on
         default: http://127.0.0.1
       couchdb_user:

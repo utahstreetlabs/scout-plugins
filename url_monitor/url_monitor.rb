@@ -89,6 +89,7 @@ class UrlMonitor < Scout::Plugin
 
       http = Net::HTTP.new(connect_host,uri.port)
       http.use_ssl = url =~ %r{\Ahttps://}
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       http.open_timeout = option('timeout_length').to_i
       http.start(){|h|
             req = Net::HTTP::Head.new((uri.path != '' ? uri.path : '/' ) + (uri.query ? ('?' + uri.query) : ''))

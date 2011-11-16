@@ -1,0 +1,7 @@
+# pxname,svname,qcur,qmax,scur,smax,slim,stot,bin,bout,dreq,dresp,ereq,econ,eresp,wretr,wredis,status,weight,act,bck,chkfail,chkdown,lastchg,downtime,qlimit,pid,iid,sid,throttle,lbtot,tracked,type,rate,rate_lim,rate_max,check_status,check_code,check_duration,hrsp_1xx,hrsp_2xx,hrsp_3xx,hrsp_4xx,hrsp_5xx,hrsp_other,hanafail,req_rate,req_rate_max,req_tot,cli_abrt,srv_abrt,
+metrics-api,FRONTEND,,,0,2,250000,61,27122,30884,0,0,0,,,,,OPEN,,,,,,,,,1,2,0,,,,0,0,0,3,,,,0,61,0,0,0,0,,0,3,61,,,
+metrics-api,api2_west,0,0,0,1,16000,16,6324,4636,,0,,0,0,0,0,UP,1,1,0,0,0,80047,0,,1,2,1,,16,,2,0,,1,L7OK,200,4,0,16,0,0,0,0,0,,,,0,0,
+metrics-api,api3_west,0,0,0,1,16000,15,6547,6463,,0,,0,0,0,0,UP,1,1,0,0,0,80047,0,,1,2,2,,15,,2,0,,1,L7OK,200,1,0,15,0,0,0,0,0,,,,0,0,
+metrics-api,api4_west,0,0,0,1,16000,15,7217,14997,,0,,0,0,0,0,UP,1,1,0,0,0,80047,0,,1,2,3,,15,,2,0,,1,L7OK,200,8,0,15,0,0,0,0,0,,,,0,0,
+metrics-api,api5_west,0,0,0,1,16000,15,7034,4788,,0,,0,0,0,0,UP,1,1,0,0,0,80047,0,,1,2,4,,15,,2,0,,1,L7OK,200,1,0,15,0,0,0,0,0,,,,0,0,
+metrics-api,BACKEND,0,0,0,2,3000,61,27122,30884,0,0,,0,0,0,0,UP,4,4,0,,0,80047,0,,1,2,0,,61,,1,0,,3,,,,0,61,0,0,0,0,,,,,0,0,

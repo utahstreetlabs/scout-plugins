@@ -15,6 +15,9 @@ class HaproxyMonitoring < Scout::Plugin
     notes: "URI of the haproxy CSV stats url. See the 'CSV Export' link on your haproxy stats page (example stats page: http://demo.1wt.eu/)."
   proxy:
     notes: The name of the proxy to monitor. Proxies are typically listed in the haproxy.cfg file.
+  proxy_type:
+    notes: If frontend and backend proxies have the same name, you can specify which proxy you want to monitor ('frontend' or 'backend').
+    attributes: advanced
   user:
     notes: If protected under basic authentication provide the user name.
   password:
@@ -28,14 +31,30 @@ class HaproxyMonitoring < Scout::Plugin
       return error('URI to HAProxy Stats Required', "It looks like the URI to the HAProxy stats page (in csv format) hasn't been provided. Please enter this URI in the plugin settings.")
     end
     proxy = option(:proxy)
+    valid_proxy_types = %w(FRONTEND BACKEND)
+    if option(:proxy_type)
+      if !%w(BACKEND FRONTEND).include?(option(:proxy_type).upcase)
+        return error('Invalid Proxy Type provided', "The proxy type must be either BACKEND or FRONTEND. Current value: #{option(:proxy_type).upcase}")
+      else
+        valid_proxy_types = [option(:proxy_type).upcase]
+      end
+    end
     possible_proxies = []
     proxy_found = false
     begin
       FasterCSV.parse(open(option(:uri),:http_basic_authentication => [option(:user),option(:password)]), :headers => true) do |row|
-        if row["svname"] == 'FRONTEND' || row["svname"] == 'BACKEND'
+        if valid_proxy_types.include?(row["svname"])
           possible_proxies << row["# pxname"]
           next unless proxy.to_s.strip.downcase == row["# pxname"].downcase
-          proxy_found = true
+          
+          if proxy_found
+            data_for_server[:reports] = []
+            data_for_server[:memory] = {}
+            return error("Multiple proxies have the name '#{proxy}'","Please specify the proxy type (BACKEND or FRONTEND) in the plugin's advanced settings.")
+          else
+            proxy_found = true
+          end
+          
           counter(:requests, row['stot'].to_i, :per => :minute)
           counter(:errors_req, row['ereq'].to_i, :per => :minute) if row['ereq']     
           counter(:errors_conn, row['econ'].to_i, :per => :minute) if row['econ']       

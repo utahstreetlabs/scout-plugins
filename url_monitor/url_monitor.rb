@@ -44,7 +44,7 @@ class UrlMonitor < Scout::Plugin
 
     if is_up != memory(:was_up)
       if is_up == 0
-        alert("The URL [#{url}] is not responding", unindent(<<-EOF))
+        alert("The URL #{url} is not responding", unindent(<<-EOF))
             URL: #{url}
 
             Code: #{response.is_a?(String) ? 'N/A' : response.code}

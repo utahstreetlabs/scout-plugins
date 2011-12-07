@@ -177,7 +177,7 @@ class TomcatMonitor < Scout::Plugin
 
   # assumes format:  10.162.73.221 - - [23/Apr/2011:00:00:40 +0000] "GET /client/appraisalWorkshopPrintSignReport.jsp HTTP/1.1" 200 80557
   def parse_logs
-    logs = []
+    logs = ""
     begin
       pfc = print_file_cmd
       logs = `#{pfc} #{logfile} #{filters} | awk '{print $4 " "  $6 " "$7":"$8}'`

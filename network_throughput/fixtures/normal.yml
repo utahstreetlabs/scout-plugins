@@ -1,0 +1,5 @@
+- Inter-|   Receive                                                |  Transmit
+- face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
+- "lo:  175960    1989    0    0    0     0          0         0   175960    1989    0    0    0     0       0          0"
+- "eth0:91904382979 656005473    0    0    0     0          0         0 170988880537 470567863    0    0    0     0       0          0"
+- "eth1:2548954142500 3350819888    0    0    0     0          0         0 379143257134 2904753530    0    0    0     0       0"

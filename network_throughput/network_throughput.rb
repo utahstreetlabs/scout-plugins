@@ -3,12 +3,23 @@
 #
 
 class NetworkThroughput < Scout::Plugin
+  
+  OPTIONS=<<-EOS
+  interfaces:
+    notes: Only interfaces that match the given regular expression will be monitored.
+    default: "venet|eth"
+  EOS
+  
   def build_report
     lines = IO.readlines('/proc/net/dev')[2..-1]
-
+    regex = Regexp.compile(option("interfaces") || /venet|eth/)
+    interfaces = []
+    found = false
     lines.each do |line|
       iface, rest = line.split(':', 2).collect { |e| e.strip }
-      next unless iface =~ /venet|eth/
+      interfaces << iface
+      next unless iface =~ regex
+      found = true
       cols = rest.split(/\s+/)
 
       in_bytes, in_packets, out_bytes, out_packets = cols.values_at(0, 1, 8, 9).collect { |i| i.to_i }
@@ -17,6 +28,9 @@ class NetworkThroughput < Scout::Plugin
       local_counter("#{iface}_in_packets",  in_packets,         :per => :second, :round => 2)
       local_counter("#{iface}_out",         out_bytes / 1024.0, :per => :second, :round => 2)
       local_counter("#{iface}_out_packets", out_packets,        :per => :second, :round => 2)
+    end
+    unless found
+      error("No matched interfaces found", "No interfaces were found that matched the regular expression [#{regex}]. You can modify the regular expression in the plugin's advanced settings.\n\nPossible interfaces:\n#{interfaces.join('\n')}")
     end
   rescue Exception => e
     error("#{e.class}: #{e.message}\n\t#{e.backtrace.join("\n\t")}")

@@ -6,7 +6,7 @@ class NetworkThroughput < Scout::Plugin
   
   OPTIONS=<<-EOS
   interfaces:
-    notes: Only interfaces that match the given regular expression will be monitored.
+    notes: Only interfaces that match the given regular expression will be monitored. The plugin can monitor a maximum of 5 interfaces.
     default: "venet|eth"
   EOS
   

@@ -7,6 +7,7 @@ class NetworkThroughput < Scout::Plugin
   interfaces:
     notes: Only interfaces that match the given regular expression will be monitored. The plugin can monitor a maximum of 5 interfaces.
     default: "venet|eth"
+    attributes: advanced
   EOS
   
   def build_report
@@ -29,7 +30,7 @@ class NetworkThroughput < Scout::Plugin
       local_counter("#{iface}_out_packets", out_packets,        :per => :second, :round => 2)
     end
     unless found
-      error("No matched interfaces found", "No interfaces were found that matched the regular expression [#{regex}]. You can modify the regular expression in the plugin's advanced settings.\n\nPossible interfaces:\n#{interfaces.join('\n')}")
+      error("No interfaces found", "No interfaces were found that matched the regular expression [#{regex}]. You can modify the regular expression in the plugin's advanced settings.\n\nPossible interfaces:\n#{interfaces.join("\n")}")
     end
   rescue Exception => e
     error("#{e.class}: #{e.message}\n\t#{e.backtrace.join("\n\t")}")

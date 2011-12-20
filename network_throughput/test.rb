@@ -18,7 +18,7 @@ class NetworkThroughputTest < Test::Unit::TestCase
     IO.expects(:readlines).with('/proc/net/dev').returns(YAML.load(File.read(File.dirname(__FILE__)+'/fixtures/no_eth1_or_eth0.yml'))).once
     @plugin=NetworkThroughput.new(nil,{},{})
     res = @plugin.run()
-    assert_equal "No matched interfaces found", res[:errors].first[:subject]
+    assert_equal "No interfaces found", res[:errors].first[:subject]
   end
   
   def test_initial_run_with_provided_interfaces

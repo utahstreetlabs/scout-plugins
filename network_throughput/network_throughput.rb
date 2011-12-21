@@ -11,7 +11,7 @@ class NetworkThroughput < Scout::Plugin
   EOS
   
   def build_report
-    lines = IO.readlines('/proc/net/dev')[2..-1]
+    lines = %x(cat /proc/net/dev).split("\n")[2..-1]
     regex = Regexp.compile(option("interfaces") || /venet|eth/)
     interfaces = []
     found = false

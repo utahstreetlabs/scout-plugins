@@ -23,7 +23,7 @@ class CpuUsage < Scout::Plugin
     attr_accessor :user, :system, :idle, :iowait, :interrupts, :procs_running, :procs_blocked, :time
 
     def self.fetch
-      data      = File.read("/proc/stat").split(/\n/).collect { |line| line.split }
+      data      = %x(cat /proc/stat).split(/\n/).collect { |line| line.split }
       cpu_stats = CpuStats.new
 
       if cpu = data.detect { |line| line[0] == 'cpu' }

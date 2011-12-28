@@ -24,7 +24,7 @@ class Swappiness < Scout::Plugin
   def vmstat
     @vmstat ||= begin
       hash = {}
-      IO.foreach('/proc/vmstat') do |line|
+      %x(cat /proc/vmstat).split(/\n/).each do |line|
         _, key, value = *line.match(/^(\w+)\s+(\d+)/)
         hash[key] = value.to_i
       end

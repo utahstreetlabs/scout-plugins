@@ -17,7 +17,7 @@ class MdStat < Scout::Plugin
     data          = Hash.new 
     data = Hash.new
          
-    mdstat = IO.readlines('/proc/mdstat')
+    mdstat = %x(cat /proc/mdstat).split(/\n/)
     
     spares = mdstat[1].scan(/\(S\)/).size
     failed = mdstat[1].scan(/\(F\)/).size

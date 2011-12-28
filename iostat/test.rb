@@ -7,7 +7,7 @@ class IostatTest < Test::Unit::TestCase
     #                        date      hash    hash
   def test_success
     @plugin=Iostat.new(nil,{},{})
-    IO.expects(:readlines).with('/proc/diskstats').returns(FIXTURES[:diskstats_1].split(/\n/)).once
+    @plugin.expects(:`).with("cat /proc/diskstats").returns(FIXTURES[:diskstats_1]).once
     @plugin.expects(:`).with("mount").returns(FIXTURES[:mount]).once
 
     res = @plugin.run()
@@ -18,7 +18,7 @@ class IostatTest < Test::Unit::TestCase
 
     Timecop.travel(Time.now+5*60) do # 5 minute later
       new_plugin=Iostat.new(nil,res[:memory],{})
-      IO.expects(:readlines).with('/proc/diskstats').returns(FIXTURES[:diskstats_2].split(/\n/)).once
+      new_plugin.expects(:`).with("cat /proc/diskstats").returns(FIXTURES[:diskstats_2]).once
       new_plugin.expects(:`).with("mount").returns(FIXTURES[:mount]).once
       res = new_plugin.run()
       assert_equal 7, res[:reports].size
@@ -27,7 +27,7 @@ class IostatTest < Test::Unit::TestCase
   
   def test_success_with_provided_device
     @plugin=Iostat.new(nil,{},{:device => 'xvda1'})
-    IO.expects(:readlines).with('/proc/diskstats').returns(FIXTURES[:diskstats_1].split(/\n/)).once
+    @plugin.expects(:`).with("cat /proc/diskstats").returns(FIXTURES[:diskstats_1]).once
 
     res = @plugin.run()
     assert res[:memory].is_a?(Hash), "Plugin memory should be a hash"
@@ -38,7 +38,7 @@ class IostatTest < Test::Unit::TestCase
   
   def test_error_on_bad_device_name
     @plugin=Iostat.new(nil,{},{:device => 'bad'})
-    IO.expects(:readlines).with('/proc/diskstats').returns(FIXTURES[:diskstats_1].split(/\n/)).once
+    @plugin.expects(:`).with("cat /proc/diskstats").returns(FIXTURES[:diskstats_1]).once
     @plugin.expects(:`).with("mount").returns(FIXTURES[:mount]).once
 
     res = @plugin.run()
@@ -47,7 +47,7 @@ class IostatTest < Test::Unit::TestCase
   
   def test_lvm
     @plugin=Iostat.new(nil,{},{})
-    IO.expects(:readlines).with('/proc/diskstats').returns(FIXTURES[:lvm_diskstats].split(/\n/)).once
+    @plugin.expects(:`).with("cat /proc/diskstats").returns(FIXTURES[:lvm_diskstats]).once
     @plugin.expects(:`).with("mount").returns(FIXTURES[:lvm_mount]).once
     
     res = @plugin.run()

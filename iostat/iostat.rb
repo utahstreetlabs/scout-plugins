@@ -51,7 +51,7 @@ class Iostat < Scout::Plugin
     lvm = nil
     retried = false
     begin
-      IO.readlines('/proc/diskstats').each do |line|
+      %x(cat /proc/diskstats).split(/\n/).each do |line|
         entry = Hash[*COLUMNS.zip(line.strip.split(/\s+/).collect { |v| Integer(v) rescue v }).flatten]
         return entry if dev.include?(entry['name'])
         lvm = entry if (@default_device_used and 'dm-0'.include?(entry['name']))

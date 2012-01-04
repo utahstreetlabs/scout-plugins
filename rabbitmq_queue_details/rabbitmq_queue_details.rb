@@ -1,72 +1,78 @@
-# Created by Doug Barth. 
-# http://github.com/dougbarth/
+# =================================================================================
+# rabbitmq_overall
+#
+# Created by Erik Wickstrom on 2011-10-14.
+# =================================================================================
 class RabbitmqQueueDetails < Scout::Plugin
-  OPTIONS = <<-EOS
-  rabbitmqctl:
-    name: rabbitmqctl command
-    notes: The command used to run the rabbitctl program, minus arguments
-    default: rabbitmqctl
-  queue:
-    name: Queue
-    notes: The name of the queue to collect detailed metrics for
-  vhost:
-    name: Virtual host
-    notes: The name of the virtual host to collect detailed metrics for
-    default: /
+  needs 'json'
+  needs 'net/http'
+
+  OPTIONS=<<-EOS
+    management_url:
+        default: http://localhost:55672
+        notes: The base URL of your RabbitMQ Management server.
+    username:
+        default: guest
+    password:
+        default: guest
+        attributes: password
+    queue:
+        notes: The name of the queue to collect detailed metrics for
+    vhost:
+        notes: The virtual host containing the queue.
+    frequency:
+        default: minute
+        notes: The frequency at which sample rates should be calculated (ie "7 failures per minute").  Valid options are minute and second.
   EOS
 
-  QUEUE_INFO_ITEMS = %w(name messages_ready messages_unacknowledged messages consumers memory)
-
   def build_report
-    rabbitmqctl_script = option('rabbitmqctl')
-    queue_name = option('queue')
-    vhost = option('vhost')
-
-    unless queue_name
-      error("Queue name not specified", "You must specify the queue to get details for.")
-      return
+    if option(:frequency) == "second"
+        frequency = :second
+    else
+        frequency = :minute
     end
 
-    queue_stats_line = get_queue_stats_line(rabbitmqctl_script, queue_name, vhost)
-
-    unless queue_stats_line
-      error("\"#{queue_name}\" queue not found", "Please check the queue name for potential errors.")
-      return
+    if option(:queue).nil?
+        return error("Queue Required", "Specificy the queue you wish to monitor in the plugin settings.")
     end
 
-    report(extract_stats(queue_stats_line))
+    queue = get_queue(option(:vhost), option(:queue))
+
+    if queue["durable"]
+        durable = 1
+    else
+        durable = 0
+    end
+
+    report(:messages => queue["messages"],
+           :messages_unacknowledged => queue["messages_unacknowledged"],
+           :memory => queue["memory"].to_f / (1024 * 1024),
+           :pending_acks => queue["backing_queue_status"]["pending_acks"],
+           :consumers => queue["consumers"],
+           :durable => durable,
+           :messages_ready => queue["messages_ready"])
+  rescue Errno::ECONNREFUSED
+    error("Unable to connect to RabbitMQ Management server", "Please ensure the connection details are correct in the plugin settings.\n\nException: #{$!.message}\n\nBacktrace:\n#{$!.backtrace}")
   end
 
-  def `(command)
-    result = super(%{#{command} 2>&1})
-    if ($? != 0)
-      raise "#{command} exited with a non-zero value: #{$?} `#{result}'"
-    end
-    result
+
+  def get_queue(vhost, queue)
+     url = "#{option('management_url').to_s.strip}/api/queues/#{vhost}/#{queue}/"
+     result = query_api(url)
   end
-
-  private
-    def get_queue_stats_line(rabbitmqctl_script, queue_name, vhost)
-      cmd = vhost.nil? ? "#{rabbitmqctl_script} -q list_queues " : "#{rabbitmqctl_script} -q list_queues -p '#{vhost}' "
-      all_queue_stats = `#{cmd} #{QUEUE_INFO_ITEMS.join(' ')}`.lines.to_a
-      all_queue_stats.detect do |line|
-        line.split[0] == queue_name
-      end
-    end
-
-    def extract_stats(queue_stats_line)
-      queue_stats = queue_stats_line.split
-
-      report_data = {}
-      QUEUE_INFO_ITEMS.each_with_index do |item, i|
-        next if item == 'name'
-        report_data[item] = queue_stats[i]
-
-        if item == 'memory'
-          # Convert from bytes to megabytes
-          report_data[item] = report_data[item].to_f / (1024 * 1024)
-        end
-      end
-      report_data
-    end
+  
+  def query_api(url)
+     parsed = URI.parse(url)
+     http = Net::HTTP.new(parsed.host, parsed.port)
+     req = Net::HTTP::Get.new(parsed.path)
+     req.basic_auth option(:username), option(:password)
+     response = http.request(req)
+     data = response.body
+  
+     # we convert the returned JSON data to native Ruby
+     # data structure - a hash
+     result = JSON.parse(data)
+  
+     return result
+  end
 end

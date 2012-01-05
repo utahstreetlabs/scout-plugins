@@ -20,18 +20,9 @@ class RabbitmqQueueDetails < Scout::Plugin
         notes: The name of the queue to collect detailed metrics for
     vhost:
         notes: The virtual host containing the queue.
-    frequency:
-        default: minute
-        notes: The frequency at which sample rates should be calculated (ie "7 failures per minute").  Valid options are minute and second.
   EOS
 
   def build_report
-    if option(:frequency) == "second"
-        frequency = :second
-    else
-        frequency = :minute
-    end
-
     if option(:queue).nil?
         return error("Queue Required", "Specificy the queue you wish to monitor in the plugin settings.")
     end

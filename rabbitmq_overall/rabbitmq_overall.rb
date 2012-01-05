@@ -17,18 +17,9 @@ class RabbitmqOverall < Scout::Plugin
     password:
         default: guest
         attributes: password
-    frequency:
-        default: minute
-        notes: The frequency at which sample rates should be calculated (ie "7 failures per minute").  Valid options are minute and second.
-  EOS
+ EOS
 
   def build_report
-    if option(:frequency) == "second"
-        frequency = :second
-    else
-        frequency = :minute
-    end
-
     overview = get('overview')
     nodes = get('nodes')
 

@@ -153,9 +153,9 @@ class MongoOverview < Scout::Plugin
         'Rollback'
     end
     
-    report(:replica_set_name => replset_status['set'])
-    report(:member_state => member_state)
-    report(:member_state_num => replset_status['myState'])
+    report(:replset_name => replset_status['set'])
+    report(:replset_member_state => member_state)
+    report(:replset_member_state_num => replset_status['myState'])
 
     primary = replset_status['members'].detect {|member| member['state'] == 1}
     if primary
@@ -164,10 +164,10 @@ class MongoOverview < Scout::Plugin
       end
       
       if current_member
-        report(:replication_lag => current_member['optimeDate'] - primary['optimeDate'])
+        report(:replset_replication_lag => current_member['optimeDate'] - primary['optimeDate'])
       end
     end  
-    report(:member_healthy => current_member['health'] ? 'True' : 'False')
+    report(:replset_member_healthy => current_member['health'] ? 'True' : 'False')
   end
   
   # Handles 3 metrics - a counter for the +divended+ and +divisor+ and a ratio, named +ratio_name+, 

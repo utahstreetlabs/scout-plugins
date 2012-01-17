@@ -57,13 +57,8 @@ class ScoutMongoSlow < Scout::Plugin
     else
       threshold = threshold_str.to_i
     end
-
-    connection = if Gem::Version.new(Mongo::VERSION) < Gem::Version.new('1.1.5')
-                   Mongo::Connection.new(server,option("port").to_i)
-                 else
-                   Mongo::ReplSetConnection.new([server,option("port").to_i], :read_secondary => true)
-                 end
-    db = connection.db(database)
+            
+    db = Mongo::Connection.new(server, option("port").to_i).db(database)                 
     db.authenticate(option(:username), option(:password)) if !option(:username).to_s.empty?
     enable_profiling(db)
 
@@ -106,13 +101,7 @@ class ScoutMongoSlow < Scout::Plugin
   
   def build_alert(slow_queries)
     subj = "Maximum Query Time exceeded on #{slow_queries.size} #{slow_queries.size > 1 ? 'queries' : 'query'}"
-    
-    body = String.new
-    slow_queries.each do |sq|
-      body << "<strong>#{sq["millis"]} millisec query on #{sq['ts']}:</strong>\n"
-      body << sq['info']
-      body << "\n\n"
-    end # slow_queries.each
-    {:subject => subj, :body => body}
-  end # build_alert
+    {:subject => subj, :body => slow_queries.to_json}
+  end
+
 end

@@ -7,8 +7,6 @@ class Ec2Monitor < Scout::Plugin
       note: eg. 'sdi'.  await - The average time (in milliseconds) for I/O requests issued to the device to be served. This includes the time spent by the requests in queue and the time spent servicing them.  svctime - The average service time (in milliseconds) for I/O requests that were issued to the device. avgqu-sz - The average queue length of the requests that were issued to the device
       default: sdi
   EOS
-  
-  NO_IOSTAT_ERROR = "iostat error"
 
   def build_report
     begin
@@ -21,12 +19,8 @@ class Ec2Monitor < Scout::Plugin
        combined_report = combined_report.merge( ping_report ) if ping_avg && ping_max
        combined_report = combined_report.merge( ebs_report ) if avgqu_sz && avgqu_sz.size > 0
        report combined_report
-    rescue StandardError => e
-      if e.message == NO_IOSTAT_ERROR
-        error("Please install iostat","It looks like the sysstat package may not be installed on this server. The iostat command used by this plugin is included in sysstat.\n\nFor example, to install on Ubuntu: apt-get install sysstat")
-      else
-        raise
-      end
+    rescue StandardError => trouble
+      error "#{trouble} #{trouble.backtrace}"
     end
   end
 
@@ -45,20 +39,15 @@ class Ec2Monitor < Scout::Plugin
     max = values[2]
     return avg, max
   end
-  
+
   # http://www.igvita.com/2009/06/23/measuring-optimizing-io-performance/
   #  await - The average time (in milliseconds) for I/O requests issued to the device to be served. This includes the time spent by the requests in queue and the time spent servicing them.
   #  svctime - The average service time (in milliseconds) for I/O requests that were issued to the device.
   #  avgqu-sz - The average queue length of the requests that were issued to the device
   def ebs_timing
-    iostat_output = `iostat -x`
-    puts iostat_output.to_i
-    unless $?.to_i.zero? # checking to see if process existed w/an error
-      raise NO_IOSTAT_ERROR
-    end
-    avgqu_sz = `echo #{iostat_output} | grep #{ebs_device} | awk '{print $9}'`
-    await = `echo #{iostat_output} | grep #{ebs_device} | awk '{print $10}'`
-    svctm = `echo #{iostat_output} | grep #{ebs_device} | awk '{print $11}'`
+    avgqu_sz = `iostat -x | grep #{ebs_device} | awk '{print $9}'`
+    await = `iostat -x | grep #{ebs_device} | awk '{print $10}'`
+    svctm = `iostat -x | grep #{ebs_device} | awk '{print $11}'`
     return avgqu_sz.chomp, await.chomp, svctm.chomp
   end
 

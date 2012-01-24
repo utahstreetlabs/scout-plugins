@@ -57,13 +57,8 @@ class ScoutMongoSlow < Scout::Plugin
     else
       threshold = threshold_str.to_i
     end
-
-    connection = if Gem::Version.new(Mongo::VERSION) < Gem::Version.new('1.1.5')
-                   Mongo::Connection.new(server,option("port").to_i)
-                 else
-                   Mongo::ReplSetConnection.new([server,option("port").to_i], :read_secondary => true)
-                 end
-    db = connection.db(database)
+            
+    db = Mongo::Connection.new(server, option("port").to_i,:slave_ok=>true).db(database)                 
     db.authenticate(option(:username), option(:password)) if !option(:username).to_s.empty?
     enable_profiling(db)
 
@@ -73,7 +68,7 @@ class ScoutMongoSlow < Scout::Plugin
     
     # info
     selector = { 'millis' => { '$gte' => threshold } }
-    cursor = Mongo::Cursor.new(db[Mongo::DB::SYSTEM_PROFILE_COLLECTION], :selector => selector).limit(20).sort([["$natural", "descending"]])
+    cursor = Mongo::Cursor.new(db[Mongo::DB::SYSTEM_PROFILE_COLLECTION], :selector => selector,:slave_ok=>true).limit(20).sort([["$natural", "descending"]])
     
     # reads most recent first
     # {"ts"=>Wed Dec 16 02:44:03 UTC 2009, "info"=>"query twitter_follow.system.profile ntoreturn:0 reslen:1236 nscanned:8  \nquery: { query: { millis: { $gte: 5 } }, orderby: { $natural: -1 } }  nreturned:8 bytes:1220", "millis"=>57.0}
@@ -93,8 +88,9 @@ class ScoutMongoSlow < Scout::Plugin
       alert(build_alert(slow_queries))
     end
     remember(:last_run,Time.now)
-  rescue Mongo::MongoDBError => error
-    raise error
+  rescue Mongo::ConnectionFailure => error
+    error("Unable to connect to MongoDB","#{error.message}\n\n#{error.backtrace}")
+    return
   rescue RuntimeError => error
     if error.message =~/Error with profile command.+unauthorized/i
       error("Invalid MongoDB Authentication", "The username/password for your MongoDB database are incorrect")
@@ -106,13 +102,7 @@ class ScoutMongoSlow < Scout::Plugin
   
   def build_alert(slow_queries)
     subj = "Maximum Query Time exceeded on #{slow_queries.size} #{slow_queries.size > 1 ? 'queries' : 'query'}"
-    
-    body = String.new
-    slow_queries.each do |sq|
-      body << "<strong>#{sq["millis"]} millisec query on #{sq['ts']}:</strong>\n"
-      body << sq['info']
-      body << "\n\n"
-    end # slow_queries.each
-    {:subject => subj, :body => body}
-  end # build_alert
+    {:subject => subj, :body => slow_queries.to_json}
+  end
+
 end

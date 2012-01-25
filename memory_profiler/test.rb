@@ -35,6 +35,18 @@ class MemoryProfilerTest < Test::Unit::TestCase
       assert_equal false,res[:memory][:solaris]
     end
     
+    def test_success_with_no_buffers
+      @plugin=MemoryProfiler.new(nil,{},{})
+      @plugin.expects(:`).with("cat /proc/meminfo").returns(File.read(File.dirname(__FILE__)+'/fixtures/no_buffers.txt')).once
+      @plugin.expects(:`).with("uname").returns('Linux').once
+
+      res = @plugin.run()
+      
+      assert res[:errors].empty?
+      assert !res[:memory][:solaris]
+      assert_equal 5, res[:reports].first.keys.size
+    end
+    
     def test_success_solaris
       @plugin=MemoryProfiler.new(nil,{},{})
       @plugin.expects(:`).with("prstat -c -Z 1 1").returns(File.read(File.dirname(__FILE__)+'/fixtures/prstat.txt')).once

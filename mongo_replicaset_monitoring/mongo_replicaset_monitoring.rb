@@ -44,7 +44,7 @@ class MongoOverview < Scout::Plugin
     replset_status = @admin_db.command({'replSetGetStatus' => 1}, :check_response => false)
     
     unless replset_status['ok'] == 1
-      return error("Replica Sets are not enabled","Unable to fetch Replica Set status information. Error Message:\n\n#{replset_status['errmsg']}")
+      return error("Node isn't a member of a Replica Set","Unable to fetch Replica Set status information. Error Message:\n\n#{replset_status['errmsg']}")
     end
     
     member_state = case replset_status['myState']

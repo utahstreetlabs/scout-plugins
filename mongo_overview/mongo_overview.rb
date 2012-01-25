@@ -82,7 +82,6 @@ class MongoOverview < Scout::Plugin
     
     get_stats
     get_server_status
-    get_replica_set_status
   end
   
   def get_stats
@@ -125,51 +124,7 @@ class MongoOverview < Scout::Plugin
     counter(:op_deletes, stats['opcounters']['delete'], :per => :second)
     counter(:op_get_mores, stats['opcounters']['getmore'], :per => :second)
   end
-  
-  def get_replica_set_status
-    replset_status = @admin_db.command({'replSetGetStatus' => 1}, :check_response => false)
-    return unless replset_status['ok'] == 1
-    
-    member_state = case replset_status['myState']
-      when 0 
-        'Starting Up'
-      when 1 
-        'Primary'
-      when 2 
-        'Secondary'
-      when 3 
-        'Recovering'
-      when 4 
-        'Fatal'
-      when 5 
-        'Starting up (forking threads)'
-      when 6 
-        'Unknown'
-      when 7 
-        'Arbiter'
-      when 8 
-        'Down'
-      when 9 
-        'Rollback'
-    end
-    
-    report(:replset_name => replset_status['set'])
-    report(:replset_member_state => member_state)
-    report(:replset_member_state_num => replset_status['myState'])
 
-    primary = replset_status['members'].detect {|member| member['state'] == 1}
-    if primary
-      current_member = replset_status['members'].detect do |member|
-        member['self']
-      end
-      
-      if current_member
-        report(:replset_replication_lag => current_member['optimeDate'] - primary['optimeDate'])
-      end
-    end  
-    report(:replset_member_healthy => current_member['health'] ? 'True' : 'False')
-  end
-  
   # Handles 3 metrics - a counter for the +divended+ and +divisor+ and a ratio, named +ratio_name+, 
   # of the dividend / divisor.
   def count_and_ratio(dividend,divisor,ratio_name)

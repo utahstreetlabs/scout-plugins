@@ -1,0 +1,7 @@
+metadata: 
+  member_healthy: 
+    precision: 0
+  member_state_num: 
+    precision: 0
+  replication_lag: 
+    units: sec

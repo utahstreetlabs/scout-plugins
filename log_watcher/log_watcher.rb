@@ -55,7 +55,7 @@ class LogWatcher < Scout::Plugin
         count = nil
       end
     end
-    report(:occurrences => count) if count
+    report(:occurances => count) if count
     remember(:last_bytes, current_length)
   end
 end

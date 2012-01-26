@@ -1,10 +1,10 @@
 metadata:
-  occurances:
+  occurrences:
     units: /min
     precision: 2
 triggers:
   - type: trend
-    dname: occurances
+    dname: occurrences
     direction: UP
     percentage_change: 300
     duration: 60

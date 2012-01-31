@@ -60,9 +60,7 @@ class MongoOverview < Scout::Plugin
       @port     = config['port']
       @database = config['database']
       @username = config['username']
-      @password = config['password']
-    else
-      
+      @password = config['password'] 
     end
 
     begin
@@ -97,16 +95,18 @@ class MongoOverview < Scout::Plugin
   def get_server_status
     stats = @db.command('serverStatus' => 1)
     
-    counter(:btree_accesses, stats['indexCounters']['btree']['accesses'], :per => :second)
+    if stats['indexCounters']['btree']
+      counter(:btree_accesses, stats['indexCounters']['btree']['accesses'], :per => :second)
     
-    misses = stats['indexCounters']['btree']['misses']
-    hits   = stats['indexCounters']['btree']['hits']
-    if mem_misses = memory(:btree_misses) and mem_hits = memory(:btree_hits)
-      ratio = (misses-mem_misses).to_f/(hits-mem_hits).to_f
-      report(:btree_miss_ratio => ratio*100) unless ratio.nan?
+      misses = stats['indexCounters']['btree']['misses']
+      hits   = stats['indexCounters']['btree']['hits']
+      if mem_misses = memory(:btree_misses) and mem_hits = memory(:btree_hits)
+        ratio = (misses-mem_misses).to_f/(hits-mem_hits).to_f
+        report(:btree_miss_ratio => ratio*100) unless ratio.nan?
+      end
+      remember(:btree_misses,misses)
+      remember(:btree_hits,hits)
     end
-    remember(:btree_misses,misses)
-    remember(:btree_hits,hits)
     
     lock_time  = stats['globalLock']['lockTime']
     lock_total = stats['globalLock']['totalTime']

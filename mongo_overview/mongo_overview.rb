@@ -60,9 +60,7 @@ class MongoOverview < Scout::Plugin
       @port     = config['port']
       @database = config['database']
       @username = config['username']
-      @password = config['password']
-    else
-      
+      @password = config['password'] 
     end
 
     begin
@@ -73,6 +71,7 @@ class MongoOverview < Scout::Plugin
     
     # Try to connect to the database
     @db = connection.db(@database)
+    @admin_db = connection.db('admin')
     begin 
       @db.authenticate(@username,@password) unless @username.nil?
     rescue Mongo::AuthenticationError
@@ -95,16 +94,19 @@ class MongoOverview < Scout::Plugin
   
   def get_server_status
     stats = @db.command('serverStatus' => 1)
-    counter(:btree_accesses, stats['indexCounters']['btree']['accesses'], :per => :second)
     
-    misses = stats['indexCounters']['btree']['misses']
-    hits   = stats['indexCounters']['btree']['hits']
-    if mem_misses = memory(:btree_misses) and mem_hits = memory(:btree_hits)
-      ratio = (misses-mem_misses).to_f/(hits-mem_hits).to_f
-      report(:btree_miss_ratio => ratio*100) unless ratio.nan?
+    if stats['indexCounters']['btree']
+      counter(:btree_accesses, stats['indexCounters']['btree']['accesses'], :per => :second)
+    
+      misses = stats['indexCounters']['btree']['misses']
+      hits   = stats['indexCounters']['btree']['hits']
+      if mem_misses = memory(:btree_misses) and mem_hits = memory(:btree_hits)
+        ratio = (misses-mem_misses).to_f/(hits-mem_hits).to_f
+        report(:btree_miss_ratio => ratio*100) unless ratio.nan?
+      end
+      remember(:btree_misses,misses)
+      remember(:btree_hits,hits)
     end
-    remember(:btree_misses,misses)
-    remember(:btree_hits,hits)
     
     lock_time  = stats['globalLock']['lockTime']
     lock_total = stats['globalLock']['totalTime']
@@ -122,7 +124,7 @@ class MongoOverview < Scout::Plugin
     counter(:op_deletes, stats['opcounters']['delete'], :per => :second)
     counter(:op_get_mores, stats['opcounters']['getmore'], :per => :second)
   end
-  
+
   # Handles 3 metrics - a counter for the +divended+ and +divisor+ and a ratio, named +ratio_name+, 
   # of the dividend / divisor.
   def count_and_ratio(dividend,divisor,ratio_name)

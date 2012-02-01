@@ -1,5 +1,6 @@
 metadata:
   occurances:
+    label: Occurrences
     units: /min
     precision: 2
 triggers:

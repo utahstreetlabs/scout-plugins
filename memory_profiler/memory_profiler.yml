@@ -6,6 +6,9 @@ metadata:
   Memory Used:
     units: MB
     precision: 0
+  Memory Available:
+    units: MB
+    precision: 0
   % Memory Used:
     units: %
     precision: 0

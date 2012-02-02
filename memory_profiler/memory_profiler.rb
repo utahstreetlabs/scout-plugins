@@ -43,6 +43,7 @@ class MemoryProfiler < Scout::Plugin
 
     report_data['Memory Total'] = mem_total
     report_data['Memory Used'] = mem_used
+    report_data['Memory Available'] = mem_total - mem_used
     report_data['% Memory Used'] = mem_percent_used
 
     report_data['Swap Total'] = swap_total

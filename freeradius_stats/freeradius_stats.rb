@@ -23,10 +23,9 @@ class FreeradiusStats < Scout::Plugin
   EOS
   
   def build_report
-    output = `echo "Message-Authenticator = 0x00, FreeRADIUS-Statistics-Type = 1" | radclient #{option(:host)}:#{option(:port)} status #{option(:secret)}`
-    
-    if output.nil? or output == "" or output =~ /no response/i
-      alert("Could not connect to Freeradius status server on #{option(:host)}:#{option(:port)}")
+    output = `echo "Message-Authenticator = 0x00, FreeRADIUS-Statistics-Type = 1" | radclient #{option(:host)}:#{option(:port)} status #{option(:secret)} 2>&1`
+    if !$?.success? or output =~ /no response/i
+      error("Could not connect to Freeradius status server on #{option(:host)}:#{option(:port)}", "Command Result:\n\n#{output}")
     else 
       lines = output.split(/\n/)
       
@@ -43,19 +42,6 @@ class FreeradiusStats < Scout::Plugin
       invalid_requests = lines[7].split(' = ')[1].to_i
       dropped_requests = lines[8].split(' = ')[1].to_i
       unknown_types = lines[9].split(' = ')[1].to_i
-      
-      #report(
-      #  :access_requests => access_requests,
-      #  :access_accepts => access_accepts,
-      #  :access_rejects => access_rejects,
-      #  :access_challenges => access_challenges,
-      #  :auth_responses => auth_responses,
-      #  :duplicate_requests => duplicate_requests,
-      #  :malformed_requests => malformed_requests,
-      #  :invalid_requests => invalid_requests,
-      #  :dropped_requests => dropped_requests,
-      #  :unknown_types => unknown_types
-      #)
       
       counter(:access_requests, access_requests, :per => :minute)
       counter(:access_accepts, access_accepts, :per => :minute)

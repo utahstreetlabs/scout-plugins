@@ -102,7 +102,7 @@ class MemoryProfiler < Scout::Plugin
               else
                 solaris = false
                 begin
-                  solaris = true if `uname` =~ /sun/i
+                  solaris = true if `uname` =~ /sunos/i
                 rescue
                 end
               end

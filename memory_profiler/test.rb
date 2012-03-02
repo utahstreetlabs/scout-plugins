@@ -14,7 +14,7 @@ class MemoryProfilerTest < Test::Unit::TestCase
       
       assert res[:errors].empty?
       assert !res[:memory][:solaris]
-      assert_equal 6, res[:reports].first.keys.size
+      assert_equal 7, res[:reports].first.keys.size
       
       r = res[:reports].first
       assert_equal 0, r["Swap Used"]
@@ -23,6 +23,7 @@ class MemoryProfilerTest < Test::Unit::TestCase
       assert_equal 0, r["% Swap Used"]
       assert_equal 264, r["Memory Used"]
       assert_equal 1024, r["Memory Total"]
+      assert_equal 760, r["Memory Available"]
     end
     
     def test_success_linux_second_run
@@ -44,7 +45,7 @@ class MemoryProfilerTest < Test::Unit::TestCase
       
       assert res[:errors].empty?
       assert !res[:memory][:solaris]
-      assert_equal 5, res[:reports].first.keys.size
+      assert_equal 6, res[:reports].first.keys.size
     end
     
     def test_success_solaris

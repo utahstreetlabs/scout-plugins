@@ -26,5 +26,8 @@ class NginxReport < Scout::Plugin
     }
 
     report({:total => total, :reading => reading, :writing => writing, :waiting => waiting, :requests => requests})
+
+    counter(:requests_per_sec, requests, :per => :second)
+
   end
 end

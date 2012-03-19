@@ -1,6 +1,6 @@
-require 'open-uri'
-
 class NginxReport < Scout::Plugin
+  
+  needs 'open-uri'
   
   OPTIONS=<<-EOS
   url:

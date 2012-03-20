@@ -9,11 +9,11 @@
 # You can mix and match pure process_names and process_name/args. Note that the process names are always full string matches,
 # and the args are always partial string matches.
 #
-class ProcessUsage < Scout::Plugin
+class SimpleProcessCheck < Scout::Plugin
 
   OPTIONS=<<-EOS
     process_names:
-      notes: "comma-delimited list of process names to monitor. Example: sshd,apache2,node"
+      notes: "comma-delimited list of process names to monitor. Example: sshd,apache2,node/eventLogger"
     ps_command:
       label: ps command
       default: ps -eo comm,args

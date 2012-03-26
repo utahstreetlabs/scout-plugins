@@ -1,7 +1,5 @@
 # MySQL Statistics by Eric Lindvall <eric@5stops.com>
 # MySQLTuner integration by Andre Lewis <@andre@scoutapp.com>
-
-
 class MysqlQueryStatistics < Scout::Plugin
   ENTRIES = %w(Com_insert Com_select Com_update Com_delete)
 
@@ -39,33 +37,12 @@ class MysqlQueryStatistics < Scout::Plugin
     attributes: advanced
   EOS
 
-  needs "mysql"
+  # Raised by #mysql_query when an error occurs.
+  class MysqlConnectionError < Exception
+  end
 
   def build_report
-    # get_option returns nil if the option value is blank
-    user     = get_option(:user) || 'root'
-    password = get_option(:password)
-    host     = get_option(:host)
-    port     = get_option(:port)
-    socket   = get_option(:socket)
-    days     = get_option(:tuner_days)
-    forcemem  = (get_option(:forcemem) ? get_option(:forcemem).to_i : nil)
-    forceswap = (get_option(:forceswap) ? get_option(:forceswap).to_i : nil)
-
-    mysql = Mysql.connect(host, user, password, nil, (port.nil? ? nil : port.to_i), socket)
-    mysql_status = {}
-    result = mysql.query('SHOW /*!50002 GLOBAL */ STATUS')
-    result.each do |row|
-      mysql_status[row.first] = row.last.to_i
-    end
-    result.free
-
-    mysql_variables = {}
-    result = mysql.query('SHOW /*!50000 GLOBAL */ VARIABLES')
-    result.each do |row|
-      mysql_variables[row.first] = row.last.to_i
-    end
-    result.free
+    mysql_status = mysql_query('SHOW /*!50002 GLOBAL */ STATUS')
 
     report(:max_used_connections => mysql_status['Max_used_connections'])
     report(:connections => mysql_status['Threads_connected'])
@@ -78,7 +55,58 @@ class MysqlQueryStatistics < Scout::Plugin
       end
     end
     counter(:total, total, :per => :second)
+    
+    tuner_summary
+    
+  rescue MysqlConnectionError => e
+    error("Unable to connect to MySQL",e.message)
+  end
 
+  private
+
+  # Returns nil if an empty string
+  def get_option(opt_name)
+    val = option(opt_name)
+    return (val.is_a?(String) and val.strip == '') ? nil : val
+  end
+  
+  # Executes a mysql query via the 'mysql' command. Returns a Hash of variable names and their values.
+  def mysql_query(query)
+    result = `mysql #{connection_options} -e '#{query}' --batch 2>&1`
+    if $?.success?
+      output = {}
+      result.each do |line|
+        row = line.split(/\t/)
+        output[row.first] = row.last.to_i
+      end
+      output
+    else
+      raise MysqlConnectionError, result
+    end
+  end
+  
+  # Returns a string of connection options for the mysql command.
+  def connection_options
+    opts = {'u' => get_option(:user) || 'root'}
+    opts['p'] = get_option(:password) if get_option(:password)
+    opts['h'] = get_option(:host) if get_option(:host)
+    opts['P'] = get_option(:port) if get_option(:port)
+    opts['S'] = get_option(:socket) if get_option(:socket)
+    
+    opts.to_a.map { |o| "-#{o.first}#{o.last}"}.join(' ')
+  end
+  
+  # Runs MySQLTuner Perl script once every 7 days, generating a summary. 
+  def tuner_summary
+    # get_option returns nil if the option value is blank
+    user     = get_option(:user) || 'root'
+    password = get_option(:password)
+    host     = get_option(:host)
+    port     = get_option(:port)
+    socket   = get_option(:socket)
+    days     = get_option(:tuner_days)
+    forcemem  = (get_option(:forcemem) ? get_option(:forcemem).to_i : nil)
+    forceswap = (get_option(:forceswap) ? get_option(:forceswap).to_i : nil)
     return if days == nil # blank (or nil) means don't run tuner
     days=days.to_i
     last_run = memory(:tuner_last_run)
@@ -126,14 +154,6 @@ class MysqlQueryStatistics < Scout::Plugin
     else
       remember(:tuner_last_run, memory(:tuner_last_run))
     end
-  end
-
-  private
-
-  # Returns nil if an empty string
-  def get_option(opt_name)
-    val = option(opt_name)
-    return (val.is_a?(String) and val.strip == '') ? nil : val
   end
 
   TUNER_CODE=<<END_OF_CODE

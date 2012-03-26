@@ -37,7 +37,7 @@ class SimpleProcessCheck < Scout::Plugin
     # [ ["smtpd", "smtpd -n smtp -t inet -u -c"],
     #   ["proxymap", "proxymap -t unix -u"],
     #   ["apache2", "usr/sbin/apache2 -k start"] ]
-    ps_output=ps_output.downcase.split("\n").map{|line| line.split(/\W+/,2)}
+    ps_output=ps_output.downcase.split("\n").map{|line| line.split(/\s+/,2)}
 
     processes_to_watch = process_names.split(",").uniq
     process_counts = processes_to_watch.map do |p|

@@ -1,11 +1,11 @@
 class DiskInodeUsage < Scout::Plugin
-  # Heavily borrowed from Scout's DiskUsage plugin
-
   OPTIONS=<<-EOS
   command:
     name: df Command
     notes: The command used to display free inodes
     default: df -i
+  filesystem:
+    notes: The filesystem to check usage, if none specified, uses the first listed
   EOS
 
   DF_RE = /\A\s*(\S.*?)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s*\z/
@@ -36,6 +36,16 @@ class DiskInodeUsage < Scout::Plugin
     df_lines = []
     parse_file_systems(df_output) { |row| df_lines << row }
     
+    # if the user specified a filesystem use that
+    df_line = nil
+    if option("filesystem")
+      df_lines.each do |line|
+        if line.has_value?(option("filesystem"))
+          df_line = line
+        end
+      end
+    end
+    
     # else just use the first line
     df_line ||= df_lines.first
     
@@ -46,6 +56,7 @@ class DiskInodeUsage < Scout::Plugin
     report_data = Hash.new
     
     df_line.each do |name, value|
+      puts name
       report_data[name.downcase.strip.to_sym] = value
     end
     report(report_data)

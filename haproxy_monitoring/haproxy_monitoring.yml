@@ -29,7 +29,7 @@ metadata:
     label: Active Sessions
     units: sessions
     precision: 0
-  active_sessions:
+  queued_sessions:
     label: Queued Sessions
     units: sessions
     precision: 0

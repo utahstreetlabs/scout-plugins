@@ -63,10 +63,10 @@ class HaproxyMonitoring < Scout::Plugin
           counter(:bytes_in,  row['bin'].to_i,  :per => :second) if row['bin']
           counter(:bytes_out, row['bout'].to_i, :per => :second) if row['bout']
 
-          report(:active_sessions, row['scur'])
-          report(:queued_sessions, row['qcur'])
+          report(:active_sessions => row['scur'])
+          report(:queued_sessions => row['qcur'])
 
-          report(:active_servers, row['act'])
+          report(:active_servers => row['act'])
 
           report(:proxy_up=>%w(UP OPEN).find {|s| s == row['status']} ? 1 : 0)
         end

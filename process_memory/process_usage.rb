@@ -1,6 +1,20 @@
 class ProcessUsage < Scout::Plugin  
   MEM_CONVERSION = 1024
   
+  OPTIONS=<<-EOS
+  command_name:
+    name: Command Name
+    notes: The name of the process you want to monitor.
+  ps_command:
+    name: The Process Status (ps) Command
+    notes: The command with options. The default works on most systems.
+    default: ps auxww
+  ps_regex:
+    name: The regex used to match a command name.
+    notes: "By default, this matches a command name anywhere in the ps output line.  The word COMMAND get's replaced with the command you gave (regex escaped).  You may wish to try the following pattern if you only want to match a command in the last column:  (?i:COMMAND\\s+$)"
+    default: "(?i:\\bCOMMAND\\b)"
+  EOS
+  
   def build_report
     if option(:command_name).nil? or option(:command_name) == ""
       return error("Please specify the name of the process you want to monitor.")
@@ -19,6 +33,10 @@ class ProcessUsage < Scout::Plugin
       return error( "RSS or PID field not found.",
                     "The output from `#{ps_command}` did not include the needed RSS and PID fields." )
     end
+    unless cpu_index = fields.index("%cpu")
+      return error( "%CPU field not found.",
+                    "The output from `#{ps_command}` did not include the needed %CPU field." )
+    end
 
     # narrow the ps lines to just those mentioning the process we're interested in
     process_lines = ps_lines.grep(Regexp.new(ps_regex))
@@ -26,9 +44,13 @@ class ProcessUsage < Scout::Plugin
     if process_lines.any?
       rss_values = process_lines.map { |com| Float(com.split[memory_index]).abs }
       pids       = process_lines.map { |com| Integer(com.split[pid_index]) }
-      highest    = rss_values.max
-      total      = rss_values.inject(0){|s,value| s + value }
+      highest_rss    = rss_values.max
+      total_rss      = rss_values.inject(0){|s,value| s + value }
       restarts   = 0
+      
+      cpu_values = process_lines.map { |com| Float(com.split[cpu_index]).abs }
+      highest_cpu = cpu_values.max
+      total_cpu  = cpu_values.inject(0){|s,value| s + value }
 
       if remembered_pids = memory(:pids)
         # Find how many new pids we haven't seen before
@@ -42,10 +64,12 @@ class ProcessUsage < Scout::Plugin
         restarts = new_pids - started_pids
       end
 
-      report(:memory        => (highest/MEM_CONVERSION).to_i,
-             :total_rss     => (total/MEM_CONVERSION).to_i,
+      report(:memory        => (highest_rss/MEM_CONVERSION).to_i,
+             :total_rss     => (total_rss/MEM_CONVERSION).to_i,
              :num_processes => process_lines.size,
-             :restarts      => restarts)
+             :restarts      => restarts,
+             :cpu           => highest_cpu,
+             :total_cpu     => total_cpu)
 
       remember(:pids => pids)
     else

@@ -11,17 +11,25 @@ class NginxReportTest < Test::Unit::TestCase
     FakeWeb.clean_registry    
   end
   
-  def test_initial_run
+  def test_two_runs
+    time = Time.now
     uri="http://127.0.0.1/nginx_status"
     FakeWeb.register_uri(:get, uri, 
       [
        {:body => File.read(File.dirname(__FILE__)+'/fixtures/nginx_status.txt')},
-       {:body => nil}
+       {:body => File.read(File.dirname(__FILE__)+'/fixtures/nginx_status_second_run.txt')}
       ]
     )
     
-    @plugin = NginxReport.new(nil,{},{})
-    @res = @plugin.run
-    pp @res
+    Timecop.travel(time-60) do 
+      plugin = NginxReport.new(nil,{},{})
+      res = plugin.run
+      Timecop.travel(time) do
+        plugin = NginxReport.new(nil,res[:memory],{})
+        res = plugin.run
+        assert count=res[:reports].find { |r| r.keys.include?(:requests_per_sec)}
+        assert_in_delta 50/60.to_f, count.values.last, 0.001
+      end
+    end
   end
 end

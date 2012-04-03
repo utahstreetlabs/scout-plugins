@@ -26,11 +26,11 @@ metadata:
     units: /sec
     precision: 1
   active_sessions:
-    label: Active Sessions
+    label: Sessions Active
     units: sessions
     precision: 0
   queued_sessions:
-    label: Queued Sessions
+    label: Sessions Queued
     units: sessions
     precision: 0
   active_servers:

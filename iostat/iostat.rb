@@ -46,14 +46,22 @@ class Iostat < Scout::Plugin
     `mount`.split("\n").grep(/ \/ /)[0].split[0]
   end
 
+  # Returns the /proc/diskstats line associated with device name +dev+. Logic:
+  #
+  # * If an exact match of the specified device is found, returns it. 
+  # * If there isn't an exact match but there are /proc/diskstats lines that are included in +dev+, 
+  #   returns the first matching line. This is needed as the mount output used to find the default device doesn't always 
+  #   match /proc/diskstats output.
+  # * If there are no matches but an LVM is used, returns the line matching "dm-0". 
   def iostat(dev)
     # if a LVM is used, `mount` output doesn't map to `/diskstats`. In this case, use dm-0 as the default device.
     lvm = nil
     retried = false
+    possible_devices = []
     begin
       %x(cat /proc/diskstats).split(/\n/).each do |line|
         entry = Hash[*COLUMNS.zip(line.strip.split(/\s+/).collect { |v| Integer(v) rescue v }).flatten]
-        return entry if dev == entry['name']
+        possible_devices << entry if dev.include?(entry['name'])
         lvm = entry if (@default_device_used and 'dm-0'.include?(entry['name']))
       end
     rescue Errno::EPIPE
@@ -64,6 +72,7 @@ class Iostat < Scout::Plugin
         retry
       end
     end
-    return lvm
+    found_device = possible_devices.find { |entry| dev == entry['name'] } || possible_devices.first
+    return found_device || lvm
   end
 end

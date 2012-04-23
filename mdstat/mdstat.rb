@@ -24,6 +24,9 @@ class MdStat < Scout::Plugin
 
     mdstat[2] =~ /\[(\d*\/\d*)\].*\[(.+)\]/
     counts = $1
+    if counts.nil?
+      return error("Not applicable for RAID 0", "This plugin reports the number of active disks, spares, and failed disks. As RAID 0 isn't redundent, a single drive failure destroys the Array. These metrics aren't applicable for RAID 0.")
+    end
     status = $2
     
     disk_counts = counts.split('/').map { |x| x.to_i } 
@@ -47,7 +50,5 @@ class MdStat < Scout::Plugin
     end
 
     report(data)
-  rescue
-    error(:subject => "Couldn't parse /proc/mdstat as expected.", :body => $!.message)
   end
 end

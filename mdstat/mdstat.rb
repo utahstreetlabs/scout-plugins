@@ -3,18 +3,8 @@
 # 
 # Created by Mark Hasse on 2008-04-15.
 # =================================================================================
-
-=begin
-Personalities : [raid1] 
-md1 : active raid1 sda1[0] sdc1[2](S) sdb1[1]
-      244195904 blocks [2/2] [UU]
-      
-unused devices: <none>
-=end
-
 class MdStat < Scout::Plugin
   def build_report
-    data          = Hash.new 
     data = Hash.new
          
     mdstat = %x(cat /proc/mdstat).split(/\n/)

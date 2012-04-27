@@ -1,0 +1,5 @@
+Personalities : [raid0]
+md0 : active raid0 xvdf[0] xvdh[2] xvdi[3] xvdg[1]
+     838856704 blocks super 1.2 512k chunks
+
+unused devices: <none>

@@ -10,7 +10,6 @@ class MongoOverview < Scout::Plugin
     database:
       name: Mongo Database
       notes: Name of the MongoDB database to profile
-      attributes: advanced
     host:
       name: Mongo Server
       notes: Where mongodb is running. If a database.yml file is used, the yml settings will override this.
@@ -95,7 +94,7 @@ class MongoOverview < Scout::Plugin
   def get_server_status
     stats = @db.command('serverStatus' => 1)
     
-    if stats['indexCounters']['btree']
+    if stats['indexCounters'] and stats['indexCounters']['btree']
       counter(:btree_accesses, stats['indexCounters']['btree']['accesses'], :per => :second)
     
       misses = stats['indexCounters']['btree']['misses']
@@ -108,14 +107,16 @@ class MongoOverview < Scout::Plugin
       remember(:btree_hits,hits)
     end
     
-    lock_time  = stats['globalLock']['lockTime']
-    lock_total = stats['globalLock']['totalTime']
-    if mem_lock_time = memory(:global_lock_lock_time) and mem_lock_total = memory(:global_lock_total_time)
-      ratio = (lock_time-mem_lock_time).to_f/(lock_total-mem_lock_total).to_f
-      report(:global_lock_ratio => ratio*100) unless ratio.nan?
+    if stats['globalLock']
+      lock_time  = stats['globalLock']['lockTime']
+      lock_total = stats['globalLock']['totalTime']
+      if mem_lock_time = memory(:global_lock_lock_time) and mem_lock_total = memory(:global_lock_total_time)
+        ratio = (lock_time-mem_lock_time).to_f/(lock_total-mem_lock_total).to_f
+        report(:global_lock_ratio => ratio*100) unless ratio.nan?
+      end
+      remember(:global_lock_lock_time,lock_time)
+      remember(:global_lock_total_time,lock_total)
     end
-    remember(:global_lock_lock_time,lock_time)
-    remember(:global_lock_total_time,lock_total)
     
     # ops
     counter(:op_inserts, stats['opcounters']['insert'], :per => :second)

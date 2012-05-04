@@ -8,7 +8,7 @@ class MongoOverviewTest < Test::Unit::TestCase
   
   def setup
     @options=parse_defaults("mongo_overview")
-    Mongo::Connection.any_instance.stubs(:initialize).returns(Mongo::DB.new('localhost','27017'))
+    Mongo::Connection.any_instance.stubs(:initialize).returns(Mongo::DB.new('test',Mongo::Connection.new('localhost',27017)))
   end
   
   def test_should_error_without_yaml_file_and_connection_options

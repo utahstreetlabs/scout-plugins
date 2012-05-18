@@ -79,6 +79,7 @@ class ProcessUsage < Scout::Plugin
 
       remember(:pids => pids)
     else
+      report(:num_processes => 0)
       if alert_when_command_not_found
         error( "Command not found.", "No processes found matching #{option(:command_name)}." )
       end

@@ -16,7 +16,7 @@ class ProcessUsage < Scout::Plugin
   alert_when_command_not_found:
     name: Alert when command not found
     notes: Specifies if an error is reported when no commands are found.  Use 0 to disable alert.
-	  default: 1
+    default: 1
     attributes: advanced
   EOS
   

@@ -13,6 +13,11 @@ class ProcessUsage < Scout::Plugin
     name: The regex used to match a command name.
     notes: "By default, this matches a command name anywhere in the ps output line.  The word COMMAND get's replaced with the command you gave (regex escaped).  You may wish to try the following pattern if you only want to match a command in the last column:  (?i:COMMAND\\s+$)"
     default: "(?i:\\bCOMMAND\\b)"
+  alert_when_command_not_found:
+    name: Alert when command not found
+    notes: Specifies if an error is reported when no commands are found.  Use 0 to disable alert.
+	  default: 1
+    attributes: advanced
   EOS
   
   def build_report
@@ -21,6 +26,7 @@ class ProcessUsage < Scout::Plugin
     end
     ps_command   = option(:ps_command) || "ps auxww"
     ps_regex     = (option(:ps_regex) || "(?i:\\bCOMMAND\\b)").to_s.gsub("COMMAND") { Regexp.escape(option(:command_name)) }
+    alert_when_command_not_found = option(:alert_when_command_not_found).to_s != '0'
 
     ps_output = `#{ps_command}`
     unless $?.success?
@@ -73,8 +79,9 @@ class ProcessUsage < Scout::Plugin
 
       remember(:pids => pids)
     else
-      error( "Command not found.",
-             "No processes found matching #{option(:command_name)}." )
+      if alert_when_command_not_found
+        error( "Command not found.", "No processes found matching #{option(:command_name)}." )
+      end
     end
   rescue Exception => e
     error("Error when executing: #{e.class}", e.message)

@@ -1,0 +1,45 @@
+metadata:
+  connections_per_second: 
+    units: /sec
+    precision: "1"
+  items: 
+    precision: "0"
+  jvm_heap_used: 
+    units: MB
+    precision: "0"
+  misses_per_second: 
+    units: /sec
+    precision: "1"
+  data_read_per_second: 
+    label: Data read
+    units: KB/sec
+  hits_per_second: 
+    label: Hits
+    units: /sec
+    precision: "1"
+  items_per_second: 
+    label: Items per second
+    units: /sec
+    precision: "1"
+  gets_per_second: 
+    label: Gets
+    units: /sec
+    precision: "1"
+  sets_per_second: 
+    label: Sets
+    units: /sec
+    precision: "1"
+  connections: 
+    precision: "0"
+  jvm_heap_max: 
+    units: MB
+    precision: "0"
+  peeks_per_second: 
+    label: Peeks
+    units: /sec
+    precision: "1"
+  data_written_per_second: 
+    label: Data written
+    units: KB/sec
+    precision: "1"
+    

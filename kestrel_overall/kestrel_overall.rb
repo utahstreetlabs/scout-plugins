@@ -2,7 +2,7 @@
 # Created by Eric Lindvall <eric@sevenscale.com>
 #
 
-class KestrelMonitor < Scout::Plugin
+class KestrelOverallMonitor < Scout::Plugin
   OPTIONS=<<-EOS
     host:
       label: Host

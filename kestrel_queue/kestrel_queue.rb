@@ -21,7 +21,7 @@ class KestrelQueueMonitor < Scout::Plugin
   needs 'json'
 
   def build_report
-    report :items => gauge_stat(:items), :open_transacitons => gauge_stat(:open_transactions),
+    report :items => gauge_stat(:items), :open_transactions => gauge_stat(:open_transactions),
       :mem_items => gauge_stat(:mem_items), :age => gauge_stat(:age_msec).to_f / 1000,
       :waiters => gauge_stat(:waiters)
       

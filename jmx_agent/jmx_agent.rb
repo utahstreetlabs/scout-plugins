@@ -60,7 +60,7 @@ class JmxAgent < Scout::Plugin
       result = `#{command} 2>&1`
 
       if result.match(/No such PID (\d+)/)
-        error("Java PID #{$1} is invalid", "Java processes: \n\n#{`ps -ef | grep java`}")
+        error("Java PID #{$1} is invalid -- no such PID")
         return {}
       end
 

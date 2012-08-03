@@ -67,6 +67,7 @@ class HaproxyMonitoring < Scout::Plugin
           report(:queued_sessions => row['qcur']) if row['qcur']
 
           report(:active_servers => row['act']) if row['act']
+          report(:backup_servers => row['bck']) if row['bck']
 
           report(:proxy_up=>%w(UP OPEN).find {|s| s == row['status']} ? 1 : 0)
         end

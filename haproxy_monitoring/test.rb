@@ -21,18 +21,6 @@ class HaProxyTest < Test::Unit::TestCase
     
   end
   
-  def test_should_error_with_invalid_proxy_type
-    uri='http://fake'
-    proxy = 'metrics-api'
-    FakeWeb.register_uri(:get, uri, :body => File.read(File.dirname(__FILE__)+'/fixtures/non_unique_proxies.csv'))
-    @plugin=HaproxyMonitoring.new(nil,{},{:uri=>uri, :proxy => proxy, :proxy_type => 'invalid'})
-    res = @plugin.run()
-    assert res[:reports].empty?
-    assert res[:memory].empty?
-    assert res[:errors].any?
-    assert res[:errors].first[:subject] =~ /Invalid Proxy Type/
-  end
-  
   def test_should_run_with_proxy_type
     uri='http://fake'
     proxy = 'metrics-api'

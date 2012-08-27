@@ -3,16 +3,31 @@ class Iostat < Scout::Plugin
   OPTIONS=<<-EOS
   device:
     name: Device
-    notes: The device to check, eg 'sda1'. If not specified, uses the device mounted at '/'
+    notes: The device to check, eg 'sda1'. If not specified, uses the device mounted at '/'. To sum stats across multiple devices, provide a comma-separated list of device names.
   EOS
 
   def build_report
     @default_device_used = false
     # determine the device, either from the passed option or by parsing `mount`
     device = option('device') || default_device
-    stats = iostat(device)
-    error("Device not found: #{device} -- check your plugin settings.",
-          "FYI, mount returns:\n#{`mount`}") and return if !stats
+    
+    stats = {}
+    if devices=device.split(',') and devices.size > 1
+      device_stats = []
+      devices.each do |d|
+        s = iostat(d.strip)
+        error("Device not found: #{d} -- check your plugin settings.") and return if !s
+        device_stats << s
+      end
+      # sum the values across each stats Hash, using the keys from the first device.
+      device_stats.first.keys.each do |k|
+        stats[k] = device_stats.map { |s| s[k]}.inject{|sum,x| sum + x }
+      end
+    else  
+      stats = iostat(device)
+      error("Device not found: #{device} -- check your plugin settings.",
+            "FYI, mount returns:\n#{`mount`}") and return if !stats
+    end
 
     counter(:rps,   stats['rio'],        :per => :second)
     counter(:wps,   stats['wio'],        :per => :second)

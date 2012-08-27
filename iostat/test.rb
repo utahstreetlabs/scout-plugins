@@ -53,6 +53,25 @@ class IostatTest < Test::Unit::TestCase
     res = @plugin.run()
     assert_equal 348375058/2, res[:memory]['_counter_rkbps'][:value]
   end
+  
+  def test_success_with_multiple_devices
+    @plugin=Iostat.new(nil,{},{:device => 'xvda1,xvda2'})
+    @plugin.expects(:`).with("cat /proc/diskstats").returns(FIXTURES[:diskstats_1]).twice
+
+    res = @plugin.run()
+    assert res[:memory].is_a?(Hash), "Plugin memory should be a hash"
+    assert_equal 7, res[:memory].keys.size, "Plugin memory has the wrong number of keys"
+    assert_equal 0, res[:reports].size, "Plugin shouldn't return any results first run"
+    assert_equal (103724634+4)/2, res[:memory]['_counter_rkbps'][:value]
+  end
+  
+  def test_multiple_devices_with_invalid_name
+    @plugin=Iostat.new(nil,{},{:device => 'xvda1,INVALID'})
+    @plugin.expects(:`).with("cat /proc/diskstats").returns(FIXTURES[:diskstats_1]).twice
+
+    res = @plugin.run()
+    assert res[:errors].any?
+  end
 
   FIXTURES=YAML.load(<<-EOS)
     :mount: |

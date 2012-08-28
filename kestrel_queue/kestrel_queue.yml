@@ -1,0 +1,12 @@
+metadata:
+  items:
+    precision: 0
+  item_rate:
+    units: /sec
+    precision: 1
+  open_transactions:
+    precision: 0
+  mem_items:
+    precision: 0
+  waiters:
+    precision: 0

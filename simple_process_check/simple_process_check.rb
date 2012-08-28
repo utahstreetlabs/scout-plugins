@@ -51,7 +51,7 @@ class SimpleProcessCheck < Scout::Plugin
     end
 
     num_processes=processes_to_watch.size
-    num_processes_present = process_counts.count{|count| count > 0}
+    num_processes_present = process_counts.select {|count| count > 0}.size
 
     previous_num_processes=memory(:num_processes)
     previous_num_processes_present=memory(:num_processes_present)

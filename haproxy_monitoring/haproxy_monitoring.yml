@@ -34,6 +34,10 @@ metadata:
     units: sessions
     precision: 0
   active_servers:
-    label: Active Servers
+    label: Servers (Active)
+    units: servers
+    precision: 0
+  backup_servers:
+    label: Servers (Backup)
     units: servers
     precision: 0

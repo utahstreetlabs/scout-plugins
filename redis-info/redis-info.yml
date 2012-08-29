@@ -46,6 +46,6 @@ triggers:
     dname: up
     low_value: 0
   - type: plateau
-    min_value: 0
+    low_value: 0
     dname: master_link_status
     duration: 30

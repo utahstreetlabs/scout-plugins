@@ -16,7 +16,7 @@ class HaproxyMonitoring < Scout::Plugin
   proxy:
     notes: The name of the proxy to monitor. Proxies are typically listed in the haproxy.cfg file.
   proxy_type:
-    notes: "If frontend and backend proxies have the same name, you can specify which proxy you want to monitor (ex: 'frontend' or 'backend')."
+    notes: "If multiple proxies have the same name, specify which proxy you want to monitor (ex: 'frontend' or 'backend')."
     attributes: advanced
   user:
     notes: If protected under basic authentication provide the user name.
@@ -83,7 +83,7 @@ class HaproxyMonitoring < Scout::Plugin
     if proxy.nil?
       error('Proxy name required',"The name of the proxy to monitor must be provided in the plugin settings. The possible proxies to monitor:\n<ul>#{possible_proxies.map { |p| "<li>#{p}</li>"}.join('')}</ul>")
     elsif found_proxies.empty?
-      error('Proxy not found',"The proxy '#{proxy}' was not found. The possible proxies to monitor:\n<ul>#{possible_proxies.map { |p| "<li>#{p}</li>"}.join('')}</ul>")
+      error('Proxy not found',"The proxy '#{proxy}' #{proxy_type ? "w/proxy type [#{proxy_type}]" : nil} was not found. The possible proxies #{proxy_type ? "for this proxy type" : nil} to monitor:\n<ul>#{possible_proxies.map { |p| "<li>#{p}</li>"}.join('')}</ul>")
     end
   end
 

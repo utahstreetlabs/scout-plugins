@@ -9,7 +9,7 @@ Each folder in this repository represents one Scout plugin.
 Gem Dependencies 
 ----------------
 
-This repo contains a Gemfile to use with bunder to install needed Gems for tests and the plugins themselves. 
+This repo contains a Gemfile to use with bundler to install needed Gems for tests and the plugins themselves.
 
 If you don't have Bundler:
 

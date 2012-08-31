@@ -3,18 +3,8 @@
 # 
 # Created by Mark Hasse on 2008-04-15.
 # =================================================================================
-
-=begin
-Personalities : [raid1] 
-md1 : active raid1 sda1[0] sdc1[2](S) sdb1[1]
-      244195904 blocks [2/2] [UU]
-      
-unused devices: <none>
-=end
-
 class MdStat < Scout::Plugin
   def build_report
-    data          = Hash.new 
     data = Hash.new
          
     mdstat = %x(cat /proc/mdstat).split(/\n/)
@@ -24,6 +14,9 @@ class MdStat < Scout::Plugin
 
     mdstat[2] =~ /\[(\d*\/\d*)\].*\[(.+)\]/
     counts = $1
+    if counts.nil?
+      return error("Not applicable for RAID 0", "This plugin reports the number of active disks, spares, and failed disks. As RAID 0 isn't redundent, a single drive failure destroys the Array. These metrics aren't applicable for RAID 0.")
+    end
     status = $2
     
     disk_counts = counts.split('/').map { |x| x.to_i } 
@@ -47,7 +40,5 @@ class MdStat < Scout::Plugin
     end
 
     report(data)
-  rescue
-    error(:subject => "Couldn't parse /proc/mdstat as expected.", :body => $!.message)
   end
 end

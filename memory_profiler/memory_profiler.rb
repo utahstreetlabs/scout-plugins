@@ -1,7 +1,15 @@
 class MemoryProfiler < Scout::Plugin
+  # reports darwin units as MB
+  DARWIN_UNITS = { "b" => 1/(1024*1024),
+            "k" => 1/1024,
+            "m" => 1,
+            "g" => 1024 }
+            
   def build_report
     if solaris?
       solaris_memory
+    elsif darwin?
+      darwin_memory
     else
       linux_memory
     end   
@@ -63,6 +71,27 @@ class MemoryProfiler < Scout::Plugin
     end
   end
   
+  # Parses top output. Does not report swap usage.
+  def darwin_memory
+    report_data = Hash.new
+    top_output = `top -l1 -n0 -u`
+    mem = top_output[/^(?:Phys)?Mem:.+/i]
+    
+    mem.scan(/(\d+|\d+\.\d+)([bkmg])\s+(\w+)/i) do |amount, unit, label|
+      case label
+      when 'used'
+        report_data["Memory Used"] =
+        (amount.to_f * DARWIN_UNITS[unit.downcase]).round
+      when 'free'
+        report_data["Memory Available"] =
+        (amount.to_f * DARWIN_UNITS[unit.downcase]).round
+      end
+    end
+    report_data["Memory Total"] = report_data["Memory Used"]+report_data["Memory Available"]
+    report_data['% Memory Used'] = ((report_data["Memory Used"].to_f/report_data["Memory Total"])*100).to_i
+    report(report_data)
+  end
+  
   # Memory Used and Swap Used come from the prstat command. 
   # Memory Total comes from prtconf
   # Swap Total comes from swap -s
@@ -102,12 +131,27 @@ class MemoryProfiler < Scout::Plugin
               else
                 solaris = false
                 begin
-                  solaris = true if `uname` =~ /sun/i
+                  solaris = true if `uname` =~ /sunos/i
                 rescue
                 end
               end
     remember(:solaris, solaris)
     return solaris
+  end
+  
+  # True if on darwin. Only checked on the first run (assumes OS does not change).
+  def darwin?
+    darwin = if @memory.has_key?(:darwin)
+                memory(:darwin) || false
+              else
+                darwin = false
+                begin
+                  darwin = true if `uname` =~ /darwin/i
+                rescue
+                end
+              end
+    remember(:darwin, darwin)
+    return darwin
   end
   
   # Ensures solaris memory metrics are in MB. Metrics that don't contain 'T,G,M,or K' are just

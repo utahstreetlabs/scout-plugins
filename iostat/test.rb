@@ -7,8 +7,8 @@ class IostatTest < Test::Unit::TestCase
     #                        date      hash    hash
   def test_success
     @plugin=Iostat.new(nil,{},{})
-    @plugin.expects(:`).with("cat /proc/diskstats").returns(FIXTURES[:diskstats_1]).once
-    @plugin.expects(:`).with("mount").returns(FIXTURES[:mount]).once
+    @plugin.stubs(:`).with("cat /proc/diskstats").returns(FIXTURES[:diskstats_1])
+    @plugin.stubs(:`).with("mount").returns(FIXTURES[:mount])
 
     res = @plugin.run()
     assert res[:memory].is_a?(Hash), "Plugin memory should be a hash"
@@ -25,7 +25,7 @@ class IostatTest < Test::Unit::TestCase
     end
   end
   
-  def test_success_with_provided_device
+  def test_success_with_provided_device_exact_match
     @plugin=Iostat.new(nil,{},{:device => 'xvda1'})
     @plugin.expects(:`).with("cat /proc/diskstats").returns(FIXTURES[:diskstats_1]).once
 
@@ -33,7 +33,7 @@ class IostatTest < Test::Unit::TestCase
     assert res[:memory].is_a?(Hash), "Plugin memory should be a hash"
     assert_equal 7, res[:memory].keys.size, "Plugin memory has the wrong number of keys"
     assert_equal 0, res[:reports].size, "Plugin shouldn't return any results first run"
-    assert_equal 52087575, res[:memory]['_counter_rkbps'][:value]
+    assert_equal 51862317, res[:memory]['_counter_rkbps'][:value]
   end
   
   def test_error_on_bad_device_name

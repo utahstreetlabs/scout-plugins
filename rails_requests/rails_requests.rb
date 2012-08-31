@@ -68,8 +68,6 @@ class RailsRequests < Scout::Plugin
 
     # set to the time of the last request processed. the next run will start parsing requests later requests.
     last_request_time  = nil
-    # the updated file position will be saved for the next run.
-    last_file_position = nil
     
     # for dev debugging
     skipped_requests_count = 0
@@ -239,7 +237,7 @@ class RailsRequests < Scout::Plugin
   def set_interval
     interval = (Time.now-(@last_run || @previous_last_request_time))
 
-    interval < 1 ? inteval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
+    interval < 1 ? interval = 1 : nil # if the interval is less than 1 second (may happen on initial run) set to 1 second
     interval = interval/60 # convert to minutes
     interval = interval.to_f
   end
@@ -615,9 +613,7 @@ class File
       self.lineno += 1
       return @line_buffer.shift 
     end
-    
-    sep = 
-    
+        
     chunk = String.new
     while chunk and chunk !~ /#{sep_string}/   
       chunk = read(@read_size)

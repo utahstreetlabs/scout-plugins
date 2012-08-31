@@ -9,11 +9,11 @@
 # You can mix and match pure process_names and process_name/args. Note that the process names are always full string matches,
 # and the args are always partial string matches.
 #
-class ProcessUsage < Scout::Plugin
+class SimpleProcessCheck < Scout::Plugin
 
   OPTIONS=<<-EOS
     process_names:
-      notes: "comma-delimited list of process names to monitor. Example: sshd,apache2,node"
+      notes: "comma-delimited list of process names to monitor. Example: sshd,apache2,node/eventLogger"
     ps_command:
       label: ps command
       default: ps -eo comm,args
@@ -37,7 +37,7 @@ class ProcessUsage < Scout::Plugin
     # [ ["smtpd", "smtpd -n smtp -t inet -u -c"],
     #   ["proxymap", "proxymap -t unix -u"],
     #   ["apache2", "usr/sbin/apache2 -k start"] ]
-    ps_output=ps_output.downcase.split("\n").map{|line| line.split(/\W+/,2)}
+    ps_output=ps_output.downcase.split("\n").map{|line| line.split(/\s+/,2)}
 
     processes_to_watch = process_names.split(",").uniq
     process_counts = processes_to_watch.map do |p|
@@ -51,7 +51,7 @@ class ProcessUsage < Scout::Plugin
     end
 
     num_processes=processes_to_watch.size
-    num_processes_present = process_counts.count{|count| count > 0}
+    num_processes_present = process_counts.select {|count| count > 0}.size
 
     previous_num_processes=memory(:num_processes)
     previous_num_processes_present=memory(:num_processes_present)

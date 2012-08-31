@@ -21,18 +21,6 @@ class HaProxyTest < Test::Unit::TestCase
     
   end
   
-  def test_should_error_with_invalid_proxy_type
-    uri='http://fake'
-    proxy = 'metrics-api'
-    FakeWeb.register_uri(:get, uri, :body => File.read(File.dirname(__FILE__)+'/fixtures/non_unique_proxies.csv'))
-    @plugin=HaproxyMonitoring.new(nil,{},{:uri=>uri, :proxy => proxy, :proxy_type => 'invalid'})
-    res = @plugin.run()
-    assert res[:reports].empty?
-    assert res[:memory].empty?
-    assert res[:errors].any?
-    assert res[:errors].first[:subject] =~ /Invalid Proxy Type/
-  end
-  
   def test_should_run_with_proxy_type
     uri='http://fake'
     proxy = 'metrics-api'
@@ -42,7 +30,7 @@ class HaProxyTest < Test::Unit::TestCase
       @plugin=HaproxyMonitoring.new(nil,{},{:uri=>uri, :proxy => proxy, :proxy_type => 'backend'})
       res = @plugin.run()
       assert_equal 61, res[:memory]["_counter_requests"][:value]
-      assert_equal 1, res[:reports].first[:proxy_up]
+      assert_equal 1, res[:reports].find { |e| e[:proxy_up]}[:proxy_up]
       first_run_memory = res[:memory]
       
       # now - 10 minutes later
@@ -71,7 +59,7 @@ class HaProxyTest < Test::Unit::TestCase
       assert_equal 10860, res[:memory]["_counter_errors_req"][:value]
       assert_equal 10, res[:memory]["_counter_errors_conn"][:value]
       assert_equal 20, res[:memory]["_counter_errors_resp"][:value]
-      assert_equal 1, res[:reports].first[:proxy_up]
+      assert_equal 1, res[:reports].find { |hash| hash[:proxy_up] }.values.last
       first_run_memory = res[:memory]
       
       # now - 10 minutes later
@@ -83,7 +71,7 @@ class HaProxyTest < Test::Unit::TestCase
         assert_in_delta 1, res[:reports].find { |e| e[:errors_req]}[:errors_req], 0.001
         assert_in_delta 0, res[:reports].first[:errors_conn], 0.001
         assert_in_delta 0.1, res[:reports].find { |e| e[:errors_resp]}[:errors_resp], 0.001      
-        assert_equal 0, res[:reports].find { |e| e[:proxy_up]}[:proxy_up]
+        assert_equal 0, res[:reports].find { |hash| hash[:proxy_up] }.values.last
       end # 2nd run
     end # travel
   end

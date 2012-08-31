@@ -17,5 +17,27 @@ metadata:
   proxy_up:
     label: Proxy Up
     precision: 0
-  
-    
+  bytes_in:
+    label: Bytes In
+    units: /sec
+    precision: 1
+  bytes_out:
+    label: Bytes Out
+    units: /sec
+    precision: 1
+  active_sessions:
+    label: Sessions Active
+    units: sessions
+    precision: 0
+  queued_sessions:
+    label: Sessions Queued
+    units: sessions
+    precision: 0
+  active_servers:
+    label: Servers (Active)
+    units: servers
+    precision: 0
+  backup_servers:
+    label: Servers (Backup)
+    units: servers
+    precision: 0

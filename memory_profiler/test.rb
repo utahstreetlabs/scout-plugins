@@ -7,14 +7,14 @@ class MemoryProfilerTest < Test::Unit::TestCase
     #                        date      hash    hash
     def test_success_linux
       @plugin=MemoryProfiler.new(nil,{},{})
-      @plugin.expects(:`).with("cat /proc/meminfo").returns(File.read(File.dirname(__FILE__)+'/fixtures/proc_meminfo.txt')).once
-      @plugin.expects(:`).with("uname").returns('Linux').once
+      @plugin.stubs(:`).with("cat /proc/meminfo").returns(File.read(File.dirname(__FILE__)+'/fixtures/proc_meminfo.txt'))
+      @plugin.stubs(:`).with("uname").returns('Linux')
 
       res = @plugin.run()
       
       assert res[:errors].empty?
       assert !res[:memory][:solaris]
-      assert_equal 6, res[:reports].first.keys.size
+      assert_equal 7, res[:reports].first.keys.size
       
       r = res[:reports].first
       assert_equal 0, r["Swap Used"]
@@ -23,13 +23,13 @@ class MemoryProfilerTest < Test::Unit::TestCase
       assert_equal 0, r["% Swap Used"]
       assert_equal 264, r["Memory Used"]
       assert_equal 1024, r["Memory Total"]
+      assert_equal 760, r["Memory Available"]
     end
     
     def test_success_linux_second_run
       # shouldn't run uname again as it is stored in memory
-      @plugin=MemoryProfiler.new(Time.now-60*10,{:solaris=>false},{})
-      @plugin.expects(:`).with("cat /proc/meminfo").returns(File.read(File.dirname(__FILE__)+'/fixtures/proc_meminfo.txt')).once
-      @plugin.expects(:`).with("uname").returns('Linux').never
+      @plugin=MemoryProfiler.new(Time.now-60*10,{:solaris=>false,:darwin=>false},{})
+      @plugin.stubs(:`).with("cat /proc/meminfo").returns(File.read(File.dirname(__FILE__)+'/fixtures/proc_meminfo.txt'))
 
       res = @plugin.run()
       assert_equal false,res[:memory][:solaris]
@@ -37,22 +37,22 @@ class MemoryProfilerTest < Test::Unit::TestCase
     
     def test_success_with_no_buffers
       @plugin=MemoryProfiler.new(nil,{},{})
-      @plugin.expects(:`).with("cat /proc/meminfo").returns(File.read(File.dirname(__FILE__)+'/fixtures/no_buffers.txt')).once
-      @plugin.expects(:`).with("uname").returns('Linux').once
+      @plugin.stubs(:`).with("cat /proc/meminfo").returns(File.read(File.dirname(__FILE__)+'/fixtures/no_buffers.txt'))
+      @plugin.stubs(:`).with("uname").returns('Linux')
 
       res = @plugin.run()
       
       assert res[:errors].empty?
       assert !res[:memory][:solaris]
-      assert_equal 5, res[:reports].first.keys.size
+      assert_equal 6, res[:reports].first.keys.size
     end
     
     def test_success_solaris
       @plugin=MemoryProfiler.new(nil,{},{})
-      @plugin.expects(:`).with("prstat -c -Z 1 1").returns(File.read(File.dirname(__FILE__)+'/fixtures/prstat.txt')).once
-      @plugin.expects(:`).with("/usr/sbin/prtconf | grep Memory").returns(File.read(File.dirname(__FILE__)+'/fixtures/prtconf.txt')).once
-      @plugin.expects(:`).with("swap -s").returns(File.read(File.dirname(__FILE__)+'/fixtures/swap.txt')).once
-      @plugin.expects(:`).with("uname").returns('SunOS').once
+      @plugin.stubs(:`).with("prstat -c -Z 1 1").returns(File.read(File.dirname(__FILE__)+'/fixtures/prstat.txt'))
+      @plugin.stubs(:`).with("/usr/sbin/prtconf | grep Memory").returns(File.read(File.dirname(__FILE__)+'/fixtures/prtconf.txt'))
+      @plugin.stubs(:`).with("swap -s").returns(File.read(File.dirname(__FILE__)+'/fixtures/swap.txt'))
+      @plugin.stubs(:`).with("uname").returns('SunOS')
 
       res = @plugin.run()
       
@@ -72,10 +72,10 @@ class MemoryProfilerTest < Test::Unit::TestCase
     
     def test_success_solaris_second_run
       @plugin=MemoryProfiler.new(Time.now-60*10,{:solaris=>true},{})
-      @plugin.expects(:`).with("prstat -c -Z 1 1").returns(File.read(File.dirname(__FILE__)+'/fixtures/prstat.txt')).once
-      @plugin.expects(:`).with("/usr/sbin/prtconf | grep Memory").returns(File.read(File.dirname(__FILE__)+'/fixtures/prtconf.txt')).once
-      @plugin.expects(:`).with("swap -s").returns(File.read(File.dirname(__FILE__)+'/fixtures/swap.txt')).once
-      @plugin.expects(:`).with("uname").returns('SunOS').never
+      @plugin.stubs(:`).with("prstat -c -Z 1 1").returns(File.read(File.dirname(__FILE__)+'/fixtures/prstat.txt'))
+      @plugin.stubs(:`).with("/usr/sbin/prtconf | grep Memory").returns(File.read(File.dirname(__FILE__)+'/fixtures/prtconf.txt'))
+      @plugin.stubs(:`).with("swap -s").returns(File.read(File.dirname(__FILE__)+'/fixtures/swap.txt'))
+      @plugin.stubs(:`).with("uname").returns('SunOS').never
 
       res = @plugin.run()
       assert_equal true,res[:memory][:solaris]
@@ -83,10 +83,10 @@ class MemoryProfilerTest < Test::Unit::TestCase
     
     def test_success_solaris_with_gb_swap_units
       @plugin=MemoryProfiler.new(nil,{},{})
-      @plugin.expects(:`).with("prstat -c -Z 1 1").returns(File.read(File.dirname(__FILE__)+'/fixtures/prstat.txt')).once
-      @plugin.expects(:`).with("/usr/sbin/prtconf | grep Memory").returns(File.read(File.dirname(__FILE__)+'/fixtures/prtconf.txt')).once
-      @plugin.expects(:`).with("swap -s").returns(File.read(File.dirname(__FILE__)+'/fixtures/swap_gb.txt')).once
-      @plugin.expects(:`).with("uname").returns('SunOS').once
+      @plugin.stubs(:`).with("prstat -c -Z 1 1").returns(File.read(File.dirname(__FILE__)+'/fixtures/prstat.txt'))
+      @plugin.stubs(:`).with("/usr/sbin/prtconf | grep Memory").returns(File.read(File.dirname(__FILE__)+'/fixtures/prtconf.txt'))
+      @plugin.stubs(:`).with("swap -s").returns(File.read(File.dirname(__FILE__)+'/fixtures/swap_gb.txt'))
+      @plugin.stubs(:`).with("uname").returns('SunOS')
 
       res = @plugin.run()
       
@@ -102,5 +102,42 @@ class MemoryProfilerTest < Test::Unit::TestCase
       assert_equal 2, r["% Memory Used"]
       assert_equal 872, r["Memory Used"]
       assert_equal 32763, r["Memory Total"]
+    end
+    
+    def test_success_darwin
+      @plugin=MemoryProfiler.new(nil,{},{})
+      @plugin.stubs(:`).with("top -l1 -n0 -u").returns(File.read(File.dirname(__FILE__)+'/fixtures/top_darwin.txt'))
+      @plugin.stubs(:`).with("uname").returns('Darwin')
+
+      res = @plugin.run()
+      
+      assert res[:errors].empty?
+      assert !res[:memory][:solaris]
+      assert res[:memory][:darwin]
+      
+      assert_equal 4, res[:reports].first.keys.size
+      
+      r = res[:reports].first
+      assert_equal 77, r["% Memory Used"]
+      assert_equal 3158, r["Memory Used"]
+      assert_equal 4094, r["Memory Total"]
+      assert_equal 936, r["Memory Available"]
+    end
+    
+    def test_success_darwin_second_run
+      @plugin=MemoryProfiler.new(Time.now-60*10,{:solaris=>false,:darwin=>true},{})
+      @plugin.stubs(:`).with("top -l1 -n0 -u").returns(File.read(File.dirname(__FILE__)+'/fixtures/top_darwin.txt'))
+      @plugin.stubs(:`).with("uname").returns('Darwin')
+
+      res = @plugin.run()
+      
+      assert res[:errors].empty?
+      assert !res[:memory][:solaris]
+      assert res[:memory][:darwin]
+      
+      assert_equal 4, res[:reports].first.keys.size
+      
+      r = res[:reports].first
+      assert_equal 77, r["% Memory Used"]
     end
 end

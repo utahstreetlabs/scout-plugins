@@ -1,23 +1,10 @@
-options:
-  command_name:
-    name: Command Name
-    notes: The name of the process you want to monitor.
-  ps_command:
-    name: The Process Status (ps) Command
-    notes: The command with options. The default works on most systems.
-    default: ps auxww
-  ps_regex:
-    name: The regex used to match a command name.
-    notes: "By default, this matches a command name anywhere in the ps output line.  The word COMMAND get's replaced with the command you gave (regex escaped).  You may wish to try the following pattern if you only want to match a command in the last column:  (?i:COMMAND\\s+$)"
-    default: "(?i:\\bCOMMAND\\b)"
-    
 metadata:
   memory:          
-    label: Largest Process Memory Usage
+    label: Memory Usage (Largest Process)
     units: MB
     precision: 0
   total_rss:          
-    label: Total Memory Usage
+    label: Memory Usage (Total)
     units: MB
     precision: 0
   num_processes:          
@@ -28,6 +15,14 @@ metadata:
     label: Restarts
     units: ""
     precision: 0
+  cpu:
+    label: CPU Usage (Largest Process)
+    units: %
+    precision: 1
+  total_cpu:
+    label: CPU Usage (Total)
+    units: %
+    precision: 1
      
 triggers:
   - type: peak

@@ -54,33 +54,42 @@ class JmxAgent < Scout::Plugin
   
   def read_mbean(jmx_cmd, mbean, attributes)
     values = {}
-    
-    result = `echo get -b #{mbean} #{attributes} | #{jmx_cmd}`
-  
-    attribute = nil
-    composite = false
-    
-    result.each_line do |line|
-      next if line.strip.empty?
-      
-      if composite then
-        if (line.strip.end_with?('};')) then
-          composite = false
+    command = "echo get -b #{mbean} #{attributes} | #{jmx_cmd}"
+    result = "not executed yet"
+    begin
+      result = `#{command} 2>&1`
+
+      if result.match(/No such PID (\d+)/)
+        error("Java PID #{$1} is invalid", "Command: #{command}\n\nResult: #{result}")
+        return {}
+      end
+
+      attribute = nil
+      composite = false
+
+      result.each_line do |line|
+        next if line.strip.empty?
+
+        if composite then
+          if (line.strip.end_with?('};')) then
+            composite = false
+          else
+            p = parse_attribute_line(line)
+            values["#{attribute}.#{p[:name]}"] = p[:value]
+          end
         else
           p = parse_attribute_line(line)
-          values["#{attribute}.#{p[:name]}"] = p[:value]
-        end
-      else
-        p = parse_attribute_line(line)
-        attribute = p[:name]
-        if (p[:value]  == '{') then
-          composite = true
-        else
-          values[attribute] = p[:value]
+          attribute = p[:name]
+          if (p[:value]  == '{') then
+            composite = true
+          else
+            values[attribute] = p[:value]
+          end
         end
       end
+    rescue
+      error("Error running JMX command", "Command: #{command}\n\nResult: #{result}")
     end
-    
     values
   end
 
@@ -92,21 +101,20 @@ class JmxAgent < Scout::Plugin
       jvm_pid = File.open(jvm_pid_file).readline.strip
       mbean_server_location = jvm_pid
     end
-    
+
     if mbean_server_location.nil? or mbean_server_location.empty?
       return error("A a JMX PID or an MBean Server Url is required",
-           "No MBean server location configured: no PID file nor server URL") 
+           "No MBean server location configured: no PID file nor server URL")
     end
-    
+
     mbeans_attributes = option(:mbeans_attributes)
     return error("No MBeans and Attributes Names defined") if mbeans_attributes.empty?
-    
+
     jmx_cmd = "java -jar #{option(:jmxterm_uberjar)} -l #{mbean_server_location} -n -v silent"
-    
+
     # validate JVM connectivity
-    jvm_name = read_mbean(jmx_cmd, 'java.lang:type=Runtime', 'Name')['Name']
-    # PID is validated for JVM PID file but not for mbean_server_url.
-    return error("JVM not found for PID #{jvm_pid}") unless jvm_name and (jvm_pid_file.nil? or jvm_pid_file.empty? or jvm_name.start_with?(jvm_pid))
+    read_mbean(jmx_cmd, 'java.lang:type=Runtime', 'Name')
+    return if errors.any?
     
     report_content = {}
     
@@ -116,7 +124,9 @@ class JmxAgent < Scout::Plugin
       raise "Invalid MBean attributes configuration" unless s.size == 2
       mbean = s[1]
       attributes = s[0].gsub(',', ' ')
-      report_content.merge!(read_mbean(jmx_cmd, mbean, attributes))
+      res = read_mbean(jmx_cmd, mbean, attributes)
+      next if res.empty?
+      report_content.merge!(res)
     end
 
     report(report_content)

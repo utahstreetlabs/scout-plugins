@@ -23,12 +23,12 @@ class FreeradiusStats < Scout::Plugin
   EOS
   
   def build_report
-    output = `echo "Message-Authenticator = 0x00, FreeRADIUS-Statistics-Type = 1" | radclient #{option(:host)}:#{option(:port)} status #{option(:secret)}`
+    output = `echo "Message-Authenticator = 0x00, FreeRADIUS-Statistics-Type = 1" | radclient #{option(:host)}:#{option(:port)} status #{option(:secret)} 2>&1`
     
     if !$?.success? or output =~ /no response/i
       # If the port was up last run, but not this run, report an error (cuts down on alerts)
       if memory(:portStatus) == 1
-        error("Could not connect to Freeradius status server on #{option(:host)}:#{option(:port)}")
+        error("Could not connect to Freeradius status server on #{option(:host)}:#{option(:port)}", "Command Result:\n\n#{output}")
       end
       
       # Set the port status to down for the next run

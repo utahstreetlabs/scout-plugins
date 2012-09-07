@@ -1,0 +1,25 @@
+metadata:  
+  backend_fail:  
+    label: Backend failures
+    units: /min
+  backend_conn:  
+    label: Backend connections
+    units: /min  
+  hitrate:  
+    label: Hit rate
+    units: "%"  
+  cache_hit:  
+    label: Cache hits
+    units: /min    
+  client_req:  
+    label: Client requests
+    units: /min    
+  client_conn:  
+    label: Client connections
+    units: /min    
+  cache_miss:  
+    label: Cache miss
+    units: /min    
+  cache_hitpass:  
+    label: Cache hits for pass
+    units: /min

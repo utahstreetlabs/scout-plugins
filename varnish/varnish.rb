@@ -10,16 +10,18 @@ class Varnish < Scout::Plugin
     metrics:
       name: Varnishstat Metrics
       default: client_conn,client_req,cache_hit,cache_hitpass,cache_miss,backend_conn,backend_fail
-      notes: A comma separated list varnishstat metrics.
-    rate:
-      name: Metric Reporting Rate
-      default: second
-      notes: Whether the metrics should be report per second or minute
+      notes: A comma separated list of varnishstat metrics.
   EOS
+  
+  RATE = :minute # counter metrics are reported per-minute
 
   def build_report
     stats = {}
-    `varnishstat -1`.each_line do |line|
+    res = `varnishstat -1 2>&1`
+    if !$?.success?
+      return error("Unable to fetch stats",res)
+    end
+    res.each_line do |line|
       #client_conn 211980 0.30 Client connections accepted
       next unless /^(\w+)\s+(\d+)\s+(\d+\.\d+)\s(.+)$/.match(line)
       stats[$1.to_sym] = $2.to_i
@@ -29,18 +31,10 @@ class Varnish < Scout::Plugin
     hitrate = stats[:cache_hit].to_f / total * 100
     report(:hitrate => hitrate)
 
-    rate = option(:rate)
-    if rate == "second" || rate == "minute"
-      rate = rate.to_sym
-    else
-      error("Invalid rate - #{rate} - using second")
-      rate = :second
-    end
-
     option(:metrics).split(/,\s*/).compact.each do |metric|
       metric = metric.to_sym
       if stats[metric]
-        counter(metric, stats[metric], :per=>rate)
+        counter(metric, stats[metric], :per=>RATE)
       else
         error("No such metric - #{metric}")
       end

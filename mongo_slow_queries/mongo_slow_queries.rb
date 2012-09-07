@@ -30,6 +30,9 @@ class ScoutMongoSlow < Scout::Plugin
       Notes: MongoDB standard port is 27017
       attributes: advanced
   EOS
+  
+  # In order to limit the alert body size, only the first +MAX_QUERIES+ are listed in the alert body. 
+  MAX_QUERIES = 10
 
   def enable_profiling(db)
     # set to slow_only or higher (>100ms)
@@ -102,7 +105,15 @@ class ScoutMongoSlow < Scout::Plugin
   
   def build_alert(slow_queries)
     subj = "Maximum Query Time exceeded on #{slow_queries.size} #{slow_queries.size > 1 ? 'queries' : 'query'}"
-    {:subject => subj, :body => slow_queries.to_json}
+    # send a sampling of slow queries. the total # of queries + query is limited as scout will throwout large checkins.
+    queries = []
+    slow_queries[0..(MAX_QUERIES-1)].each do |sq|
+      if q=sq['query'] and q.size > 300
+        sq['query'] = q[0..300] + '...'
+      end
+      queries << sq
+    end
+    {:subject => subj, :body => queries.to_json}
   end
 
 end

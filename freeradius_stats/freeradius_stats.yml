@@ -53,4 +53,4 @@ metadata: !map:HashWithIndifferentAccess
 triggers:
   - type: peak
     dname: access_requests
-    min_value: 0
+    low_value: 0

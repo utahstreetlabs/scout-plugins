@@ -32,13 +32,7 @@ class ApacheAnalyzer < Scout::Plugin
 
     log_path                   = option(:log)
     format                     = scan_format
-    
-    unless log_path and not log_path.empty?
-      return error("A path to the Apache log file wasn't provided.","Please provide the full path to the Apache log file to analyze (ie - /etc/httpd/logs/access.log)")
-    end
-    unless File.exist?(log_path)
-      return error("Unable to find the Apache log file", "Could not find an Apache log file at: #{option(:log)}. Please ensure the path is correct.")
-    end
+    return if !file_readable?(log_path)
     
     @ignored_paths=nil
     if option(:ignored_paths)
@@ -83,6 +77,25 @@ class ApacheAnalyzer < Scout::Plugin
   end
 
   private
+  
+  # Ensure (a) a file path is provided (b) exists (c) is readable. Generates an error and returns +false+ if if the file isn't readable, otherwise +true+.
+  def file_readable?(path)
+    unless path and not path.empty?
+      error("A path to the Apache log file wasn't provided.","Please provide the full path to the Apache log file to analyze (ie - /etc/httpd/logs/access.log)")
+      return false
+    end
+    # File#exist? returns false if the file exists but isn't readable. This provides a more accurate error message.
+    begin 
+      FileTest.size(path)
+    rescue Errno::EACCES
+      error("The Apache log file isn't readable", "The log file at #{path} isn't readable by the user running Scout. Please update the file permissions to give the user access.")
+    rescue Errno::ENOENT
+      error("Unable to find the Apache log file", "Could not find an Apache log file at: #{path}. Please ensure the path is correct.")
+    rescue
+      error("Unable to read the Apache log file", "The log file at: #{path} couldn't be accessed (#{$!.message}).")
+    end
+    data_for_server[:errors].any? ? false : true
+  end
   
   # Calculates the request rate, number of lines scanned, and average request time (if possible)
   def aggregate

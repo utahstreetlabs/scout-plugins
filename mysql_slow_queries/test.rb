@@ -33,4 +33,18 @@ class RailsRequestsTest < Test::Unit::TestCase
     end
   end
   
+  def test_no_file_path
+    plugin=ScoutMysqlSlow.new(nil,{},@options)
+    res=plugin.run
+    assert_equal 1, res[:errors].size
+    assert res[:reports].empty?
+  end
+  
+  def test_bad_file_path
+    plugin=ScoutMysqlSlow.new(nil,{},@options.merge(:mysql_slow_log => 'bad'))
+    res=plugin.run
+    assert_equal 1, res[:errors].size
+    assert res[:reports].empty?
+  end
+  
 end

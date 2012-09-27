@@ -33,10 +33,7 @@ class ScoutMysqlSlow < Scout::Plugin
   
   def build_report
     log_file_path = option(:mysql_slow_log).to_s.strip
-    if log_file_path.empty?
-      return error( "A path to the MySQL Slow Query log file wasn't provided.",
-                    "The full path to the slow queries log must be provided. Learn more about enabling the slow queries log here: http://dev.mysql.com/doc/refman/5.1/en/slow-query-log.html" )
-    end
+    return if !file_readable?(log_file_path)
 
     slow_query_count = 0
     all_queries = [] # all of the queries from the log file are stored here
@@ -88,6 +85,28 @@ class ScoutMysqlSlow < Scout::Plugin
     remember(:last_run_entry_timestamp, latest_entry_timestamp || last_run_entry_timestamp)
   rescue Errno::ENOENT => error
     error("Unable to find the MySQL slow queries log file", "Could not find a MySQL slow queries log file at: #{option(:mysql_slow_log)}. Please ensure the path is correct.")    
+  end
+  
+  private
+  
+  # Ensure (a) a file path is provided (b) exists (c) is readable. Generates an error and returns +false+ if if the file isn't readable, otherwise +true+.
+  def file_readable?(path)
+    unless path and not path.empty?
+      error( "A path to the MySQL Slow Query log file wasn't provided.",
+                    "The full path to the slow queries log must be provided. Learn more about enabling the slow queries log here: http://dev.mysql.com/doc/refman/5.1/en/slow-query-log.html" )
+      return false
+    end
+    # File#exist? returns false if the file exists but isn't readable. This provides a more accurate error message.
+    begin 
+      FileTest.size(path)
+    rescue Errno::EACCES
+      error("The MySQL Slow Query log file isn't readable", "The log file at #{path} isn't readable by the user running Scout. Please update the file permissions to give the user access.")
+    rescue Errno::ENOENT
+      error("Unable to find the MySQL Slow Query log file", "Could not find a MySQL Slow Query log file at: #{path}. Please ensure the path is correct.")
+    rescue
+      error("Unable to read the MySQL Slow Query log file", "The log file at: #{path} couldn't be accessed (#{$!.message}).")
+    end
+    data_for_server[:errors].any? ? false : true
   end
   
   def build_alert(slow_queries,log_file_path)

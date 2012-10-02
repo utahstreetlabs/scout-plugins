@@ -69,7 +69,7 @@ class HaProxyTest < Test::Unit::TestCase
         res = @plugin.run()
         assert_in_delta 10, res[:reports].first[:requests], 0.001
         assert_in_delta 1, res[:reports].find { |e| e[:errors_req]}[:errors_req], 0.001
-        assert_in_delta 0, res[:reports].first[:errors_conn], 0.001
+        assert_in_delta 0, res[:reports].find { |e| e[:errors_conn]}[:errors_conn], 0.001
         assert_in_delta 0.1, res[:reports].find { |e| e[:errors_resp]}[:errors_resp], 0.001      
         assert_equal 0, res[:reports].find { |hash| hash[:proxy_up] }.values.last
       end # 2nd run
@@ -115,10 +115,12 @@ class HaProxyTest < Test::Unit::TestCase
   end
   
   def test_should_error_with_invalid_basic_auth
+    uri_no_auth = "http://example.com/secret"
     uri_invalid_auth = "http://user:invalid@example.com/secret"
+    FakeWeb.register_uri(:get, uri_no_auth, :body => "Unauthorized", :status => ["401", "Unauthorized"])
     FakeWeb.register_uri(:get, uri_invalid_auth, :body => "Unauthorized", :status => ["401", "Unauthorized"])
 
-    @plugin=HaproxyMonitoring.new(nil,{},{:uri=>uri_invalid_auth, :user => 'user', :password => 'invalid'})
+    @plugin=HaproxyMonitoring.new(nil,{},{:uri=>uri_no_auth, :user => 'user', :password => 'invalid'})
     res = @plugin.run()
     assert_equal 1, res[:errors].size
     assert_equal "Authentication Failed", res[:errors].first[:subject]

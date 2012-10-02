@@ -46,14 +46,9 @@ class RailsRequests < Scout::Plugin
     self.class.class_eval(FILE_EXTS) if Gem::Version.new(RequestLogAnalyzer::VERSION) < Gem::Version.new("1.11.0") or RUBY_VERSION.to_f < 1.9
 
     @log_path = option(:log)
-    unless @log_path and not @log_path.empty?
-      @file_found = false
-      return error("A path to the Rails log file wasn't provided.","Please provide the full path to the Rails log file to analyze (ie - /var/www/apps/APP_NAME/log/production.log)")
-    end
-    unless File.exist?(@log_path)
-      @file_found = false
-      return error("Unable to find the Rails log file", "Could not find a Rails log file at: #{option(:log)}. Please ensure the path is correct.")
-    end
+    
+    @file_found = file_readable?(@log_path)
+    return if !@file_found
     
     @max_length = option(:max_request_length).to_f
     @max_memory_diff = option(:max_memory_diff) ? option(:max_memory_diff).to_f : nil
@@ -72,8 +67,6 @@ class RailsRequests < Scout::Plugin
     # for dev debugging
     skipped_requests_count = 0
     
-    # needed to ensure that the analyzer doesn't run if the log file isn't found.
-    @file_found        = true
     File.open(@log_path, 'rb') do |f| 
       # seek to the last position in the log file
       f.seek(@previous_position, IO::SEEK_SET)      
@@ -101,10 +94,6 @@ class RailsRequests < Scout::Plugin
     remember(:last_request_time, last_request_time ? Time.parse(last_request_time.to_s) : Time.now)
 
     report(aggregate)
-  rescue Errno::ENOENT => e
-    # TODO - Is this needed anymore with the File.exist? check?
-    @file_found = false
-    error("Unable to find the Rails log file", "Could not find a Rails log file at: #{option(:log)}. Please ensure the path is correct. \n\n#{e.message}")
   rescue Exception => e
     error("#{e.class}:  #{e.message}", e.backtrace.join("\n"))
   ensure
@@ -116,6 +105,25 @@ class RailsRequests < Scout::Plugin
   end
   
   private
+  
+  # Ensure (a) a file path is provided (b) exists (c) is readable. Generates an error and returns +false+ if if the file isn't readable, otherwise +true+.
+  def file_readable?(path)
+    unless path and not path.empty?
+      error("A path to the Rails log file wasn't provided.","Please provide the full path to the Rails log file to analyze (ie - /var/www/apps/APP_NAME/log/production.log)")      
+      return false
+    end
+    # File#exist? returns false if the file exists but isn't readable. This provides a more accurate error message.
+    begin 
+      FileTest.size(path)
+    rescue Errno::EACCES
+      error("The Rails log file isn't readable", "The log file at #{path} isn't readable by the user running Scout. Please update the file permissions to give the user access.")
+    rescue Errno::ENOENT
+      error("Unable to find the Rails log file", "Could not find a Rails log file at: #{path}. Please ensure the path is correct.")
+    rescue
+      error("Unable to read the Rails log file", "The log file at: #{path} couldn't be accessed (#{$!.message}).")
+    end
+    data_for_server[:errors].any? ? false : true
+  end
 
   # Process the ignored_actions option -- this is a regex provided by users; matching URIs don't get counted as slow.
   # Actions are stored in +@ignored_actions+. If the RegEx cannot be generated, an Argument Error is created.

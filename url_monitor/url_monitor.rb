@@ -101,7 +101,13 @@ class UrlMonitor < Scout::Plugin
             response = h.request(req)
       }
     rescue Exception => e
-      if e.message =~ /execution expired/ and retry_url_execution_expired
+      # forgot the trailing slash...add and retry
+      if e.message == "HTTP request path is empty" and retry_url_trailing_slash
+        url += '/'
+        uri = URI.parse(url)
+        retry_url_trailing_slash = false
+        retry
+      elsif e.message =~ /execution expired/ and retry_url_execution_expired
         retry_url_execution_expired = false
         retry
       else

@@ -45,8 +45,11 @@ class ElasticsearchClusterNodeStatus < Scout::Plugin
     report(:threads_count => response['jvm']['threads']['count'] || 0)
 
     gc_time(:gc_collection_time => response['jvm']['gc'])
-    gc_time(:gc_parnew_collection_time => response['jvm']['gc']['collectors']['ParNew'])
-    gc_time(:gc_cms_collection_time => response['jvm']['gc']['collectors']['ConcurrentMarkSweep'])
+    # Additional GC metrics provided by ElasticSearch can vary:
+    gc_time(:gc_parnew_collection_time => response['jvm']['gc']['collectors']['ParNew']) if response['jvm']['gc']['collectors']['ParNew']
+    gc_time(:gc_cms_collection_time => response['jvm']['gc']['collectors']['ConcurrentMarkSweep']) if response['jvm']['gc']['collectors']['ConcurrentMarkSweep']
+    gc_time(:gc_copy_collection_time => response['jvm']['gc']['collectors']['Copy']) if response['jvm']['gc']['collectors']['Copy']
+    gc_time(:gc_msc_coolection_time => response['jvm']['gc']['collectors']['MarkSweepCompact']) if response['jvm']['gc']['collectors']['MarkSweepCompact']
 
   rescue OpenURI::HTTPError
     error("Stats URL not found", "Please ensure the base url for elasticsearch cluster node stats is correct. Current URL: \n\n#{base_url}")

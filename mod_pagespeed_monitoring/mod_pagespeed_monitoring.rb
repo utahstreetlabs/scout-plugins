@@ -14,9 +14,7 @@ class ModPagespeedMonitoring < Scout::Plugin
       return error("Please provide a url to mod_pagespeed_statistics","By default, the statistics are served from http://localhost/mod_pagespeed_statistics.")
     end
     body = open(option(:url))
-
-    stats=YAML.load(body)
-    
+    stats = load_stats(body.read)    
     # each of these stats is from startup. calculate the rate. 
     stats.each do |name,value|
       next if !TRACKED.include?(name)
@@ -45,4 +43,16 @@ class ModPagespeedMonitoring < Scout::Plugin
     javascript_total_blocks
     page_load_count
   )
+  
+  private
+  
+  # More recent versions of mod_pagespeed return an HTML-like doc. Stats are in PRE tags.
+  def load_stats(doc)
+    yaml=if doc.include?('<pre>')
+      doc.match( /<pre>(.+)<\/pre>/m)[1]
+    else
+      doc
+    end
+    YAML::load(yaml)
+  end
 end

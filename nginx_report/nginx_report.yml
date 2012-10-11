@@ -1,19 +1,19 @@
 metadata:
   total:
-    label: Active connections
+    label: Connections (active)
     precision: 0
   waiting:
-    label: keep-alive connections
+    label: Connections (keep-alive)
     precision: 0
   requests_per_sec:
     label: Request throughput
     units: /sec
   requests:
-    label: Handled requests
+    label: Requests Handled
     precision: 0
   reading:
-    label: Reading connections
+    label: Connections (reading)
     precision: 0
   writing:
-    label: Writing connections
+    label: Connections (writing)
     precision: 0

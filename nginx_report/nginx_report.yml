@@ -9,7 +9,7 @@ metadata:
     label: Request throughput
     units: /sec
   requests:
-    label: Requests Handled
+    label: Requests handled
     precision: 0
   reading:
     label: Connections (reading)

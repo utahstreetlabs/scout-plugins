@@ -5,7 +5,7 @@ Created by [Eric Lindvall](http://twitter.com/lindvall)
 Overview
 ------------
 
-Reports on various SWAP-related memory metrics, generating alerts if Swap-Ins and/or Swap-Outs increase significantly.
+Reports on various SWAP-related memory metrics. Can generate alerts if Swap-Ins and/or Swap-Outs increase significantly.
 
 Dependencies
 ------------

@@ -29,16 +29,3 @@ metadata:
     delimiter: ","
     precision: "0"
     label: Page faults
-triggers: 
-- percentage_change: 100
-  type: trend
-  min_value: 0
-  window_reference: PRECEDING_WINDOW
-  dname: Swap-ins
-  direction: UP
-- percentage_change: 100
-  type: trend
-  min_value: 0
-  window_reference: PRECEDING_WINDOW
-  dname: Swap-outs
-  direction: UP

@@ -1,6 +1,6 @@
 #
 # This combines the passenger_memory_stats and passenger_status plugins
-# and removes the alerting that should be triggers
+# and removes the notification that should be triggers
 #
 # Combination by Eric Lindvall <eric@sevenscale.com>
 #

@@ -8,15 +8,14 @@
 class PassengerStats < Scout::Plugin
 
   OPTIONS=<<-EOS
-  options:
-    passenger_memory_stats_command:
-      name: The Passenger Memory Stats Command
-      notes: The full path to the passenger-memory-stats command (possibly with sudo).
-      default: sudo /usr/bin/passenger-memory-stats
-    passenger_status_command:
-      name: The Passenger Status Command
-      notes: The full path to the passenger-status command (possibly with sudo).
-      default: sudo /usr/bin/passenger-status
+  passenger_memory_stats_command:
+    name: The Passenger Memory Stats Command
+    notes: The full path to the passenger-memory-stats command (possibly with sudo).
+    default: sudo /usr/bin/passenger-memory-stats
+  passenger_status_command:
+    name: The Passenger Status Command
+    notes: The full path to the passenger-status command (possibly with sudo).
+    default: sudo /usr/bin/passenger-status
   EOS
 
   def build_report

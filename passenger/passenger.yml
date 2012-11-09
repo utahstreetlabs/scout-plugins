@@ -1,0 +1,66 @@
+metadata:
+  passenger_max_pool_size:
+    units: ""
+    delimiter: ","
+    precision: "0"
+    label: Passenger Max Pool Size
+  passenger_process_current:
+    units: ""
+    delimiter: ","
+    precision: "0"
+    label: Passenger Running Processes
+  passenger_process_active:
+    units: ""
+    delimiter: ","
+    precision: "0"
+    label: Passenger Active Processes
+  passenger_process_inactive:
+    units: ""
+    delimiter: ","
+    precision: "0"
+    label: Passenger Inactive Processes
+  passenger_queue_depth:
+    units: ""
+    delimiter: ","
+    precision: "0"
+    label: Passenger Global Queue Depth
+  apache_private_total:
+    units: ""
+    delimiter: ","
+    precision: "0"
+    label: Apache private total
+  apache_processes:
+    units: ""
+    delimiter: ","
+    precision: "0"
+    label: Apache processes
+  passenger_vmsize_total:
+    units: "MB"
+    delimiter: ","
+    precision: "0"
+    label: Passenger vmsize total
+  nginx_vmsize_total:
+    units: "MB"
+    delimiter: ","
+    precision: "0"
+    label: Nginx vmsize total
+  nginx_processes:
+    units: ""
+    delimiter: ","
+    precision: "0"
+    label: Nginx processes
+  passenger_private_total:
+    units: "MB"
+    delimiter: ","
+    precision: "0"
+    label: Passenger private total
+  nginx_private_total:
+    units: "MB"
+    delimiter: ","
+    precision: "0"
+    label: Nginx private total
+  apache_vmsize_total:
+    units: "MB"
+    delimiter: ","
+    precision: "0"
+    label: Apache vmsize total
